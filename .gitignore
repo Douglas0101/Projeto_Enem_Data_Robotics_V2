@@ -1,0 +1,26 @@
+# Build artifacts & environments
+# Build artifacts & environments
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.venv/
+.env
+*.egg-info/
+
+# Editors/IDE
+.idea/
+.vscode/
+
+# Data layers and local DB (reproducible via pipelines)
+data/
+tmp_meta_test/
+enem.duckdb
+
+# Frontend dependencies/build
+dashboard/node_modules/
+dashboard/dist/
+
+# Misc
+.DS_Store
+Saida.txt

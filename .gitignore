@@ -12,8 +12,11 @@ __pycache__/
 .idea/
 .vscode/
 
-# Data layers and local DB (reproducible via pipelines)
+# Data layers e artefatos locais (reconstruíveis via pipelines)
 data/
+# Mantém código-fonte de pipelines versionado
+!src/enem_project/data/
+!src/enem_project/data/**
 tmp_meta_test/
 enem.duckdb
 

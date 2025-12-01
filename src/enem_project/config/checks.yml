@@ -1,0 +1,16 @@
+checks for tb_notas_stats:
+  - row_count > 0
+  - missing_count(ANO) = 0
+  - min(NOTA_MATEMATICA_mean) >= 0
+  - max(NOTA_MATEMATICA_mean) <= 1000
+
+checks for tb_notas_geo_uf:
+  - row_count > 0
+  - missing_count(SG_UF_PROVA) = 0
+  - duplicate_count(ANO, SG_UF_PROVA) = 0
+
+checks for tb_socio_economico:
+  - row_count > 0
+  - missing_count(CLASSE) = 0
+  - min(LOW) >= 0
+  - max(HIGH) <= 1000

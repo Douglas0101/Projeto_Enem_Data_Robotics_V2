@@ -35,7 +35,7 @@ def get_duckdb_conn(
     if not read_only:
         path.parent.mkdir(parents=True, exist_ok=True)
     logger.info(
-        "Conectando ao DuckDB: %s (read_only=%s)",
+        "Conectando ao DuckDB: {} (read_only={})",
         path,
         read_only,
     )
@@ -100,6 +100,27 @@ def register_parquet_views(conn: duckdb.DuckDBPyConnection) -> None:
         f"""
         CREATE OR REPLACE VIEW gold_tb_notas_geo AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_geo.parquet").as_posix()}')
+        """,
+    )
+
+    conn.execute(
+        f"""
+        CREATE OR REPLACE VIEW gold_tb_notas_geo_uf AS
+        SELECT * FROM read_parquet('{(g_dir / "tb_notas_geo_uf.parquet").as_posix()}')
+        """,
+    )
+
+    conn.execute(
+        f"""
+        CREATE OR REPLACE VIEW gold_tb_notas_histogram AS
+        SELECT * FROM read_parquet('{(g_dir / "tb_notas_histogram.parquet").as_posix()}')
+        """,
+    )
+
+    conn.execute(
+        f"""
+        CREATE OR REPLACE VIEW gold_tb_socio_economico AS
+        SELECT * FROM read_parquet('{(g_dir / "tb_socio_economico.parquet").as_posix()}')
         """,
     )
 

@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = "http://localhost:8000";
+const DEFAULT_API_BASE_URL = "";
 
 function resolveBaseUrl(): string {
   // Em dev, o proxy do Vite cuida de /v1 e /health.

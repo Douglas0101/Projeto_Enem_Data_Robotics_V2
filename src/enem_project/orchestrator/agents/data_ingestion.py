@@ -19,7 +19,7 @@ class DataIngestionAgent(Agent):
 
         if ref is not None:
             logger.info(
-                "[%s] Detected streaming mode (arquivo ~%.2f GB). Nenhum DataFrame será carregado agora.",
+                "[{}] Detected streaming mode (arquivo ~{:.2f} GB). Nenhum DataFrame será carregado agora.",
                 self.name,
                 (ref.file_size_gb or 0.0),
             )

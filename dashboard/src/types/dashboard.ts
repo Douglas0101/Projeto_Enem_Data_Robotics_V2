@@ -1,5 +1,6 @@
 export interface TbNotasStatsRow {
   ANO: number;
+  TOTAL_INSCRITOS: number;
 
   NOTA_CIENCIAS_NATUREZA_count: number;
   NOTA_CIENCIAS_NATUREZA_mean: number | null;
@@ -53,5 +54,25 @@ export interface TbNotasGeoRow {
   NOTA_MATEMATICA_mean: number | null;
   NOTA_REDACAO_count: number;
   NOTA_REDACAO_mean: number | null;
+}
+
+export interface TbNotasGeoUfRow {
+  ANO: number;
+  SG_UF_PROVA: string;
+  INSCRITOS: number;
+
+  NOTA_CIENCIAS_NATUREZA_mean: number | null;
+  NOTA_CIENCIAS_HUMANAS_mean: number | null;
+  NOTA_LINGUAGENS_CODIGOS_mean: number | null;
+  NOTA_MATEMATICA_mean: number | null;
+  NOTA_REDACAO_mean: number | null;
+}
+
+export interface TbNotasHistogramRow {
+  ANO: number;
+  DISCIPLINA: string;
+  BIN_START: number;
+  BIN_END: number;
+  CONTAGEM: number;
 }
 

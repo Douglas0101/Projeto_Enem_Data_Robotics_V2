@@ -35,7 +35,7 @@ class CleanseAgent(Agent):
         if not silver_path.exists():
             raise FileNotFoundError(silver_path)
 
-        logger.info("[%s] Iniciando limpeza avançada: %s", self.name, silver_path)
+        logger.info("[{}] Iniciando limpeza avançada: {}", self.name, silver_path)
         metadata = load_metadata()
 
         clean_dir = paths.gold_dir() / "cleaned"
@@ -45,7 +45,7 @@ class CleanseAgent(Agent):
         if _should_stream_cleaning(silver_path):
             chunk_rows = _resolve_cleaning_chunk_rows()
             logger.info(
-                "[%s] Streaming habilitado para limpeza (%s, chunk=%d).",
+                "[{}] Streaming habilitado para limpeza ({}, chunk={}).",
                 self.name,
                 _format_size_gb(silver_path),
                 chunk_rows,
@@ -110,7 +110,7 @@ class CleanseAgent(Agent):
         )
         ctx.add_log(f"{self.name}: {row_count} linhas limpas.")
         logger.success(
-            "[%s] Limpeza concluída (%d linhas).",
+            "[{}] Limpeza concluída ({} linhas).",
             self.name,
             row_count,
         )

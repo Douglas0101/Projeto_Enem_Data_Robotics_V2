@@ -1,19 +1,24 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { useState } from "react";
 import { DashboardPage } from "./pages/DashboardPage";
+import { AdvancedPage } from "./pages/AdvancedPage";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Topbar } from "./components/layout/Topbar";
 
+export type PageType = "dashboard" | "advanced";
+
 export function App() {
+  const [currentPage, setCurrentPage] = useState<PageType>("dashboard");
+
   return (
-    <Flex minH="100vh">
-      <Sidebar />
-      <Box flex="1" display="flex" flexDirection="column">
+    <div className="flex h-screen w-full overflow-hidden bg-zinc-50">
+      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
+      <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar />
-        <Box as="main" flex="1" px={6} py={6}>
-          <DashboardPage />
-        </Box>
-      </Box>
-    </Flex>
+        <main className="flex-1 overflow-y-auto p-6">
+          {currentPage === "dashboard" ? <DashboardPage /> : <AdvancedPage />}
+        </main>
+      </div>
+    </div>
   );
 }
 

@@ -50,7 +50,7 @@ class MetadataRecord:
 
 def save_metadata(df: pd.DataFrame) -> Path:
     path = _metadata_path()
-    logger.info("Salvando metadados em %s", path)
+    logger.info("Salvando metadados em {}", path)
     df.to_parquet(path, index=False)
     return path
 
@@ -59,7 +59,7 @@ def load_metadata() -> pd.DataFrame:
     path = _metadata_path()
     if not path.exists():
         raise FileNotFoundError(path)
-    logger.info("Carregando metadados de %s", path)
+    logger.info("Carregando metadados de {}", path)
     return pd.read_parquet(path)
 
 

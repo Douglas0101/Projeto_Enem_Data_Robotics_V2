@@ -1,7 +1,12 @@
+import "./polyfills";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./index.css";
+
 import { ChakraProvider, extendTheme, ThemeConfig } from "@chakra-ui/react";
 import { App } from "./App";
+import { LayoutProvider } from "./context/LayoutContext";
+import { FilterProvider } from "./context/FilterContext";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -29,22 +34,26 @@ const theme = extendTheme({
       "'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     body:
       "'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-  },
-  styles: {
-    global: {
-      body: {
-        bg: "gray.50",
-        color: "gray.800"
-      }
-    }
   }
 });
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <ChakraProvider theme={theme}>
-      <App />
-    </ChakraProvider>
-  </React.StrictMode>
-);
+import { ErrorBoundary } from "./components/ErrorBoundary";
+
+try {
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <ChakraProvider theme={theme}>
+          <LayoutProvider>
+            <FilterProvider>
+              <App />
+            </FilterProvider>
+          </LayoutProvider>
+        </ChakraProvider>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
+} catch (e) {
+  console.error("Failed to mount React application:", e);
+}
 

@@ -35,7 +35,7 @@ def run_quality_audit_for_years(
     year_list = list(years)
 
     logger.info(
-        "[audit-workflow] Iniciando auditoria de Parquets para anos: %s",
+        "[audit-workflow] Iniciando auditoria de Parquets para anos: {}",
         year_list,
     )
     for year in year_list:
@@ -66,7 +66,7 @@ def run_quality_audit_for_years(
     combined_frames = [silver_df, gold_df]
     report_path = save_audit_report(combined_frames, output_name)
     logger.success(
-        "[audit-workflow] Auditoria concluída. Relatório consolidado em %s.",
+        "[audit-workflow] Auditoria concluída. Relatório consolidado em {}.",
         report_path,
     )
     return {"silver": silver_df, "gold": gold_df, "report_path": report_path}

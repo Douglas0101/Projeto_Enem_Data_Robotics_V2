@@ -1,53 +1,50 @@
+import { Bell, Settings, Slash } from "lucide-react";
+import { Button } from "../ui/button";
 import {
-  Avatar,
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  IconButton,
-  Text,
-  useColorModeValue
-} from "@chakra-ui/react";
-import { FiBell, FiSettings } from "react-icons/fi";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 export function Topbar() {
-  const bg = useColorModeValue("white", "gray.900");
-  const border = useColorModeValue("gray.200", "gray.700");
-
   return (
-    <Flex
-      as="header"
-      align="center"
-      justify="space-between"
-      px={6}
-      py={4}
-      borderBottomWidth="1px"
-      borderBottomColor={border}
-      bg={bg}
-    >
-      <Box>
-        <Text fontSize="sm" color="gray.500">
-          Painel principal
-        </Text>
-        <Text fontSize="xl" fontWeight="semibold">
-          Dashboard ENEM – Notas e Geografia
-        </Text>
-      </Box>
+    <header className="sticky top-0 z-50 flex h-16 w-full shrink-0 items-center gap-2 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex flex-1 items-center gap-2">
+        <div className="flex items-center text-sm text-muted-foreground">
+          <span className="font-medium text-foreground hover:text-primary cursor-pointer transition-colors">
+            Analytics
+          </span>
+          <Slash className="mx-2 h-4 w-4 text-muted-foreground/50" />
+          <span className="font-medium text-foreground">
+            Dashboard Geral
+          </span>
+        </div>
+      </div>
 
-      <HStack spacing={3}>
-        <IconButton
-          aria-label="Notificações"
-          variant="ghost"
-          icon={<Icon as={FiBell} />}
-        />
-        <IconButton
-          aria-label="Configurações"
-          variant="ghost"
-          icon={<Icon as={FiSettings} />}
-        />
-        <Avatar size="sm" name="Data Robotics" />
-      </HStack>
-    </Flex>
+      <div className="flex items-center gap-2">
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Bell className="h-4 w-4 text-muted-foreground" />
+                <span className="sr-only">Notificações</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Notificações</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Settings className="h-4 w-4 text-muted-foreground" />
+                <span className="sr-only">Configurações</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Configurações</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </header>
   );
 }
-

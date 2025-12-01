@@ -7,6 +7,13 @@ from pydantic import BaseModel
 
 class TbNotasStatsRow(BaseModel):
     ANO: int
+    TOTAL_INSCRITOS: int
+
+    IDADE_mean: Optional[float]
+    IDADE_std: Optional[float]
+    IDADE_min: Optional[float]
+    IDADE_median: Optional[float]
+    IDADE_max: Optional[float]
 
     NOTA_CIENCIAS_NATUREZA_count: int
     NOTA_CIENCIAS_NATUREZA_mean: Optional[float]
@@ -62,7 +69,50 @@ class TbNotasGeoRow(BaseModel):
     NOTA_REDACAO_mean: Optional[float]
 
 
+class TbNotasGeoUfRow(BaseModel):
+    ANO: int
+    SG_UF_PROVA: str
+    INSCRITOS: int
+
+    NOTA_CIENCIAS_NATUREZA_count: int
+    NOTA_CIENCIAS_NATUREZA_mean: Optional[float]
+    NOTA_CIENCIAS_HUMANAS_count: int
+    NOTA_CIENCIAS_HUMANAS_mean: Optional[float]
+    NOTA_LINGUAGENS_CODIGOS_count: int
+    NOTA_LINGUAGENS_CODIGOS_mean: Optional[float]
+    NOTA_MATEMATICA_count: int
+    NOTA_MATEMATICA_mean: Optional[float]
+    NOTA_REDACAO_count: int
+    NOTA_REDACAO_mean: Optional[float]
+
+
+class TbNotasHistogramRow(BaseModel):
+    ANO: int
+    DISCIPLINA: str
+    BIN_START: float
+    BIN_END: float
+    CONTAGEM: int
+
+
+class TbSocioRaceRow(BaseModel):
+    RACA: str
+    NOTA_MATEMATICA: Optional[float]
+    NOTA_CIENCIAS_NATUREZA: Optional[float]
+    NOTA_CIENCIAS_HUMANAS: Optional[float]
+    NOTA_LINGUAGENS_CODIGOS: Optional[float]
+    NOTA_REDACAO: Optional[float]
+    COUNT: int
+
+
+class TbSocioIncomeRow(BaseModel):
+    CLASSE: str
+    LOW: float
+    Q1: float
+    MEDIAN: float
+    Q3: float
+    HIGH: float
+
+
 class HealthResponse(BaseModel):
     status: str
     detail: str
-

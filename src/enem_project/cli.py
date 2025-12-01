@@ -6,6 +6,7 @@ from typing import Optional, List
 import sys
 import subprocess
 import typer
+import uvicorn
 
 from enem_project.config.settings import settings
 from enem_project.data.silver_to_gold import (
@@ -13,17 +14,14 @@ from enem_project.data.silver_to_gold import (
     build_tb_notas_geo_from_cleaned,
     build_tb_notas_stats_from_cleaned,
     build_tb_notas_geo_uf_from_cleaned,
+    build_tb_socio_economico_from_cleaned,
 )
 from enem_project.orchestrator.workflows.audit_workflow import run_quality_audit_for_years
 from enem_project.orchestrator.workflows.class_workflow import run_class_workflow
 from enem_project.orchestrator.workflows.etl_workflow import run_etl_full
 from enem_project.orchestrator.workflows.sql_backend_workflow import run_sql_backend_workflow
 from enem_project.infra.logging import logger
-from enem_project.orchestrator.mcp_docs import (
-    Context7DocsClient,
-    MCPConfigError,
-    MCPRemoteError,
-)
+
 
 
 app = typer.Typer(add_completion=False, no_args_is_help=False)
@@ -120,9 +118,12 @@ def _run_default(
         )
 
     if sql_backend:
-        db_path = run_sql_backend_workflow(materialize_dashboard_tables=True)
+        db_path = run_sql_backend_workflow(
+            materialize_dashboard_tables=True,
+            years=anos_alvo,
+        )
         logger.info(
-            "Backend SQL inicializado em %s (DuckDB). "
+            "Backend SQL inicializado em {} (DuckDB). "
             "Tabelas tb_notas, tb_notas_stats e tb_notas_geo disponíveis para consumo.",
             db_path,
         )
@@ -142,28 +143,37 @@ def _run_default(
             anos_exec = [y for y in anos_alvo if not _cleaned_exists(y)]
             if not anos_exec:
                 typer.echo("✅ Nenhum ano a processar (cleaned já existente). Materializando DuckDB...")
-                db_path = run_sql_backend_workflow(materialize_dashboard_tables=True)
+                db_path = run_sql_backend_workflow(
+                    materialize_dashboard_tables=True,
+                    years=anos_alvo,
+                )
                 typer.echo(f"✅ Backend SQL (DuckDB) materializado em: {db_path}")
                 return
 
         results = run_class_workflow(anos_exec)
         anos_processados = sorted(results.keys())
         logger.info(
-            "[dashboard] Limpeza + classes concluídas para anos: %s",
+            "[dashboard] Limpeza + classes concluídas para anos: {}",
             anos_processados,
         )
         tb_notas_rows = build_tb_notas_parquet_streaming(anos_exec)
         stats_df = build_tb_notas_stats_from_cleaned(anos_exec)
         geo_df = build_tb_notas_geo_from_cleaned(anos_exec)
         geo_uf_df = build_tb_notas_geo_uf_from_cleaned(anos_exec)
-        db_path = run_sql_backend_workflow(materialize_dashboard_tables=True)
+        socio_df = build_tb_socio_economico_from_cleaned(anos_exec)
+        materialization_years = anos_exec or anos_alvo
+        db_path = run_sql_backend_workflow(
+            materialize_dashboard_tables=True,
+            years=materialization_years,
+        )
         logger.info(
-            "[dashboard] Tabelas de notas atualizadas (tb_notas=%d, stats=%d, geo=%d, geo_uf=%d) "
-            "e backend SQL materializado em %s.",
+            "[dashboard] Tabelas de notas atualizadas (tb_notas={}, stats={}, geo={}, geo_uf={}, socio={}) "
+            "e backend SQL materializado em {}.",
             tb_notas_rows,
             len(stats_df),
             len(geo_df),
             len(geo_uf_df),
+            len(socio_df),
             db_path,
         )
         typer.echo(
@@ -175,7 +185,7 @@ def _run_default(
     if auditoria:
         audit_result = run_quality_audit_for_years(anos_alvo)
         logger.info(
-            "Auditoria concluída para anos: %s | Relatório: %s",
+            "Auditoria concluída para anos: {} | Relatório: {}",
             anos_alvo,
             audit_result["report_path"],
         )
@@ -189,7 +199,7 @@ def _run_default(
         results = run_class_workflow(anos_alvo)
         anos_processados = sorted(results.keys())
         logger.info(
-            "Workflow de classes finalizado para anos: %s | tabelas em data/02_gold/classes",
+            "Workflow de classes finalizado para anos: {} | tabelas em data/02_gold/classes",
             anos_processados,
         )
         # Após limpeza + classes, gera também as tabelas de notas
@@ -200,8 +210,8 @@ def _run_default(
         geo_uf_df = build_tb_notas_geo_uf_from_cleaned(anos_alvo)
         logger.info(
             "Tabelas de notas para dashboard atualizadas em data/02_gold "
-            "(tb_notas, tb_notas_stats, tb_notas_geo, tb_notas_geo_uf) | linhas tb_notas=%d, "
-            "tb_notas_stats=%d, tb_notas_geo=%d, tb_notas_geo_uf=%d",
+            "(tb_notas, tb_notas_stats, tb_notas_geo, tb_notas_geo_uf) | linhas tb_notas={}, "
+            "tb_notas_stats={}, tb_notas_geo={}, tb_notas_geo_uf={}",
             tb_notas_rows,
             len(stats_df),
             len(geo_df),
@@ -445,6 +455,24 @@ def mcp_docs(
         raise typer.Exit(code=1)
 
     typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("serve")
+def serve(
+    host: str = typer.Option("0.0.0.0", help="Host para binding do servidor."),
+    port: int = typer.Option(8000, help="Porta para binding do servidor."),
+    reload: bool = typer.Option(True, help="Habilita auto-reload (dev mode)."),
+) -> None:
+    """
+    Inicia o servidor da API (FastAPI + Uvicorn).
+    """
+    typer.echo(f"🚀 Iniciando servidor API em {host}:{port} (reload={reload})...")
+    uvicorn.run(
+        "enem_project.api.main:app",
+        host=host,
+        port=port,
+        reload=reload,
+    )
 
 
 def main() -> None:

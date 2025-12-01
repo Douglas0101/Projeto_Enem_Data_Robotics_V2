@@ -125,7 +125,7 @@ class SilverParquetQualityAgent(Agent):
             f"{self.name}: {row_count} linhas, {len(columns)} colunas no Parquet SILVER."
         )
         logger.success(
-            "[%s] Auditoria concluída (%d linhas / %d colunas).",
+            "[{}] Auditoria concluída ({} linhas / {} colunas).",
             self.name,
             row_count,
             len(columns),
@@ -168,7 +168,7 @@ class GoldParquetAuditAgent(Agent):
             records.append(result.to_frame())
 
             logger.info(
-                "[%s] %s → %d linhas / %d colunas.",
+                "[{}] {} → {} linhas / {} colunas.",
                 self.name,
                 file_path.name,
                 row_count,
@@ -193,7 +193,7 @@ class GoldParquetAuditAgent(Agent):
         ctx.add_data(handle.name, handle)
         ctx.add_log(f"{self.name}: {len(parquet_files)} arquivos GOLD auditados.")
         logger.success(
-            "[%s] Auditoria GOLD concluída (%d arquivos).",
+            "[{}] Auditoria GOLD concluída ({} arquivos).",
             self.name,
             len(parquet_files),
         )
@@ -222,7 +222,7 @@ def save_audit_report(frames: Iterable[pd.DataFrame], output_name: str) -> Path:
     output_path = paths.gold_dir() / output_name
     write_parquet(combined, output_path)
     logger.success(
-        "Relatório de auditoria salvo em %s (%d linhas).",
+        "Relatório de auditoria salvo em {} ({} linhas).",
         output_path,
         len(combined),
     )

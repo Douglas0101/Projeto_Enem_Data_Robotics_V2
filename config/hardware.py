@@ -1,3 +1,4 @@
+
 # src/enem_project/config/hardware.py
 
 from __future__ import annotations

@@ -12,6 +12,15 @@ __pycache__/
 .idea/
 .vscode/
 
+# MCP / credenciais locais (nunca versionar chaves)
+.mcp/
+config/mcp*.toml
+*.age
+*.gpg
+*.pem
+*.key
+.env*
+
 # Data layers e artefatos locais (reconstruíveis via pipelines)
 data/
 # Mantém código-fonte de pipelines versionado

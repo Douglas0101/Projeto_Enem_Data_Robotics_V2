@@ -1,0 +1,1233 @@
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1998_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1998_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1998_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1999_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1999_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1999_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2000_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2000_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2000_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2001_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2001_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2001_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2002_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2002_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2002_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2003_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2003_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2003_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2004_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2004_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2004_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2005_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2005_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2005_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2006_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2006_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2006_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2007_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2007_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2007_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2008_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2008_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2008_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2009_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2009_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2009_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2010_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2010_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2010_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2011_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2011_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2011_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2012_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2012_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2012_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2013_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2013_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2013_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2014_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2014_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2014_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2015_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2015_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2015_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2016_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2016_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2016_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2017_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2017_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2017_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2018_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2018_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2018_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2019_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2019_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2019_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2020_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2020_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2020_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2021_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2021_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2021_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2022_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2022_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2022_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2023_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2023_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2023_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:196 - Lendo Parquet de: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2024_clean.parquet
+2025-11-29 02:02:59 | enem_project.infra.io:read_parquet:205 - Erro inesperado ao ler Parquet /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2024_clean.parquet: No match for FieldRef.Name(Q006) in ID_INSCRICAO: string
+ANO: int64
+SG_UF_PROVA: string
+CO_MUNICIPIO_PROVA: string
+NO_MUNICIPIO_PROVA: string
+TP_SEXO: string
+TP_COR_RACA: int64
+TP_FAIXA_ETARIA: int64
+NU_IDADE: int64
+NOTA_CIENCIAS_NATUREZA: double
+NOTA_CIENCIAS_HUMANAS: double
+NOTA_LINGUAGENS_CODIGOS: double
+NOTA_MATEMATICA: double
+NOTA_REDACAO: double
+__fragment_index: int32
+__batch_index: int32
+__last_in_fragment: bool
+__filename: string
+2025-11-29 02:02:59 | enem_project.data.silver_to_gold:build_tb_socio_economico_from_cleaned:555 - Colunas socioeconômicas ausentes em /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2024_clean.parquet. Pulando.
+2025-11-29 02:02:59 | enem_project.orchestrator.workflows.sql_backend_workflow:run_sql_backend_workflow:49 - [workflow-sql] Tabelas Gold (Parquet) geradas com sucesso.
+2025-11-29 02:02:59 | enem_project.infra.db_agent:_get_conn:36 - Connecting to DuckDB: /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/enem.duckdb (read_only=False)
+╭─────────────────────────────────────────────────────────────────────────────────────────────── Traceback (most recent call last) ────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/src/enem_project/cli.py:327 in cli_entrypoint                                                                                                                        │
+│                                                                                                                                                                                                                                  │
+│   324 │   """                                                                                  ╭─────────────────────────── locals ────────────────────────────╮                                                                 │
+│   325 │   if ctx.invoked_subcommand:                                                           │           ano = None                                          │                                                                 │
+│   326 │   │   return                                                                           │       ano_fim = None                                          │                                                                 │
+│ ❱ 327 │   _run_default(                                                                        │    ano_inicio = None                                          │                                                                 │
+│   328 │   │   ano=ano,                                                                         │          anos = None                                          │                                                                 │
+│   329 │   │   ano_inicio=ano_inicio,                                                           │     auditoria = False                                         │                                                                 │
+│   330 │   │   ano_fim=ano_fim,                                                                 │        classe = False                                         │                                                                 │
+│                                                                                                │           ctx = <click.core.Context object at 0x7cb6ea048d70> │                                                                 │
+│                                                                                                │     dashboard = True                                          │                                                                 │
+│                                                                                                │ skip_existing = False                                         │                                                                 │
+│                                                                                                │   sql_backend = False                                         │                                                                 │
+│                                                                                                ╰───────────────────────────────────────────────────────────────╯                                                                 │
+│                                                                                                                                                                                                                                  │
+│ /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/src/enem_project/cli.py:165 in _run_default                                                                                                                          │
+│                                                                                                                                                                                                                                  │
+│   162 │   │   geo_uf_df = build_tb_notas_geo_uf_from_cleaned(anos_exec)                                                                                                                                                          │
+│   163 │   │   socio_df = build_tb_socio_economico_from_cleaned(anos_exec)                                                                                                                                                        │
+│   164 │   │   materialization_years = anos_exec or anos_alvo                                                                                                                                                                     │
+│ ❱ 165 │   │   db_path = run_sql_backend_workflow(                                                                                                                                                                                │
+│   166 │   │   │   materialize_dashboard_tables=True,                                                                                                                                                                             │
+│   167 │   │   │   years=materialization_years,                                                                                                                                                                                   │
+│   168 │   │   )                                                                                                                                                                                                                  │
+│                                                                                                                                                                                                                                  │
+│ ╭─────────────────────────────────────────────────────────────────────────────────────────────────────────── locals ───────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+│ │                   ano = None                                                                                                                                                                                                 │ │
+│ │               ano_fim = None                                                                                                                                                                                                 │ │
+│ │            ano_inicio = None                                                                                                                                                                                                 │ │
+│ │                  anos = None                                                                                                                                                                                                 │ │
+│ │             anos_alvo = [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, ... +17]                                                                                                                                │ │
+│ │             anos_exec = [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, ... +17]                                                                                                                                │ │
+│ │      anos_processados = [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, ... +17]                                                                                                                                │ │
+│ │             auditoria = False                                                                                                                                                                                                │ │
+│ │                classe = False                                                                                                                                                                                                │ │
+│ │             dashboard = True                                                                                                                                                                                                 │ │
+│ │                geo_df = │   │   ANO SG_UF_PROVA CO_MUNICIPIO_PROVA          NO_MUNICIPIO_PROVA  NOTA_CIENCIAS_NATUREZA_count  ...  NOTA_LINGUAGENS_CODIGOS_mean  NOTA_MATEMATICA_count  NOTA_MATEMATICA_mean                 │ │
+│ │                         NOTA_REDACAO_count  NOTA_REDACAO_mean                                                                                                                                                                │ │
+│ │                         0      1998          RN            2401453                     BARAUNA                           0.0  ...                           NaN                    0.0                   NaN                 │ │
+│ │                         50.0          21.600000                                                                                                                                                                              │ │
+│ │                         1      1998          TO            1715754               PALMEIROPOLIS                           0.0  ...                           NaN                    0.0                   NaN                 │ │
+│ │                         5.0           3.000000                                                                                                                                                                               │ │
+│ │                         2      1998          TO            1700350        ALIANCA DO TOCANTINS                           0.0  ...                           NaN                    0.0                   NaN                 │ │
+│ │                         1.0          25.000000                                                                                                                                                                               │ │
+│ │                         3      1998          CE            2304400                   FORTALEZA                           0.0  ...                           NaN                    0.0                   NaN                 │ │
+│ │                         653.0          64.425727                                                                                                                                                                             │ │
+│ │                         4      1998          PE            2609600                      OLINDA                           0.0  ...                           NaN                    0.0                   NaN                 │ │
+│ │                         922.0          14.473970                                                                                                                                                                             │ │
+│ │                         ...     ...         ...                ...                         ...                           ...  ...                           ...                    ...                   ...                 │ │
+│ │                         ...                ...                                                                                                                                                                               │ │
+│ │                         78165  2024          MT            5104609                    Itiquira                         115.0  ...                    504.501613                  115.0            488.416522                 │ │
+│ │                         124.0         539.677419                                                                                                                                                                             │ │
+│ │                         78166  2024          MT            5107107  São José dos Quatro Marcos                         202.0  ...                    508.726389                  202.0            500.965842                 │ │
+│ │                         216.0         620.185185                                                                                                                                                                             │ │
+│ │                         78167  2024          TO            1703701          Brejinho de Nazaré                          64.0  ...                    484.351948                   64.0            464.276563                 │ │
+│ │                         77.0         514.545455                                                                                                                                                                              │ │
+│ │                         78168  2024          MG            3164209                   São Romão                         199.0  ...                    484.727523                  199.0            474.382915                 │ │
+│ │                         218.0         524.311927                                                                                                                                                                             │ │
+│ │                         78169  2024          MT            5103700                 Feliz Natal                         113.0  ...                    505.831148                  113.0            511.848673                 │ │
+│ │                         122.0         574.754098                                                                                                                                                                             │ │
+│ │                                                                                                                                                                                                                              │ │
+│ │                         [78170 rows x 14 columns]                                                                                                                                                                            │ │
+│ │             geo_uf_df = │     ANO SG_UF_PROVA  INSCRITOS  NOTA_CIENCIAS_NATUREZA_count  NOTA_CIENCIAS_NATUREZA_mean  ...  NOTA_LINGUAGENS_CODIGOS_mean  NOTA_MATEMATICA_count  NOTA_MATEMATICA_mean  NOTA_REDACAO_count      │ │
+│ │                         NOTA_REDACAO_mean                                                                                                                                                                                    │ │
+│ │                         0    1998          TO         48                           0.0                          NaN  ...                           NaN                    0.0                   NaN                48.0      │ │
+│ │                         42.083333                                                                                                                                                                                            │ │
+│ │                         1    1998          CE        667                           0.0                          NaN  ...                           NaN                    0.0                   NaN               667.0      │ │
+│ │                         64.505247                                                                                                                                                                                            │ │
+│ │                         2    1998          AM        456                           0.0                          NaN  ...                           NaN                    0.0                   NaN               456.0      │ │
+│ │                         43.311404                                                                                                                                                                                            │ │
+│ │                         3    1998          MG      23412                           0.0                          NaN  ...                           NaN                    0.0                   NaN             23412.0      │ │
+│ │                         30.279130                                                                                                                                                                                            │ │
+│ │                         4    1998          SP       8845                           0.0                          NaN  ...                           NaN                    0.0                   NaN              8845.0      │ │
+│ │                         50.586772                                                                                                                                                                                            │ │
+│ │                         ..    ...         ...        ...                           ...                          ...  ...                           ...                    ...                   ...                 ...      │ │
+│ │                         ...                                                                                                                                                                                                  │ │
+│ │                         725  2024          PI     108113                       80260.0                   472.788100  ...                    503.561820                80260.0            505.810338             83074.0      │ │
+│ │                         623.719335                                                                                                                                                                                           │ │
+│ │                         726  2024          MT      67782                       43516.0                   490.126112  ...                    517.671166                43516.0            514.565819             46774.0      │ │
+│ │                         602.291016                                                                                                                                                                                           │ │
+│ │                         727  2024          PE     237615                      172869.0                   483.116086  ...                    516.510655               172869.0            520.570203            180632.0      │ │
+│ │                         614.092520                                                                                                                                                                                           │ │
+│ │                         728  2024          RS     279039                      143069.0                   503.025195  ...                    539.029573               143069.0            536.424148            156726.0      │ │
+│ │                         611.810548                                                                                                                                                                                           │ │
+│ │                         729  2024          AC      26424                       16919.0                   475.760216  ...                    506.691419                16919.0            489.960973             18156.0      │ │
+│ │                         589.491077                                                                                                                                                                                           │ │
+│ │                                                                                                                                                                                                                              │ │
+│ │                         [730 rows x 13 columns]                                                                                                                                                                              │ │
+│ │ materialization_years = [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, ... +17]                                                                                                                                │ │
+│ │               results = {                                                                                                                                                                                                    │ │
+│ │                         │   1998: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-1998-2025-11-29T04:50:53+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 1998},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_1998': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_1998',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1998_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=150944,                                                                                                                                                                │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_1998': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_1998',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_1998.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=150944,                                                                                                                                                                │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-1998: 150944 linhas limpas.', 'class-engineering-1998: classes geradas e salvas em classes_enem_1998.parquet.']                                                              │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   1999: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-1999-2025-11-29T04:50:53+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 1999},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_1999': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_1999',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_1999_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=308959,                                                                                                                                                                │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_1999': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_1999',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_1999.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=308959,                                                                                                                                                                │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-1999: 308959 linhas limpas.', 'class-engineering-1999: classes geradas e salvas em classes_enem_1999.parquet.']                                                              │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2000: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2000-2025-11-29T04:50:54+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2000},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2000': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2000',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2000_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=378421,                                                                                                                                                                │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2000': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2000',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2000.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=378421,                                                                                                                                                                │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2000: 378421 linhas limpas.', 'class-engineering-2000: classes geradas e salvas em classes_enem_2000.parquet.']                                                              │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2001: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2001-2025-11-29T04:50:56+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2001},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2001': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2001',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2001_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=1609886,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2001': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2001',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2001.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=1609886,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2001: 1609886 linhas limpas.', 'class-engineering-2001: classes geradas e salvas em classes_enem_2001.parquet.']                                                             │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2002: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2002-2025-11-29T04:51:01+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2002},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2002': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2002',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2002_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=1820404,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2002': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2002',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2002.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=1820404,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2002: 1820404 linhas limpas.', 'class-engineering-2002: classes geradas e salvas em classes_enem_2002.parquet.']                                                             │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2003: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2003-2025-11-29T04:51:07+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2003},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2003': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2003',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2003_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=1873079,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2003': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2003',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2003.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=1873079,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2003: 1873079 linhas limpas.', 'class-engineering-2003: classes geradas e salvas em classes_enem_2003.parquet.']                                                             │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2004: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2004-2025-11-29T04:51:13+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2004},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2004': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2004',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2004_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=1542165,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2004': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2004',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2004.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=1542165,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2004: 1542165 linhas limpas.', 'class-engineering-2004: classes geradas e salvas em classes_enem_2004.parquet.']                                                             │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2005: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2005-2025-11-29T04:51:17+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2005},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2005': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2005',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2005_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=2991271,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2005': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2005',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2005.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=2991271,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2005: 2991271 linhas limpas.', 'class-engineering-2005: classes geradas e salvas em classes_enem_2005.parquet.']                                                             │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2006: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2006-2025-11-29T04:51:27+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2006},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2006': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2006',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2006_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=3743370,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2006': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2006',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2006.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=3743370,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2006: 3743370 linhas limpas.', 'class-engineering-2006: classes geradas e salvas em classes_enem_2006.parquet.']                                                             │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   2007: OrchestratorContext(                                                                                                                                                                       │ │
+│ │                         │   │   run_id='class-2007-2025-11-29T04:51:40+00:00',                                                                                                                                               │ │
+│ │                         │   │   params={'year': 2007},                                                                                                                                                                       │ │
+│ │                         │   │   data={                                                                                                                                                                                       │ │
+│ │                         │   │   │   'clean_2007': DataHandle(                                                                                                                                                                │ │
+│ │                         │   │   │   │   name='clean_2007',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_2007_clean.parquet'),                                           │ │
+│ │                         │   │   │   │   │   row_count=3584577,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +4                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   ),                                                                                                                                                                                       │ │
+│ │                         │   │   │   'classes_2007': DataHandle(                                                                                                                                                              │ │
+│ │                         │   │   │   │   name='classes_2007',                                                                                                                                                                 │ │
+│ │                         │   │   │   │   sensitivity='AGGREGATED',                                                                                                                                                            │ │
+│ │                         │   │   │   │   payload=DatasetArtifact(                                                                                                                                                             │ │
+│ │                         │   │   │   │   │   path=PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_2007.parquet'),                                                    │ │
+│ │                         │   │   │   │   │   row_count=3584577,                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   columns=(                                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'ID_INSCRICAO',                                                                                                                                                              │ │
+│ │                         │   │   │   │   │   │   'ANO',                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   │   'SG_UF_PROVA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'CO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'NO_MUNICIPIO_PROVA',                                                                                                                                                        │ │
+│ │                         │   │   │   │   │   │   'TP_SEXO',                                                                                                                                                                   │ │
+│ │                         │   │   │   │   │   │   'TP_COR_RACA',                                                                                                                                                               │ │
+│ │                         │   │   │   │   │   │   'TP_FAIXA_ETARIA',                                                                                                                                                           │ │
+│ │                         │   │   │   │   │   │   'NU_IDADE',                                                                                                                                                                  │ │
+│ │                         │   │   │   │   │   │   'NOTA_CIENCIAS_NATUREZA',                                                                                                                                                    │ │
+│ │                         │   │   │   │   │   │   ... +7                                                                                                                                                                       │ │
+│ │                         │   │   │   │   │   )                                                                                                                                                                                │ │
+│ │                         │   │   │   │   )                                                                                                                                                                                    │ │
+│ │                         │   │   │   )                                                                                                                                                                                        │ │
+│ │                         │   │   },                                                                                                                                                                                           │ │
+│ │                         │   │   logs=['cleaning-2007: 3584577 linhas limpas.', 'class-engineering-2007: classes geradas e salvas em classes_enem_2007.parquet.']                                                             │ │
+│ │                         │   ),                                                                                                                                                                                               │ │
+│ │                         │   ... +17                                                                                                                                                                                          │ │
+│ │                         }                                                                                                                                                                                                    │ │
+│ │         skip_existing = False                                                                                                                                                                                                │ │
+│ │              socio_df = Empty DataFrame                                                                                                                                                                                      │ │
+│ │                         Columns: []                                                                                                                                                                                          │ │
+│ │                         Index: []                                                                                                                                                                                            │ │
+│ │           sql_backend = False                                                                                                                                                                                                │ │
+│ │              stats_df = │    ANO  TOTAL_INSCRITOS  IDADE_mean  IDADE_std  IDADE_min  IDADE_median  IDADE_max  ...  NOTA_MATEMATICA_max  NOTA_REDACAO_count  NOTA_REDACAO_mean  NOTA_REDACAO_std  NOTA_REDACAO_min            │ │
+│ │                         NOTA_REDACAO_median  NOTA_REDACAO_max                                                                                                                                                                │ │
+│ │                         0   1998           150944         NaN        NaN        NaN           NaN        NaN  ...             0.000000              150944          33.899921         31.449106               0.0            │ │
+│ │                         30.000000             100.0                                                                                                                                                                          │ │
+│ │                         1   1999           308959         NaN        NaN        NaN           NaN        NaN  ...             0.000000              308959          44.477207         25.741896               0.0            │ │
+│ │                         48.330002             100.0                                                                                                                                                                          │ │
+│ │                         2   2000           378421         NaN        NaN        NaN           NaN        NaN  ...             0.000000              378421          52.221447         25.052893               0.0            │ │
+│ │                         60.000000             100.0                                                                                                                                                                          │ │
+│ │                         3   2001          1609886         NaN        NaN        NaN           NaN        NaN  ...             0.000000             1609886          37.140804         27.665472               0.0            │ │
+│ │                         45.000000             100.0                                                                                                                                                                          │ │
+│ │                         4   2002          1820404         NaN        NaN        NaN           NaN        NaN  ...             0.000000             1820404          36.797832         28.500813               0.0            │ │
+│ │                         47.500000             100.0                                                                                                                                                                          │ │
+│ │                         5   2003          1873079         NaN        NaN        NaN           NaN        NaN  ...             0.000000             1873079          36.618652         29.124010               0.0            │ │
+│ │                         47.500000             100.0                                                                                                                                                                          │ │
+│ │                         6   2004          1542165         NaN        NaN        NaN           NaN        NaN  ...             0.000000             1542165          30.508772         29.703306               0.0            │ │
+│ │                         37.500000             100.0                                                                                                                                                                          │ │
+│ │                         7   2005          2991271         NaN        NaN        NaN           NaN        NaN  ...             0.000000             2991271          39.900852         28.202055               0.0            │ │
+│ │                         50.000000             100.0                                                                                                                                                                          │ │
+│ │                         8   2006          3743370         NaN        NaN        NaN           NaN        NaN  ...             0.000000             3743370          37.685398         28.004707               0.0            │ │
+│ │                         47.500000             100.0                                                                                                                                                                          │ │
+│ │                         9   2007          3584577         NaN        NaN        NaN           NaN        NaN  ...             0.000000             3584576          41.942856         27.250044               0.0            │ │
+│ │                         50.000000             100.0                                                                                                                                                                          │ │
+│ │                         10  2008          4018050         NaN        NaN        NaN           NaN        NaN  ...             0.000000             4018050          42.287361         29.076675               0.0            │ │
+│ │                         52.500000             100.0                                                                                                                                                                          │ │
+│ │                         11  2009          4148720         NaN        NaN        NaN           NaN        NaN  ...           985.099976             4148720         340.778381        319.144379               0.0            │ │
+│ │                         425.000000            1000.0                                                                                                                                                                         │ │
+│ │                         12  2010          4611614         NaN        NaN        NaN           NaN        NaN  ...           973.200012             4611612         403.195679        300.012512               0.0            │ │
+│ │                         500.000000            1000.0                                                                                                                                                                         │ │
+│ │                         13  2011          5366931         NaN        NaN        NaN           NaN        NaN  ...           953.000000             5366931         374.115967        280.511536               0.0            │ │
+│ │                         460.000000            1000.0                                                                                                                                                                         │ │
+│ │                         14  2012          5791065         NaN        NaN        NaN           NaN        NaN  ...           955.200012             3955218         509.357849        148.121979               0.0            │ │
+│ │                         500.000000            1000.0                                                                                                                                                                         │ │
+│ │                         15  2013          7173563         NaN        NaN        NaN           NaN        NaN  ...           971.500000             7173563         358.889160        269.179962               0.0            │ │
+│ │                         440.000000            1000.0                                                                                                                                                                         │ │
+│ │                         16  2014          8722248         NaN        NaN        NaN           NaN        NaN  ...           973.599976             8722248         323.421814        265.660583               0.0            │ │
+│ │                         360.000000            1000.0                                                                                                                                                                         │ │
+│ │                         17  2015          7746427         NaN        NaN        NaN           NaN        NaN  ...           999.900024             7744736         388.409821        270.374573               0.0            │ │
+│ │                         480.000000            1000.0                                                                                                                                                                         │ │
+│ │                         18  2016          8627179         NaN        NaN        NaN           NaN        NaN  ...           991.500000             5844789         529.964050        153.569946               0.0            │ │
+│ │                         540.000000            1000.0                                                                                                                                                                         │ │
+│ │                         19  2017          6731278         NaN        NaN        NaN           NaN        NaN  ...           993.900024             4701365         522.556213        184.834290               0.0            │ │
+│ │                         540.000000            1000.0                                                                                                                                                                         │ │
+│ │                         20  2018          5513733         NaN        NaN        NaN           NaN        NaN  ...           996.099976             4148250         508.679901        187.037659               0.0            │ │
+│ │                         520.000000            1000.0                                                                                                                                                                         │ │
+│ │                         21  2019          5095171         NaN        NaN        NaN           NaN        NaN  ...           985.500000             3923045         571.185486        188.565475               0.0            │ │
+│ │                         580.000000            1000.0                                                                                                                                                                         │ │
+│ │                         22  2020          5783109         NaN        NaN        NaN           NaN        NaN  ...           975.000000             2754140         573.412720        199.748718               0.0            │ │
+│ │                         580.000000            1000.0                                                                                                                                                                         │ │
+│ │                         23  2021          3389832         NaN        NaN        NaN           NaN        NaN  ...           953.099976             2378379         613.500549        190.663162               0.0            │ │
+│ │                         600.000000            1000.0                                                                                                                                                                         │ │
+│ │                         24  2022          3476105         NaN        NaN        NaN           NaN        NaN  ...           985.700012             2493442         618.479675        211.609573               0.0            │ │
+│ │                         620.000000            1000.0                                                                                                                                                                         │ │
+│ │                         25  2023          3933955         NaN        NaN        NaN           NaN        NaN  ...           958.599976             2822643         617.798462        213.922714               0.0            │ │
+│ │                         620.000000            1000.0                                                                                                                                                                         │ │
+│ │                         26  2024          4332944         NaN        NaN        NaN           NaN        NaN  ...           961.900024             3167955         624.593262        216.528366               0.0            │ │
+│ │                         640.000000            1000.0                                                                                                                                                                         │ │
+│ │                                                                                                                                                                                                                              │ │
+│ │                         [27 rows x 37 columns]                                                                                                                                                                               │ │
+│ │         tb_notas_rows = 112465000                                                                                                                                                                                            │ │
+│ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+│                                                                                                                                                                                                                                  │
+│ /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/src/enem_project/orchestrator/workflows/sql_backend_workflow.py:56 in run_sql_backend_workflow                                                                       │
+│                                                                                                                                                                                                                                  │
+│   53 │   db_path = agent.db_path                                                              ╭───────────────────────────────────────────────────────── locals ─────────────────────────────────────────────────────────╮       │
+│   54 │                                                                                        │                        agent = <enem_project.infra.db_agent.DuckDBAgent object at 0x7cb6ea04b380>                        │       │
+│   55 │   try:                                                                                 │                      db_path = PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/enem.duckdb') │       │
+│ ❱ 56 │   │   agent.register_parquet_views()                                                   │ materialize_dashboard_tables = True                                                                                      │       │
+│   57 │   │                                                                                    │                 target_years = (1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, ... +17)                     │       │
+│   58 │   │   if materialize_dashboard_tables:                                                 │                        years = [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, ... +17]                     │       │
+│   59 │   │   │   logger.info(                                                                 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯       │
+│                                                                                                                                                                                                                                  │
+│ /home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/src/enem_project/infra/db_agent.py:128 in register_parquet_views                                                                                                     │
+│                                                                                                                                                                                                                                  │
+│   125 │   │                                                                                                                                                                                                                      │
+│   126 │   │   for view_name, path in views.items():                                                                                                                                                                              │
+│   127 │   │   │   sql = f"CREATE OR REPLACE VIEW {view_name} AS SELECT * FROM read_parquet('{p                                                                                                                                   │
+│ ❱ 128 │   │   │   conn.execute(sql)                                                                                                                                                                                              │
+│   129 │   │                                                                                                                                                                                                                      │
+│   130 │   │   logger.info(f"Views registradas: {list(views.keys())}")                                                                                                                                                            │
+│   131                                                                                                                                                                                                                            │
+│                                                                                                                                                                                                                                  │
+│ ╭──────────────────────────────────────────────────────────────────────────── locals ────────────────────────────────────────────────────────────────────────────╮                                                               │
+│ │      conn = <duckdb.duckdb.DuckDBPyConnection object at 0x7cb670c797b0>                                                                                        │                                                               │
+│ │     g_dir = PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold')                                                              │                                                               │
+│ │      path = PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_socio_economico.parquet')                                   │                                                               │
+│ │     s_dir = PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/01_silver')                                                            │                                                               │
+│ │      self = <enem_project.infra.db_agent.DuckDBAgent object at 0x7cb6ea04b380>                                                                                 │                                                               │
+│ │       sql = "CREATE OR REPLACE VIEW gold_tb_socio_economico AS SELECT * FROM read_parquet('/h"+99                                                              │                                                               │
+│ │ view_name = 'gold_tb_socio_economico'                                                                                                                          │                                                               │
+│ │     views = {                                                                                                                                                  │                                                               │
+│ │             │   'silver_microdados': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/01_silver/microdados_enem_*.parquet'),        │                                                               │
+│ │             │   'gold_cleaned': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/cleaned/microdados_enem_*_clean.parquet'), │                                                               │
+│ │             │   'gold_classes': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/classes/classes_enem_*.parquet'),          │                                                               │
+│ │             │   'gold_tb_notas': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_notas.parquet'),                       │                                                               │
+│ │             │   'gold_tb_notas_stats': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_notas_stats.parquet'),           │                                                               │
+│ │             │   'gold_tb_notas_geo': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_notas_geo.parquet'),               │                                                               │
+│ │             │   'gold_tb_notas_geo_uf': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_notas_geo_uf.parquet'),         │                                                               │
+│ │             │   'gold_tb_notas_histogram': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_notas_histogram.parquet'),   │                                                               │
+│ │             │   'gold_tb_socio_economico': PosixPath('/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_socio_economico.parquet')    │                                                               │
+│ │             }                                                                                                                                                  │                                                               │
+│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯                                                               │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+IOException: IO Error: No files found that match the pattern "/home/douglas/PycharmProjects/Projeto_Enem_Data_Robotics_V2/data/02_gold/tb_socio_economico.parquet"cd

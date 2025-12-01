@@ -14,6 +14,11 @@ from enem_project.config import paths
 from enem_project.infra.io import read_parquet, write_parquet
 from enem_project.infra.logging import logger
 
+try:  # pragma: no cover - duckdb é opcional, mas acelera agregações grandes
+    import duckdb
+except ImportError:  # pragma: no cover
+    duckdb = None
+
 gold_dir = paths.gold_dir
 
 
@@ -59,7 +64,7 @@ def _clean_columns(
     for col in DEFAULT_NOTA_COLUMNS:
         if col not in df.columns:
             df[col] = np.nan
-        df[col] = pd.to_numeric(df[col], errors="coerce").astype(float)
+        df[col] = pd.to_numeric(df[col], errors="coerce").astype("float32")
 
     if "ID_INSCRICAO" in df.columns:
         df["ID_INSCRICAO"] = df["ID_INSCRICAO"].astype(str)
@@ -68,29 +73,31 @@ def _clean_columns(
 
     # Normaliza colunas geográficas quando disponíveis
     if "SG_UF_PROVA" in df.columns:
-        df["SG_UF_PROVA"] = df["SG_UF_PROVA"].astype(str).str.upper()
+        df["SG_UF_PROVA"] = df["SG_UF_PROVA"].astype("category")
     if "CO_MUNICIPIO_PROVA" in df.columns:
-        df["CO_MUNICIPIO_PROVA"] = df["CO_MUNICIPIO_PROVA"].astype(str)
+        df["CO_MUNICIPIO_PROVA"] = pd.to_numeric(
+            df["CO_MUNICIPIO_PROVA"], errors="coerce"
+        ).astype("Int32")
     if "NO_MUNICIPIO_PROVA" in df.columns:
-        df["NO_MUNICIPIO_PROVA"] = df["NO_MUNICIPIO_PROVA"].astype(str)
+        df["NO_MUNICIPIO_PROVA"] = df["NO_MUNICIPIO_PROVA"].astype("string")
 
     # Normaliza demografia (faixa etária/sexo/raça) e idade.
     if "TP_SEXO" in df.columns:
-        df["TP_SEXO"] = df["TP_SEXO"].astype("string").str.upper()
+        df["TP_SEXO"] = df["TP_SEXO"].astype("category")
     for cat_col in ("TP_COR_RACA", "TP_FAIXA_ETARIA"):
         if cat_col in df.columns:
-            df[cat_col] = pd.to_numeric(df[cat_col], errors="coerce").astype("Int64")
-    if "NU_IDADE" in df.columns:
-        age_series = pd.to_numeric(df["NU_IDADE"], errors="coerce")
-        valid_age = age_series.between(8, 120)
-        out_of_range = int((~valid_age).sum())
-        if out_of_range > 0:
-            logger.warning(
-                "Ano %s: descartando %d idades fora do intervalo [8,120].",
-                year,
-                out_of_range,
-            )
-        df["NU_IDADE"] = age_series.where(valid_age)
+            df[cat_col] = pd.to_numeric(df[cat_col], errors="coerce").astype("Int16")
+        if "NU_IDADE" in df.columns:
+            age_series = pd.to_numeric(df["NU_IDADE"], errors="coerce")
+            valid_age = age_series.between(8, 120)
+            out_of_range = int((~valid_age).sum())
+            if out_of_range > 0:
+                logger.warning(
+                    "Ano {}: descartando {} idades fora do intervalo [8,120].",
+                    year,
+                    out_of_range,
+                )
+            df["NU_IDADE"] = age_series.where(valid_age).astype("Int16")
 
     extras = extra_columns or []
     desired_cols = ["ANO", "ID_INSCRICAO", *DEMOGRAPHIC_COLUMNS, *extras, *DEFAULT_NOTA_COLUMNS]
@@ -126,7 +133,7 @@ def build_tb_notas_parquet_streaming(years: Iterable[int]) -> int:
         path = _cleaned_path(year)
         if not path.exists():
             raise FileNotFoundError(path)
-        logger.info("Construindo tb_notas (streaming) a partir de %s", path)
+        logger.info("Construindo tb_notas (streaming) a partir de {}", path)
 
         pf = pq.ParquetFile(path)
         batch_size = config.rows_per_batch if config.rows_per_batch and config.rows_per_batch > 0 else 200_000
@@ -147,7 +154,7 @@ def build_tb_notas_parquet_streaming(years: Iterable[int]) -> int:
     else:
         writer.close()
 
-    logger.info("tb_notas gerado em %s com %d linhas (streaming).", tb_notas_path, total_rows)
+    logger.info("tb_notas gerado em {} com {} linhas (streaming).", tb_notas_path, total_rows)
     return total_rows
 
 
@@ -168,20 +175,33 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
             out_age = int((~valid_age).sum())
             if out_age > 0:
                 logger.warning(
-                    "Ano %s: descartando %d idades fora do intervalo [8,120] para estatísticas anuais.",
+                    "Ano {}: descartando {} idades fora do intervalo [8,120] para estatísticas anuais.",
                     year,
                     out_age,
                 )
             age_series = age_series.where(valid_age)
-            record.update(
-                {
-                    "IDADE_mean": age_series.mean(),
-                    "IDADE_std": age_series.std(),
-                    "IDADE_min": age_series.min(),
-                    "IDADE_median": age_series.median(),
-                    "IDADE_max": age_series.max(),
-                },
-            )
+            age_valid = age_series.dropna()
+            if age_valid.empty:
+                record.update(
+                    {
+                        # Mantém como NaN para não sinalizar falsos positivos nos data checks.
+                        "IDADE_mean": np.nan,
+                        "IDADE_std": np.nan,
+                        "IDADE_min": np.nan,
+                        "IDADE_median": np.nan,
+                        "IDADE_max": np.nan,
+                    },
+                )
+            else:
+                record.update(
+                    {
+                        "IDADE_mean": age_valid.mean(),
+                        "IDADE_std": age_valid.std(),
+                        "IDADE_min": age_valid.min(),
+                        "IDADE_median": age_valid.median(),
+                        "IDADE_max": age_valid.max(),
+                    },
+                )
 
         for col in DEFAULT_NOTA_COLUMNS:
             series = pd.to_numeric(frame[col], errors="coerce")
@@ -190,39 +210,123 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
             out_of_range = (~valid).sum()
             if out_of_range > 0:
                 logger.warning(
-                    "Ano %s, coluna %s: descartando %d valores fora do intervalo [0,1000].",
+                    "Ano {}, coluna {}: descartando {} valores fora do intervalo [0,1000].",
                     year,
                     col,
                     out_of_range,
                 )
             series = series.where(valid)
+            series_valid = series.dropna()
 
-            record[f"{col}_count"] = series.count()
-            record[f"{col}_mean"] = series.mean()
-            record[f"{col}_std"] = series.std()
-            record[f"{col}_min"] = series.min()
-            record[f"{col}_median"] = series.median()
-            record[f"{col}_max"] = series.max()
+            if series_valid.empty:
+                record[f"{col}_count"] = 0
+                record[f"{col}_mean"] = 0.0
+                record[f"{col}_std"] = 0.0
+                record[f"{col}_min"] = 0.0
+                record[f"{col}_median"] = 0.0
+                record[f"{col}_max"] = 0.0
+            else:
+                record[f"{col}_count"] = series_valid.count()
+                record[f"{col}_mean"] = series_valid.mean()
+                record[f"{col}_std"] = series_valid.std()
+                record[f"{col}_min"] = series_valid.min()
+                record[f"{col}_median"] = series_valid.median()
+                record[f"{col}_max"] = series_valid.max()
         stats_frames.append(record)
 
     df_stats = pd.DataFrame(stats_frames)
 
-    # Preenche NaNs restantes (de agregações em séries vazias) com 0.
-    fill_cols = [c for c in df_stats.columns if "NOTA_" in c or "IDADE_" in c]
-    df_stats[fill_cols] = df_stats[fill_cols].fillna(0)
+    # Preenche apenas colunas de nota com 0 (idade permanece NaN para não gerar falsos avisos).
+    nota_cols = [c for c in df_stats.columns if c.startswith("NOTA_")]
+    age_cols = [c for c in df_stats.columns if c.startswith("IDADE_")]
+    if nota_cols:
+        df_stats[nota_cols] = df_stats[nota_cols].fillna(0).infer_objects(copy=False)
+    if age_cols:
+        df_stats[age_cols] = df_stats[age_cols].infer_objects(copy=False)
 
     return df_stats
+
+
+def _geo_empty_schema() -> list[str]:
+    return ["ANO", *GEO_COLUMNS] + [f"{n}_{suf}" for n in DEFAULT_NOTA_COLUMNS for suf in ("count", "mean")]
+
+
+def _geo_requires_columns(path: Path, required: list[str]) -> bool:
+    pf = pq.ParquetFile(path)
+    cols = set(pf.schema.names)
+    return all(col in cols for col in required)
+
+
+def _build_geo_duckdb(path: Path, year: int) -> pd.DataFrame:
+    required = [*GEO_COLUMNS, *DEFAULT_NOTA_COLUMNS]
+    if not _geo_requires_columns(path, required):
+        logger.warning(
+            "Colunas geográficas ou de notas ausentes para o ano {}; geo ficará vazio (schema preservado).",
+            year,
+        )
+        return pd.DataFrame(columns=_geo_empty_schema())
+
+    col_selects = []
+    for col in DEFAULT_NOTA_COLUMNS:
+        valid_case = f"CASE WHEN {col} BETWEEN 0 AND 1000 THEN {col} END"
+        col_selects.append(f"SUM(CASE WHEN {col} BETWEEN 0 AND 1000 THEN 1 ELSE 0 END) AS {col}_count")
+        col_selects.append(f"AVG({valid_case}) AS {col}_mean")
+
+    query = f"""
+    SELECT
+        COALESCE(CAST(ANO AS INT), {year}) AS ANO,
+        SG_UF_PROVA,
+        CO_MUNICIPIO_PROVA,
+        NO_MUNICIPIO_PROVA,
+        {", ".join(col_selects)}
+    FROM read_parquet('{path.as_posix()}')
+    WHERE SG_UF_PROVA IS NOT NULL
+      AND CO_MUNICIPIO_PROVA IS NOT NULL
+      AND NO_MUNICIPIO_PROVA IS NOT NULL
+    GROUP BY 1,2,3,4
+    """
+    return duckdb.sql(query).df()  # type: ignore[union-attr]
+
+
+def _build_geo_uf_duckdb(path: Path, year: int) -> pd.DataFrame:
+    pf = pq.ParquetFile(path)
+    cols = set(pf.schema.names)
+    required = {"SG_UF_PROVA", *DEFAULT_NOTA_COLUMNS}
+    if not required.issubset(cols):
+        logger.warning("Colunas necessárias para geo_uf ausentes no ano {}; retorno vazio.", year)
+        return pd.DataFrame()
+
+    has_id = "ID_INSCRICAO" in cols
+    inscritos_expr = "COUNT(DISTINCT ID_INSCRICAO)" if has_id else "COUNT(*)"
+
+    col_selects = [f"{inscritos_expr} AS INSCRITOS"]
+    for col in DEFAULT_NOTA_COLUMNS:
+        valid_case = f"CASE WHEN {col} BETWEEN 0 AND 1000 THEN {col} END"
+        col_selects.append(f"SUM(CASE WHEN {col} BETWEEN 0 AND 1000 THEN 1 ELSE 0 END) AS {col}_count")
+        col_selects.append(f"AVG({valid_case}) AS {col}_mean")
+
+    query = f"""
+    SELECT
+        COALESCE(CAST(ANO AS INT), {year}) AS ANO,
+        SG_UF_PROVA,
+        {", ".join(col_selects)}
+    FROM read_parquet('{path.as_posix()}')
+    WHERE SG_UF_PROVA IS NOT NULL
+    GROUP BY 1,2
+    """
+    return duckdb.sql(query).df()  # type: ignore[union-attr]
 
 
 def build_tb_notas_stats_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     # Calcula stats por ano lendo os Parquets limpos ano a ano
     records: list[dict[str, object]] = []
+    columns_to_read = ["ID_INSCRICAO", "NU_IDADE", *DEFAULT_NOTA_COLUMNS]
     for year in years:
         path = _cleaned_path(year)
         if not path.exists():
-            logger.warning("Arquivo limpo não encontrado para o ano %s em %s; ignorando.", year, path)
+            logger.warning("Arquivo limpo não encontrado para o ano {} em {}; ignorando.", year, path)
             continue
-        df = read_parquet(path)
+        df = read_parquet(path, columns=columns_to_read)
         df = _clean_columns(df, year)
         stats_year = _aggregate_stats(df)
         records.extend(stats_year.to_dict(orient="records"))
@@ -235,44 +339,41 @@ def build_tb_notas_stats_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
 
 def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     frames: list[pd.DataFrame] = []
+    columns_to_read = [*GEO_COLUMNS, *DEFAULT_NOTA_COLUMNS]
     for year in years:
         path = _cleaned_path(year)
         if not path.exists():
-            logger.warning("Arquivo limpo não encontrado para o ano %s em %s; ignorando.", year, path)
+            logger.warning("Arquivo limpo não encontrado para o ano {} em {}; ignorando.", year, path)
             continue
 
-        df = read_parquet(path)
+        if duckdb is not None:
+            try:
+                frames.append(_build_geo_duckdb(path, year))
+                continue
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("DuckDB falhou em geo {} ({}); caindo para pandas.", year, exc)
+
+        df = read_parquet(path, columns=columns_to_read)
         df = _clean_columns(df, year, extra_columns=GEO_COLUMNS)
 
-        # Se faltar colunas geográficas, cria schema vazio para evitar quebra.
         if not all(col in df.columns for col in GEO_COLUMNS):
             logger.warning(
-                "Colunas geográficas ausentes para o ano %s; geo ficará vazio (schema preservado).",
+                "Colunas geográficas ausentes para o ano {}; geo ficará vazio (schema preservado).",
                 year,
             )
-            empty = pd.DataFrame(
-                columns=["ANO", *GEO_COLUMNS]
-                + [f"{n}_{suf}" for n in DEFAULT_NOTA_COLUMNS for suf in ("count", "mean")]
-            )
+            empty = pd.DataFrame(columns=_geo_empty_schema())
             frames.append(empty)
             continue
 
         for col in DEFAULT_NOTA_COLUMNS:
             series = pd.to_numeric(df[col], errors="coerce")
             valid = series.between(0, 1000)
-            out_count = int((~valid).sum())
-            if out_count > 0:
-                logger.warning(
-                    "Ano %s, coluna %s: descartando %d valores fora do intervalo [0,1000] (geo).",
-                    year,
-                    col,
-                    out_count,
-                )
             df[col] = series.where(valid)
 
         grouped = df.groupby(
             ["ANO", "SG_UF_PROVA", "CO_MUNICIPIO_PROVA", "NO_MUNICIPIO_PROVA"],
             dropna=True,
+            observed=False,
         )
         agg_parts: list[pd.Series] = []
         for col in DEFAULT_NOTA_COLUMNS:
@@ -288,10 +389,7 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     if frames:
         geo_df = pd.concat(frames, ignore_index=True)
     else:
-        geo_df = pd.DataFrame(
-            columns=["ANO", *GEO_COLUMNS]
-            + [f"{n}_{suf}" for n in DEFAULT_NOTA_COLUMNS for suf in ("count", "mean")]
-        )
+        geo_df = pd.DataFrame(columns=_geo_empty_schema())
 
     geo_path = gold_dir() / "tb_notas_geo.parquet"
     write_parquet(geo_df, geo_path)
@@ -300,17 +398,25 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
 
 def build_tb_notas_geo_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     frames: list[pd.DataFrame] = []
+    columns_to_read = ["SG_UF_PROVA", "ID_INSCRICAO", *DEFAULT_NOTA_COLUMNS]
     for year in years:
         path = _cleaned_path(year)
         if not path.exists():
-            logger.warning("Arquivo limpo não encontrado para o ano %s em %s; ignorando.", year, path)
+            logger.warning("Arquivo limpo não encontrado para o ano {} em {}; ignorando.", year, path)
             continue
 
-        df = read_parquet(path)
+        if duckdb is not None:
+            try:
+                frames.append(_build_geo_uf_duckdb(path, year))
+                continue
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("DuckDB falhou em geo_uf {} ({}); caindo para pandas.", year, exc)
+
+        df = read_parquet(path, columns=columns_to_read)
         df = _clean_columns(df, year, extra_columns=["SG_UF_PROVA"])
 
         if "SG_UF_PROVA" not in df.columns:
-            logger.warning("Coluna SG_UF_PROVA ausente para o ano %s; geo (UF) ficará vazio.", year)
+            logger.warning("Coluna SG_UF_PROVA ausente para o ano {}; geo (UF) ficará vazio.", year)
             continue
 
         for col in DEFAULT_NOTA_COLUMNS:
@@ -318,14 +424,13 @@ def build_tb_notas_geo_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             valid = series.between(0, 1000)
             df[col] = series.where(valid)
 
-        grouped = df.groupby(["ANO", "SG_UF_PROVA"], dropna=True)
-        
-        # Lógica de agregação robusta para 'INSCRITOS'
+        grouped = df.groupby(["ANO", "SG_UF_PROVA"], dropna=True, observed=False)
+
         if "ID_INSCRICAO" in df.columns:
             inscritos_agg = grouped["ID_INSCRICAO"].nunique().rename("INSCRITOS")
         else:
             logger.warning(
-                "ID_INSCRICAO não encontrado para o ano %s. Usando o tamanho do grupo como contagem de inscritos.",
+                "ID_INSCRICAO não encontrado para o ano {}. Usando o tamanho do grupo como contagem de inscritos.",
                 year,
             )
             inscritos_agg = grouped.size().rename("INSCRITOS")
@@ -347,7 +452,7 @@ def build_tb_notas_geo_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     geo_df = pd.concat(frames, ignore_index=True)
     geo_path = gold_dir() / "tb_notas_geo_uf.parquet"
     write_parquet(geo_df, geo_path)
-    logger.info("Tabela Geográfica por UF gerada em %s.", geo_path)
+    logger.info("Tabela Geográfica por UF gerada em {}.", geo_path)
     return geo_df
 
 
@@ -363,7 +468,7 @@ def build_tb_notas_histogram_from_cleaned(
     for year in years:
         path = _cleaned_path(year)
         if not path.exists():
-            logger.warning("Arquivo limpo não encontrado para o ano %s; ignorando.", year, path)
+            logger.warning("Arquivo limpo não encontrado para o ano {}; ignorando.", year, path)
             continue
 
         df = read_parquet(path, columns=DEFAULT_NOTA_COLUMNS)
@@ -399,7 +504,106 @@ def build_tb_notas_histogram_from_cleaned(
     final_df = pd.concat(all_hist_frames, ignore_index=True)
     hist_path = gold_dir() / "tb_notas_histogram.parquet"
     write_parquet(final_df, hist_path)
-    logger.info("Tabela de histograma gerada em %s.", hist_path)
+    logger.info("Tabela de histograma gerada em {}.", hist_path)
+    return final_df
+
+
+Q006_MAP = {
+    "A": "Sem Renda",
+    "B": "Classe E (< 2 SM)",
+    "C": "Classe E (< 2 SM)",
+    "D": "Classe D (2-4 SM)",
+    "E": "Classe D (2-4 SM)",
+    "F": "Classe C (4-10 SM)",
+    "G": "Classe C (4-10 SM)",
+    "H": "Classe B (10-20 SM)",
+    "I": "Classe B (10-20 SM)",
+    "J": "Classe B (10-20 SM)",
+    "K": "Classe B (10-20 SM)",
+    "L": "Classe B (10-20 SM)",
+    "M": "Classe A (> 20 SM)",
+    "N": "Classe A (> 20 SM)",
+    "O": "Classe A (> 20 SM)",
+    "P": "Classe A (> 20 SM)",
+    "Q": "Classe A (> 20 SM)",
+}
+
+
+def build_tb_socio_economico_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
+    """
+    Gera a tabela Gold de indicadores socioeconômicos (Renda x Nota),
+    aplicando filtros de qualidade (presença) e mapa de classes.
+    """
+    frames = []
+    # Colunas necessárias: Notas + Q006 + Presença
+    cols = [
+        "Q006",
+        "TP_PRESENCA_CN", "TP_PRESENCA_CH", "TP_PRESENCA_LC", "TP_PRESENCA_MT",
+        "TP_STATUS_REDACAO",
+        *DEFAULT_NOTA_COLUMNS
+    ]
+
+    for year in years:
+        path = _cleaned_path(year)
+        if not path.exists():
+            continue
+        
+        # Leitura otimizada
+        try:
+            df = read_parquet(path, columns=cols)
+        except Exception:
+            logger.warning(f"Colunas socioeconômicas ausentes em {path}. Pulando.")
+            continue
+
+        # 1. Filtro de Qualidade (Apenas quem foi em tudo e não zerou redação por falta)
+        # PRESENCA = 1 (Presente), STATUS_REDACAO = 1 (Sem problemas)
+        mask = (
+            (df["TP_PRESENCA_CN"] == 1) &
+            (df["TP_PRESENCA_CH"] == 1) &
+            (df["TP_PRESENCA_LC"] == 1) &
+            (df["TP_PRESENCA_MT"] == 1) &
+            (df["TP_STATUS_REDACAO"] == 1)
+        )
+        df_valid = df[mask].copy()
+
+        if df_valid.empty:
+            continue
+
+        # 2. Cálculo da Nota Geral (Média Simples)
+        df_valid["NOTA_GERAL"] = df_valid[DEFAULT_NOTA_COLUMNS].mean(axis=1)
+
+        # 3. Mapeamento de Classe
+        df_valid["CLASSE"] = df_valid["Q006"].map(Q006_MAP)
+        df_valid = df_valid.dropna(subset=["CLASSE"])
+
+        # 4. Agregação Robusta (Percentis)
+        # Agrupa por CLASSE e calcula estatísticas
+        stats = df_valid.groupby("CLASSE")["NOTA_GERAL"].agg(
+            LOW="min",
+            Q1=lambda x: x.quantile(0.25),
+            MEDIAN="median",
+            Q3=lambda x: x.quantile(0.75),
+            HIGH="max",
+            COUNT="count"
+        ).reset_index()
+        
+        stats["ANO"] = year
+        frames.append(stats)
+
+    if not frames:
+        return pd.DataFrame()
+
+    final_df = pd.concat(frames, ignore_index=True)
+    
+    # Ordenação lógica das classes para o gráfico
+    class_order = ["Classe A (> 20 SM)", "Classe B (10-20 SM)", "Classe C (4-10 SM)", 
+                   "Classe D (2-4 SM)", "Classe E (< 2 SM)", "Sem Renda"]
+    final_df["CLASSE"] = pd.Categorical(final_df["CLASSE"], categories=class_order, ordered=True)
+    final_df = final_df.sort_values("CLASSE")
+
+    out_path = gold_dir() / "tb_socio_economico.parquet"
+    write_parquet(final_df, out_path)
+    logger.info("Tabela socioeconômica gerada em {}.", out_path)
     return final_df
 
 
@@ -409,4 +613,5 @@ __all__ = [
     "build_tb_notas_geo_from_cleaned",
     "build_tb_notas_geo_uf_from_cleaned",
     "build_tb_notas_histogram_from_cleaned",
+    "build_tb_socio_economico_from_cleaned",
 ]

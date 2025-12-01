@@ -1,97 +1,179 @@
-# ENEM Data Robotics
+# 🤖 ENEM Data Robotics V2
 
-Pipeline reproducível para processar microdados do ENEM em camadas raw → silver → gold, publicar um backend SQL/REST para consumo analítico e servir dashboards interativos.
+![Python](https://img.shields.io/badge/Python-3.12%2B-blue?style=for-the-badge&logo=python)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript)
+![DuckDB](https://img.shields.io/badge/DuckDB-Olap-fff000?style=for-the-badge&logo=duckdb)
+![FastAPI](https://img.shields.io/badge/FastAPI-High_Performance-009688?style=for-the-badge&logo=fastapi)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-## Principais componentes
-- CLI Typer `enem` para orquestrar ETL completo, auditorias e preparação de dados de dashboard.
-- Medallion architecture em `data/00_raw`, `data/01_silver`, `data/02_gold` com metadados versionados (`variaveis_meta.parquet`).
-- Backend DuckDB + FastAPI expondo tabelas `tb_notas*` e agregados geográficos.
-- Dashboard React/Vite (Chakra UI) em `dashboard/` consumindo as tabelas gold materializadas.
+> **Uma plataforma avançada de Engenharia de Dados e Inteligência Artificial para análise profunda do Exame Nacional do Ensino Médio (ENEM).**
 
-## Requisitos
-- Python 3.12+ e Poetry (ambiente virtual dedicado).
-- DuckDB e dependências nativas atendidas via `pip` (já em `pyproject.toml`).
-- Node.js 18+ para desenvolver o dashboard (Vite).
-- Microdados do ENEM baixados manualmente para `data/00_raw/microdados_enem_YYYY/DADOS/MICRODADOS_ENEM_YYYY.csv` (não versionar PII).
+O **ENEM Data Robotics V2** é uma solução "End-to-End" que combina pipelines de dados robustos, armazenamento OLAP de alta performance e um dashboard interativo moderno. O projeto visa democratizar o acesso a insights educacionais, focando em desigualdades socioeconômicas, raciais e regionais.
 
-## Instalação rápida
+---
+
+## 🚀 Funcionalidades Principais
+
+### 📊 Dashboard Interativo (Frontend)
+- **Visualizações Avançadas:** Gráficos interativos com **amCharts 5** e **Recharts**.
+- **Análise Comparativa:** Radar charts para comparar desempenho de estados vs. média nacional.
+- **Evolução Histórica:** Acompanhamento temporal de notas (2009-2024) com eixos empilhados independentes.
+- **Georreferenciamento:** Mapas de calor e clusters de desempenho por município.
+- **Assistente IA:** Chat integrado para perguntas sobre os dados (Powered by Genkit).
+
+### 🛠️ Engenharia de Dados (Backend)
+- **Arquitetura Medalhão:**
+  - 🟤 **Raw:** Dados brutos do INEP.
+  - ⚪ **Silver:** Dados limpos, tipados e padronizados.
+  - 🟡 **Gold:** Agregações analíticas prontas para consumo (OLAP).
+- **DuckDB:** Banco de dados analítico embarcado para processamento massivo local.
+- **FastAPI:** API RESTful de alta performance e documentação automática (Swagger UI).
+- **Agentes de IA:** Orquestração inteligente de pipelines e análise de dados.
+
+---
+
+## 🏗️ Arquitetura do Projeto
+
+O projeto segue uma estrutura modular e escalável:
+
+```mermaid
+graph TD
+    A[Dados Públicos INEP] -->|Ingestão| B(Camada Raw)
+    B -->|Limpeza & Validação| C(Camada Silver)
+    C -->|Agregação & Regras de Negócio| D(Camada Gold - DuckDB)
+    D -->|FastAPI| E[Backend Server]
+    E -->|JSON| F[Dashboard React/Vite]
+    G[Usuário] -->|Interage| F
+    G -->|Query NL| H[Agente IA Genkit]
+    H -->|SQL Generation| D
+```
+
+---
+
+## 📦 Stack Tecnológica
+
+### Backend & Data
+*   **Linguagem:** Python 3.12+
+*   **Gerenciamento de Dependências:** Poetry
+*   **API:** FastAPI + Pydantic
+*   **Banco de Dados:** DuckDB (Processamento OLAP local)
+*   **Orquestração/IA:** Google Genkit
+*   **Qualidade de Dados:** Soda Core (Validadores customizados)
+
+### Frontend (Dashboard)
+*   **Framework:** React 18 + Vite
+*   **Linguagem:** TypeScript
+*   **Estilização:** Tailwind CSS + Shadcn/UI
+*   **Visualização de Dados:**
+    *   `amcharts5`: Gráficos complexos e mapas.
+    *   `recharts`: Gráficos estatísticos padrão.
+    *   `lucide-react`: Ícones.
+
+---
+
+## ⚙️ Instalação e Configuração
+
+Siga os passos abaixo para executar o ambiente de desenvolvimento.
+
+### Pré-requisitos
+*   Python 3.12 ou superior
+*   Node.js 18 ou superior
+*   Poetry (Gerenciador de pacotes Python)
+
+### 1. Backend (API e Processamento)
+
 ```bash
+# Clone o repositório
+git clone https://github.com/seu-usuario/projeto-enem-data-robotics-v2.git
+cd projeto-enem-data-robotics-v2
+
+# Instale as dependências com Poetry
 poetry install
-poetry run enem --help
+
+# Ative o ambiente virtual
+poetry shell
+
+# Execute a API
+poetry run uvicorn src.enem_project.api.main:app --reload
 ```
+*A API estará disponível em: `http://localhost:8000/docs`*
 
-## Estrutura de pastas
-- `src/enem_project/config/` – caminhos, anos suportados, perfil de hardware.
-- `src/enem_project/data/` – pipelines raw → silver (`raw_to_silver.py`) e silver → gold (`silver_to_gold.py`, metadados).
-- `src/enem_project/orchestrator/` – agentes e workflows (ETL, classes, auditoria, backend SQL).
-- `src/enem_project/api/` – FastAPI (rotas de dashboard + health).
-- `data/` – camadas `00_raw`, `01_silver`, `02_gold`, além de `enem.duckdb`.
-- `dashboard/` – front-end React/Vite para os datasets gold.
-- `tests/` – Pytest para pipelines, qualidade e contratos.
-- `Enem_documentos_e_orquestração/` e `AGENTS.md` – guias de arquitetura, orquestração e governança do projeto.
+### 2. Frontend (Dashboard)
 
-## Camadas de dados e artefatos
-- Raw (`data/00_raw/`): microdados originais, imutáveis.
-- Silver (`data/01_silver/`): Parquet padronizado por ano (`microdados_enem_YYYY.parquet`).
-- Gold (`data/02_gold/`):
-  - `cleaned/` microdados limpos por ano; `classes/` com engenharia de classes.
-  - `tb_notas.parquet`, `tb_notas_stats.parquet`, `tb_notas_geo.parquet` (tabelas consumidas por API/dashboard).
-  - `reports/` com auditorias e relatórios de limpeza; `parquet_audit_report.parquet`.
-  - Metadados consolidados em `variaveis_meta.parquet`.
-- DuckDB (`data/enem.duckdb`): criado por `enem --sql-backend`, registra views e pode materializar `tb_notas*`.
-
-## Fluxos principais (CLI `enem`)
 ```bash
-# ETL completo (raw -> silver + QA) para anos específicos
-poetry run enem --ano 2022
-poetry run enem --anos 2019 2020
-poetry run enem --ano-inicio 2010 --ano-fim 2015
-
-# Somente auditoria de Parquets (silver + gold)
-poetry run enem --anos 2020 2021 --auditoria
-
-# Limpeza avançada + engenharia de classes + tabelas de notas para dashboard
-poetry run enem --classe --anos 2020 2021
-
-# Inicializar backend SQL (DuckDB), registrando views e materializando tb_notas*
-poetry run enem --sql-backend
-```
-
-## API analítica (FastAPI)
-```bash
-poetry run uvicorn enem_project.api.main:app --host 0.0.0.0 --port 8000
-```
-- `/health` para monitoramento.
-- `/v1/dashboard/anos-disponiveis`
-- `/v1/dashboard/notas/stats?ano_inicio=2015&ano_fim=2020`
-- `/v1/dashboard/notas/geo?ano=2020&uf=SP&min_count=50&limit=2000`
-O startup da API chama `init_sql_backend` para garantir que `enem.duckdb` e `tb_notas*` existam.
-
-## Dashboard (React/Vite)
-```bash
+# Navegue até a pasta do dashboard
 cd dashboard
+
+# Instale as dependências
 npm install
+
+# Inicie o servidor de desenvolvimento
 npm run dev
 ```
-O dashboard consome `tb_notas.parquet`, `tb_notas_stats.parquet` e `tb_notas_geo.parquet` via DuckDB/API. Gere essas tabelas executando os fluxos acima antes de abrir o front-end.
+*O Dashboard estará disponível em: `http://localhost:5173`*
 
-## Configuração e tuning
-- Anos e caminhos: `src/enem_project/config/settings.py`.
-- Perfil de hardware e streaming: `config/hardware.py` com detecção automática (CPU/RAM).
-- Variáveis úteis:
-  - `ENEM_MAX_RAM_GB`, `ENEM_CSV_CHUNK_ROWS`, `ENEM_ESTIMATED_ROW_BYTES`, `ENEM_STREAMING_THRESHOLD_GB`
-  - `ENEM_FORCE_STREAMING` (raw → silver), `ENEM_PARQUET_STREAM_ROWS` (tb_notas streaming)
-  - `ENEM_CLEANING_CHUNK_ROWS`, `ENEM_CLEANING_STREAMING_GB`, `ENEM_FORCE_CLEANING_STREAMING`
-  - `ENEM_CLASS_CHUNK_ROWS`, `ENEM_CLASS_STREAMING_GB`, `ENEM_FORCE_CLASS_STREAMING`
+---
 
-## Testes e qualidade
-- Testes automatizados: `poetry run pytest`.
-- Auditoria de dados: `poetry run enem --auditoria` gera `data/02_gold/parquet_audit_report.parquet`.
-- Quality gate no backend SQL: `init_sql_backend` aplica checagens em `tb_notas*` (intervalo de notas, row counts).
+## 📂 Estrutura de Diretórios
 
-## Contribuição e governança
-- Leia `AGENTS.md` e os guias em `Enem_documentos_e_orquestração/` antes de alterar pipelines, contratos ou orquestração.
-- Nunca altere dados em `data/00_raw/`. Toda mudança em silver/gold deve ser reprodutível via código.
-- Ao criar/alterar colunas em silver/gold, atualize metadados (`variaveis_meta.parquet`) e adicione testes de contrato.
-- Trate `NU_INSCRICAO/ID_INSCRICAO` como sensível: não logar valores brutos, não versionar PII.
-- Commits curtos, focados e imperativos; valide com `pytest` e, quando aplicável, com `enem --auditoria` ou `enem --sql-backend`.
+```plaintext
+Projeto_Enem_Data_Robotics_V2/
+├── config/                 # Configurações de hardware e ambiente
+├── dashboard/              # Aplicação Frontend (React/Vite)
+│   ├── src/
+│   │   ├── api/            # Clientes HTTP
+│   │   ├── components/     # Componentes UI (Charts, Maps, Cards)
+│   │   ├── pages/          # Rotas da aplicação
+│   │   └── ...
+├── data/                   # Lakehouse Local (Ignorado no Git)
+│   ├── 00_raw/
+│   ├── 01_silver/
+│   └── 02_gold/
+├── src/                    # Código Fonte Backend
+│   └── enem_project/
+│       ├── api/            # Rotas FastAPI
+│       ├── data/           # Pipelines ETL (Raw->Silver->Gold)
+│       ├── infra/          # Conexão DB, Logging, IO
+│       └── orchestrator/   # Agentes e Workflows
+├── tests/                  # Testes unitários e de integração
+└── ...
+```
+
+---
+
+## 🧪 Testes e Qualidade
+
+Para garantir a integridade dos dados e do código:
+
+```bash
+# Executar testes unitários (Backend)
+pytest tests/
+
+# Executar linter
+ruff check .
+```
+
+---
+
+## 🤝 Contribuição
+
+Contribuições são bem-vindas! Sinta-se à vontade para abrir **Issues** para reportar bugs ou **Pull Requests** para melhorias.
+
+1.  Faça um Fork do projeto
+2.  Crie sua Feature Branch (`git checkout -b feature/MinhaFeature`)
+3.  Commit suas mudanças (`git commit -m 'Add: Minha nova feature'`)
+4.  Push para a Branch (`git push origin feature/MinhaFeature`)
+5.  Abra um Pull Request
+
+---
+
+## 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+<div align="center">
+  <sub>Desenvolvido com 🧠 e ☕ por Douglas</sub>
+</div>

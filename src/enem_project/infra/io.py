@@ -124,7 +124,7 @@ def read_csv(
             return df
         except Exception as exc:  # noqa: BLE001
             logger.warning(
-                "DuckDB falhou ao ler %s (%s). Caindo para pandas com chunks de %d linhas.",
+                "DuckDB falhou ao ler {} ({}). Caindo para pandas com chunks de {} linhas.",
                 path,
                 exc,
                 chunk_size,
@@ -132,7 +132,7 @@ def read_csv(
     else:
         reason = "DuckDB indisponível" if duckdb is None else f"encoding '{encoding}' não suportado pelo DuckDB"
         logger.debug(
-            "Pulando leitura via DuckDB para %s (%s). Usando pandas com chunks de %d linhas.",
+            "Pulando leitura via DuckDB para {} ({}). Usando pandas com chunks de {} linhas.",
             path,
             reason,
             chunk_size,
@@ -223,3 +223,46 @@ def write_parquet(
     except Exception as e:  # noqa: BLE001
         logger.error(f"Falha ao escrever Parquet em {path}: {e}")
         raise
+
+
+def append_to_parquet(
+    df: pd.DataFrame,
+    path: Path,
+    *,
+    compression: str = "snappy",
+) -> None:
+    """
+    Adiciona um DataFrame a um arquivo Parquet existente, ou cria um novo
+    se não existir. Utiliza pyarrow para escrita eficiente.
+    """
+    if not path.exists():
+        write_parquet(df, path, compression=compression)
+        return
+
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    try:
+        table = pa.Table.from_pandas(df, preserve_index=False)
+        with pq.ParquetWriter(
+            path,
+            table.schema,
+            compression=compression,
+            filesystem=None,  # Local filesystem
+        ) as writer:
+            writer.write_table(table)
+    except Exception as e:
+        logger.error(f"Falha ao fazer append no Parquet {path}: {e}")
+        # Fallback: leitura total + concat + reescrita (lento e memória-intensivo, mas seguro)
+        # Em um cenário ideal de streaming, o arquivo deve ser aberto em modo append ou
+        # escrito como múltiplos arquivos em um diretório (dataset particionado).
+        # Como parquet não suporta append nativo em arquivo único fechado facilmente,
+        # a melhor prática para "append" é escrever partição separada ou dataset.
+        # Mas para manter compatibilidade com arquivo único:
+        try:
+            existing = pd.read_parquet(path)
+            combined = pd.concat([existing, df], ignore_index=True)
+            write_parquet(combined, path, compression=compression)
+        except Exception as e2:
+            logger.error(f"Falha crítica no fallback de append: {e2}")
+            raise e

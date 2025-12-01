@@ -37,7 +37,7 @@ def run_class_workflow(years: Iterable[int]) -> dict[int, OrchestratorContext]:
     )
 
     for year in years:
-        logger.info("[class-workflow] Iniciando pipeline de classes para %s", year)
+        logger.info("[class-workflow] Iniciando pipeline de classes para {}", year)
         security_manager = SecurityManager(policies={})
         agents = [
             CleanseAgent(year),
@@ -50,7 +50,7 @@ def run_class_workflow(years: Iterable[int]) -> dict[int, OrchestratorContext]:
         )
         ctx = orchestrator.run(ctx)
         results[year] = ctx
-        logger.success("[class-workflow] Pipeline concluído para %s", year)
+        logger.success("[class-workflow] Pipeline concluído para {}", year)
 
         # Libera memória agressivamente entre anos, espelhando o workflow ETL.
         gc.collect()

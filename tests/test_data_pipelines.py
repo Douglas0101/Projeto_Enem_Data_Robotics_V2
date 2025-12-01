@@ -2,68 +2,66 @@ import pandas as pd
 from pathlib import Path
 
 from enem_project.data.metadata import _collect_small_domain
-from enem_project.data.raw_to_silver import run_raw_to_silver
+from enem_project.data.raw_to_silver import clean_and_standardize, run_raw_to_silver
 from enem_project.infra.io import read_csv
 from enem_project.config import paths as paths_module
 from enem_project.config.settings import Settings, settings as global_settings
 
 
-def test_run_raw_to_silver_pipeline(tmp_path: Path):
+def test_run_raw_to_silver_pipeline(tmp_path: Path, monkeypatch):
     """
     Tests the full raw_to_silver pipeline for a sample year (2022).
     It creates a dummy raw CSV, runs the pipeline, and checks the silver output.
     """
     # 1. SETUP: Create fake raw data directory and file
     year = 2022
-    raw_dir = tmp_path / "00_raw" / f"microdados_enem_{year}" / "DADOS"
+    data_dir = tmp_path / "data"
+    raw_dir = data_dir / "00_raw" / f"microdados_enem_{year}" / "DADOS"
     raw_dir.mkdir(parents=True)
     raw_file_path = raw_dir / f"MICRODADOS_ENEM_{year}.csv"
 
-    # Create dummy data consistent with the 2022 rename map
     dummy_data = {
         "NU_INSCRICAO": [1, 2],
-        "TP_SEXO": ["M", "F"],
-        "NU_NOTA_CN": [550.0, 600.5],
-        "EXTRA_COLUMN": ["A", "B"]  # A column that should be ignored
+        "SEXO": ["m", "F"],
+        "UF_PROVA": ["sp", "RJ"],
+        "NU_ANO": [year, year],
+        "NU_NOTA_CN": ["550,5", "1200"],  # segunda nota fora de faixa será descartada
+        "NU_IDADE": [18, 200],  # idade inválida será descartada
+        "EXTRA_COLUMN": ["A", "B"],
     }
     pd.DataFrame(dummy_data).to_csv(raw_file_path, index=False, sep=";")
 
-    # Override config paths to use the temporary directory
-    # This requires a more advanced setup like monkeypatching settings,
-    # for simplicity here we will manually call the function with modified paths.
-    # For a real project, we would patch the get_raw_data_path and get_silver_dir functions.
-    # Let's simulate the expected behavior:
+    # Redireciona paths/settings para o diretório temporário
+    custom_settings = Settings(
+        PROJECT_ROOT=tmp_path,
+        DATA_DIR=data_dir,
+        YEARS=global_settings.YEARS,
+    )
+    monkeypatch.setattr(paths_module, "settings", custom_settings)
 
-    # Redefine the function to test in isolation (a simplified approach for this example)
-    from enem_project.infra.io import read_csv, write_parquet
+    import enem_project.data.raw_to_silver as rts
 
-    def run_test_pipeline(raw_path: Path, silver_dir: Path, year: int):
-        df_raw = read_csv(raw_path, separator=";")
-        rename_map = {
-            "NU_INSCRICAO": "ID_INSCRICAO",
-            "TP_SEXO": "CAT_SEXO",
-            "NU_NOTA_CN": "NOTA_CIENCIAS_NATUREZA",
-        }
-        df_clean = df_raw[rename_map.keys()].rename(columns=rename_map)
-        df_clean["ANO"] = year
-        silver_path = silver_dir / f"microdados_enem_{year}.parquet"
-        write_parquet(df_clean, silver_path)
+    monkeypatch.setattr(rts, "paths", paths_module)
+    monkeypatch.setattr(rts, "settings", custom_settings)
 
-    # 2. EXECUTION: Run the pipeline logic
-    silver_dir = tmp_path / "01_silver"
-    silver_dir.mkdir()
-    run_test_pipeline(raw_file_path, silver_dir, year)
+    # 2. EXECUTION: Run the pipeline logic end-to-end
+    results = rts.run_raw_to_silver(year)
+    assert results
+    expected_silver_file = results[0].path
 
     # 3. ASSERTION: Check if the output is correct
-    expected_silver_file = silver_dir / f"microdados_enem_{year}.parquet"
     assert expected_silver_file.exists()
 
     df_silver = pd.read_parquet(expected_silver_file)
     assert "ID_INSCRICAO" in df_silver.columns
-    assert "CAT_SEXO" in df_silver.columns
+    assert "TP_SEXO" in df_silver.columns
     assert "NOTA_CIENCIAS_NATUREZA" in df_silver.columns
     assert "ANO" in df_silver.columns
-    assert "EXTRA_COLUMN" not in df_silver.columns  # Column was correctly dropped
+    assert "EXTRA_COLUMN" not in df_silver.columns  # Column was dropped
+    assert list(df_silver["TP_SEXO"]) == ["M", "F"]
+    assert df_silver["NOTA_CIENCIAS_NATUREZA"].iloc[0] == 550.5
+    assert pd.isna(df_silver["NOTA_CIENCIAS_NATUREZA"].iloc[1])
+    assert pd.isna(df_silver["NU_IDADE"].iloc[1])
     assert df_silver["ANO"].iloc[0] == year
     assert len(df_silver) == 2
 
@@ -79,6 +77,22 @@ def test_collect_small_domain_returns_none_when_limit_exceeded():
     series = pd.Series([f"valor_{i}" for i in range(10)])
     domain = _collect_small_domain(series, max_size=3)
     assert domain is None
+
+
+def test_clean_and_standardize_handles_aliases_and_ranges():
+    df = pd.DataFrame(
+        {
+            "INSCRICAO": ["001", "002"],
+            "NOTA_MT": ["700,2", "1010"],  # segunda nota fora da faixa
+            "MUNICIPIO_PROVA": ["SAO PAULO", "RIO"],
+        }
+    )
+    clean = clean_and_standardize(df, 2010)
+    assert list(clean["ID_INSCRICAO"]) == ["001", "002"]
+    assert clean["NOTA_MATEMATICA"].iloc[0] == 700.2
+    assert pd.isna(clean["NOTA_MATEMATICA"].iloc[1])
+    assert list(clean["NO_MUNICIPIO_PROVA"]) == ["SAO PAULO", "RIO"]
+    assert clean["ANO"].nunique() == 1
 
 
 def test_read_csv_fallbacks_to_chunked_pandas_for_latin1(tmp_path: Path):
@@ -138,6 +152,8 @@ def test_build_tb_notas_and_stats(tmp_path: Path, monkeypatch):
             {
                 "ANO": [year, year],
                 "ID_INSCRICAO": [f"{year}1", f"{year}2"],
+                "TP_SEXO": ["M", "F"],
+                "NU_IDADE": [18, 19],
                 "NOTA_CIENCIAS_NATUREZA": [500.0, 600.0],
                 "NOTA_CIENCIAS_HUMANAS": [550.0, 650.0],
                 "NOTA_LINGUAGENS_CODIGOS": [580.0, 680.0],
@@ -160,6 +176,9 @@ def test_build_tb_notas_and_stats(tmp_path: Path, monkeypatch):
     stats_path = gold_root / "tb_notas_stats.parquet"
     assert stats_path.exists()
     assert set(stats["ANO"]) == set(years)
+    assert "TOTAL_INSCRITOS" in stats.columns
+    assert "IDADE_mean" in stats.columns
+    assert stats.loc[stats["ANO"] == years[0], "TOTAL_INSCRITOS"].iat[0] == 2
 
     for prefix in [
         "NOTA_CIENCIAS_NATUREZA",

@@ -36,7 +36,7 @@ class ClassEngineeringAgent(Agent):
         if not isinstance(payload, DatasetArtifact):
             raise TypeError(f"Payload inválido para {handle_key}: {type(payload)}")
 
-        logger.info("[%s] Gerando classes para %s", self.name, payload.path)
+        logger.info("[{}] Gerando classes para {}", self.name, payload.path)
         classes_dir = paths.gold_dir() / "classes"
         classes_dir.mkdir(parents=True, exist_ok=True)
         classes_path = classes_dir / f"classes_enem_{self.year}.parquet"
@@ -47,7 +47,7 @@ class ClassEngineeringAgent(Agent):
 
         if use_streaming:
             logger.info(
-                "[%s] Streaming de classes ativado (%s, chunk=%d).",
+                "[{}] Streaming de classes ativado ({}, chunk={}).",
                 self.name,
                 _format_size_gb(payload.path),
                 chunk_size,
@@ -64,7 +64,7 @@ class ClassEngineeringAgent(Agent):
         else:
             df_clean = read_parquet(payload.path)
             logger.info(
-                "[%s] Perfil de hardware → processamento em lotes de até %d linhas.",
+                "[{}] Perfil de hardware → processamento em lotes de até {} linhas.",
                 self.name,
                 chunk_size,
             )
@@ -95,7 +95,7 @@ class ClassEngineeringAgent(Agent):
         )
         ctx.add_log(f"{self.name}: classes geradas e salvas em {classes_path.name}.")
         logger.success(
-            "[%s] Classes concluídas (%d linhas).",
+            "[{}] Classes concluídas ({} linhas).",
             self.name,
             row_count,
         )

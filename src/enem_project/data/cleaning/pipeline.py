@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from enem_project.data.metadata import filter_metadata_for_year, load_metadata
+from enem_project.data.cleaning.rules import DEFAULT_NUMERIC_RULES
 from enem_project.infra.logging import logger
 
 
@@ -20,31 +21,72 @@ class CleaningArtifacts:
 
 
 def _validate_numeric_ranges(df: pd.DataFrame) -> pd.Series:
-    invalid_age = pd.Series(False, index=df.index)
-    if "NU_IDADE" in df.columns:
-        invalid_age = (df["NU_IDADE"] < 10) | (df["NU_IDADE"] > 150)
+    """
+    Valida faixas numéricas conforme regras definidas em rules.py.
+    Ignora valores nulos (NaN) para não descartar dados históricos incompletos.
+    Marca como inválida a linha que tiver valor PRESENTE fora do intervalo.
+    """
+    invalid_mask = pd.Series(False, index=df.index)
+    
+    for rule in DEFAULT_NUMERIC_RULES:
+        col = rule.column
+        if col not in df.columns:
+            continue
+            
+        # Obtém a série numérica
+        series = pd.to_numeric(df[col], errors="coerce")
+        
+        # Apenas verifica onde NÃO é nulo
+        not_na = series.notna()
+        
+        # Condição de falha: valor < min OU valor > max
+        rule_violation = pd.Series(False, index=df.index)
+        
+        if rule.min_value is not None:
+            rule_violation |= (series < rule.min_value)
+        
+        if rule.max_value is not None:
+            rule_violation |= (series > rule.max_value)
+            
+        # Atualiza a máscara global de invalidez
+        # Linha é inválida se violar a regra E não for nula
+        invalid_mask |= (rule_violation & not_na)
 
-    nota_cols = [c for c in df.columns if c.startswith("NOTA_")]
-    invalid_notas = pd.Series(False, index=df.index)
-    if nota_cols:
-        invalid_notas = False
-        for col in nota_cols:
-            invalid_notas = invalid_notas | (df[col] < 0) | (df[col] > 1000)
-    return invalid_age | invalid_notas
+    return invalid_mask
 
 
 def _apply_domains(df: pd.DataFrame, metadata: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     df_out = df.copy()
     domain_fixes = []
-    for _, row in metadata.iterrows():
-        col = row.get("nome_padrao") or row.get("nome_original")
-        domain = row.get("dominio_valores")
-        if col in df_out.columns and isinstance(domain, Iterable):
+
+    # Colunas que têm domínio definido
+    cols_with_domain = metadata.dropna(subset=["dominio_valores"])
+    
+    for _, row in cols_with_domain.iterrows():
+        col = row["nome_padrao"]
+        domain = row["dominio_valores"]
+        
+        if col in df_out.columns and domain is not None:
+            # domain vem como numpy array ou lista do parquet
             valid_values = set(domain)
-            mask_invalid = ~df_out[col].isin(valid_values)
+            
+            # Verifica valores fora do domínio
+            mask_invalid = ~df_out[col].isin(valid_values) & df_out[col].notna()
+            
             if mask_invalid.any():
-                df_out.loc[mask_invalid, col] = "UNKNOWN"
-                domain_fixes.append({"column": col, "affected_rows": int(mask_invalid.sum())})
+                # Decide o valor de substituição baseado no tipo da coluna
+                if pd.api.types.is_numeric_dtype(df_out[col]):
+                    replacement = pd.NA
+                else:
+                    replacement = "UNKNOWN"
+                
+                df_out.loc[mask_invalid, col] = replacement
+                
+                domain_fixes.append({
+                    "column": col, 
+                    "affected_rows": int(mask_invalid.sum())
+                })
+
     domain_report = pd.DataFrame(domain_fixes)
     return df_out, domain_report
 
@@ -84,7 +126,7 @@ def run_cleaning_pipeline(df: pd.DataFrame, year: int, metadata: pd.DataFrame | 
 
     cleaning_report = pd.DataFrame(cleaning_steps)
     logger.info(
-        "Limpeza concluída para %s: %d válidos, %d inválidos, %d duplicados.",
+        "Limpeza concluída para {}: {} válidos, {} inválidos, {} duplicados.",
         year,
         len(df_corrected),
         len(invalid_rows),

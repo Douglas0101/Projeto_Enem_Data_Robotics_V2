@@ -4,14 +4,16 @@ import { FilterBar } from "../components/FilterBar";
 import { ComparativoRadar } from "../components/ComparativoRadar";
 import { SocioRaceChart } from "../components/SocioRaceChart";
 import { StatePerformanceChart } from "../components/StatePerformanceChart";
-import { StateHistoryChart } from "../components/StateHistoryChart"; // New import
+import { StateHistoryChart } from "../components/StateHistoryChart"; 
 import { VerticallyStackedAxesChart } from "../components/VerticallyStackedAxesChart";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"; // New import
+import { PremiumReport } from "../components/PremiumReport"; 
+import { MunicipalityChartSection } from "../components/MunicipalityChartSection"; // New import
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"; 
 import {
   getRadarData,
   getSocioRace,
   getNotasGeoUf,
-  getNotasStats, // New import
+  getNotasStats, 
   TbRadarRow,
   TbSocioRaceRow,
   TbNotasGeoUfRow,
@@ -133,9 +135,11 @@ export function AdvancedPage() {
       )}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-[400px] grid-cols-2">
+        <TabsList className="grid w-full md:w-[800px] grid-cols-4">
           <TabsTrigger value="overview">Visão Geral ({year})</TabsTrigger>
           <TabsTrigger value="history">Evolução Histórica</TabsTrigger>
+          <TabsTrigger value="municipal" className="font-semibold text-primary">Evolução Municipal 💎</TabsTrigger>
+          <TabsTrigger value="reports" className="font-semibold text-primary">Relatórios Premium 💎</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -173,6 +177,14 @@ export function AdvancedPage() {
             isLoading={historyLoading} 
             entityName={uf === "all" ? "Brasil (Média Nacional)" : uf}
           />
+        </TabsContent>
+
+        <TabsContent value="municipal" className="mt-6">
+            <MunicipalityChartSection />
+        </TabsContent>
+
+        <TabsContent value="reports" className="mt-6">
+            <PremiumReport />
         </TabsContent>
       </Tabs>
     </div>

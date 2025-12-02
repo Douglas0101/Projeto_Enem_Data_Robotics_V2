@@ -20,11 +20,37 @@ from enem_project.orchestrator.workflows.audit_workflow import run_quality_audit
 from enem_project.orchestrator.workflows.class_workflow import run_class_workflow
 from enem_project.orchestrator.workflows.etl_workflow import run_etl_full
 from enem_project.orchestrator.workflows.sql_backend_workflow import run_sql_backend_workflow
+from enem_project.infra.db_agent import DuckDBLockError
 from enem_project.infra.logging import logger
 
 
 
 app = typer.Typer(add_completion=False, no_args_is_help=False)
+
+
+def _handle_db_lock_error(exc: DuckDBLockError) -> None:
+    """
+    Exibe mensagem amigável e encerra o processo quando o DuckDB está bloqueado
+    por outro processo (ex.: servidor/dashboard em execução).
+    """
+    logger.error("Falha ao inicializar backend SQL: {}", exc)
+    typer.secho(
+        "❌ Não foi possível adquirir o lock de escrita no DuckDB.\n"
+        "Feche o servidor/dashboard (ex.: `enem serve`) e tente novamente.",
+        fg="red",
+    )
+    raise typer.Exit(code=1)
+
+
+def _run_sql_backend_or_exit(years: List[int]) -> Path:
+    try:
+        return run_sql_backend_workflow(
+            materialize_dashboard_tables=True,
+            years=years,
+        )
+    except DuckDBLockError as exc:
+        _handle_db_lock_error(exc)
+        raise  # For type checkers; never reached.
 
 
 def _run_default(
@@ -118,10 +144,7 @@ def _run_default(
         )
 
     if sql_backend:
-        db_path = run_sql_backend_workflow(
-            materialize_dashboard_tables=True,
-            years=anos_alvo,
-        )
+        db_path = _run_sql_backend_or_exit(anos_alvo)
         logger.info(
             "Backend SQL inicializado em {} (DuckDB). "
             "Tabelas tb_notas, tb_notas_stats e tb_notas_geo disponíveis para consumo.",
@@ -143,10 +166,7 @@ def _run_default(
             anos_exec = [y for y in anos_alvo if not _cleaned_exists(y)]
             if not anos_exec:
                 typer.echo("✅ Nenhum ano a processar (cleaned já existente). Materializando DuckDB...")
-                db_path = run_sql_backend_workflow(
-                    materialize_dashboard_tables=True,
-                    years=anos_alvo,
-                )
+                db_path = _run_sql_backend_or_exit(anos_alvo)
                 typer.echo(f"✅ Backend SQL (DuckDB) materializado em: {db_path}")
                 return
 
@@ -162,10 +182,7 @@ def _run_default(
         geo_uf_df = build_tb_notas_geo_uf_from_cleaned(anos_exec)
         socio_df = build_tb_socio_economico_from_cleaned(anos_exec)
         materialization_years = anos_exec or anos_alvo
-        db_path = run_sql_backend_workflow(
-            materialize_dashboard_tables=True,
-            years=materialization_years,
-        )
+        db_path = _run_sql_backend_or_exit(materialization_years)
         logger.info(
             "[dashboard] Tabelas de notas atualizadas (tb_notas={}, stats={}, geo={}, geo_uf={}, socio={}) "
             "e backend SQL materializado em {}.",

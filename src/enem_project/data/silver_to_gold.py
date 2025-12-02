@@ -248,7 +248,7 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _geo_empty_schema() -> list[str]:
-    return ["ANO", *GEO_COLUMNS] + [f"{n}_{suf}" for n in DEFAULT_NOTA_COLUMNS for suf in ("count", "mean")]
+    return ["ANO", *GEO_COLUMNS, "INSCRITOS"] + [f"{n}_{suf}" for n in DEFAULT_NOTA_COLUMNS for suf in ("count", "mean")]
 
 
 def _geo_requires_columns(path: Path, required: list[str]) -> bool:
@@ -266,10 +266,39 @@ def _build_geo_duckdb(path: Path, year: int) -> pd.DataFrame:
         )
         return pd.DataFrame(columns=_geo_empty_schema())
 
-    col_selects = []
+    # Determine column for counting inscritos
+    pf = pq.ParquetFile(path)
+    cols = set(pf.schema.names)
+    has_id = "ID_INSCRICAO" in cols
+    inscritos_expr = "COUNT(DISTINCT ID_INSCRICAO)" if has_id else "COUNT(*)"
+
+    # Presence Column Mapping for DuckDB
+    # We check if columns exist to avoid SQL errors, defaulting to just range check if missing
+    presence_map = {
+        "NOTA_CIENCIAS_NATUREZA": "TP_PRESENCA_CN",
+        "NOTA_CIENCIAS_HUMANAS": "TP_PRESENCA_CH",
+        "NOTA_LINGUAGENS_CODIGOS": "TP_PRESENCA_LC",
+        "NOTA_MATEMATICA": "TP_PRESENCA_MT",
+        "NOTA_REDACAO": "TP_PRESENCA_LC", # Redacao is on Day 2 (LC)
+    }
+
+    col_selects = [f"{inscritos_expr} AS INSCRITOS"]
     for col in DEFAULT_NOTA_COLUMNS:
-        valid_case = f"CASE WHEN {col} BETWEEN 0 AND 1000 THEN {col} END"
-        col_selects.append(f"SUM(CASE WHEN {col} BETWEEN 0 AND 1000 THEN 1 ELSE 0 END) AS {col}_count")
+        pres_col = presence_map.get(col)
+        
+        # Check condition: Value in range AND (Presence column doesn't exist OR Presence=1)
+        # Note: In DuckDB, if column doesn't exist in file, we can't reference it easily without dynamic check.
+        # But we checked cols above.
+        
+        conditions = [f"{col} BETWEEN 0 AND 1000"]
+        if pres_col and pres_col in cols:
+             conditions.append(f"{pres_col} = 1")
+        
+        condition_str = " AND ".join(conditions)
+        
+        valid_case = f"CASE WHEN {condition_str} THEN {col} END"
+        
+        col_selects.append(f"SUM(CASE WHEN {condition_str} THEN 1 ELSE 0 END) AS {col}_count")
         col_selects.append(f"AVG({valid_case}) AS {col}_mean")
 
     query = f"""
@@ -339,7 +368,12 @@ def build_tb_notas_stats_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
 
 def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     frames: list[pd.DataFrame] = []
-    columns_to_read = [*GEO_COLUMNS, *DEFAULT_NOTA_COLUMNS]
+    # Include presence columns to correctly filter absentees from grade averages
+    columns_to_read = [
+        "ID_INSCRICAO", *GEO_COLUMNS, *DEFAULT_NOTA_COLUMNS,
+        "TP_PRESENCA_CN", "TP_PRESENCA_CH", "TP_PRESENCA_LC", "TP_PRESENCA_MT", "TP_STATUS_REDACAO"
+    ]
+    
     for year in years:
         path = _cleaned_path(year)
         if not path.exists():
@@ -353,7 +387,14 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             except Exception as exc:  # noqa: BLE001
                 logger.warning("DuckDB falhou em geo {} ({}); caindo para pandas.", year, exc)
 
-        df = read_parquet(path, columns=columns_to_read)
+        # Load data with presence columns
+        try:
+            df = read_parquet(path, columns=columns_to_read)
+        except Exception:
+            # Fallback if presence columns are missing in older schemas
+            logger.warning("Colunas de presença ausentes em {}. Carregando apenas notas/geo.", path)
+            df = read_parquet(path, columns=[c for c in columns_to_read if not c.startswith("TP_")])
+
         df = _clean_columns(df, year, extra_columns=GEO_COLUMNS)
 
         if not all(col in df.columns for col in GEO_COLUMNS):
@@ -365,9 +406,46 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             frames.append(empty)
             continue
 
+        # Apply Logic: Force NaN for Absentees based on Presence Columns
+        # This ensures count() only counts those present, while size() counts everyone (Enrolled)
+        
+        # Map Subject -> Presence Column
+        presence_map = {
+            "NOTA_CIENCIAS_NATUREZA": "TP_PRESENCA_CN",
+            "NOTA_CIENCIAS_HUMANAS": "TP_PRESENCA_CH",
+            "NOTA_LINGUAGENS_CODIGOS": "TP_PRESENCA_LC",
+            "NOTA_MATEMATICA": "TP_PRESENCA_MT",
+        }
+
         for col in DEFAULT_NOTA_COLUMNS:
+            # 1. Clean numeric range first
             series = pd.to_numeric(df[col], errors="coerce")
-            valid = series.between(0, 1000)
+            valid_range = series.between(0, 1000)
+            
+            # 2. Apply Presence Filter if column exists
+            if col in presence_map and presence_map[col] in df.columns:
+                presence_col = presence_map[col]
+                # Keep value only if range is valid AND Presence == 1 (Present)
+                # Note: TP_PRESENCA might be string or int, allow for both
+                is_present = pd.to_numeric(df[presence_col], errors='coerce') == 1
+                valid = valid_range & is_present
+            elif col == "NOTA_REDACAO" and "TP_STATUS_REDACAO" in df.columns:
+                # For Redacao, check Status. 1 = No problems.
+                # Also usually linked to LC presence, but Status is more specific for the grade validity.
+                # Using Presence LC as well is safer if available.
+                is_valid_status = pd.to_numeric(df["TP_STATUS_REDACAO"], errors='coerce').notna() # Any valid status implies presence/grading attempt? 
+                # Actually, INEP Dict: 1=Presente(Regular), 2=Branco, 3=Nulo, 4=Anulada, 6=Presente(Oral), 8=Presente(Libras).
+                # Absentees usually have Status=NaN or empty in processed data if not present.
+                # Let's stick to the Note being Non-Null and in Range as the primary check, 
+                # but if TP_PRESENCA_LC is 0, Redacao should be NaN.
+                
+                valid = valid_range
+                if "TP_PRESENCA_LC" in df.columns:
+                     is_present_lc = pd.to_numeric(df["TP_PRESENCA_LC"], errors='coerce') == 1
+                     valid = valid & is_present_lc
+            else:
+                valid = valid_range
+
             df[col] = series.where(valid)
 
         grouped = df.groupby(
@@ -375,7 +453,13 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             dropna=True,
             observed=False,
         )
-        agg_parts: list[pd.Series] = []
+        
+        if "ID_INSCRICAO" in df.columns:
+            inscritos_agg = grouped["ID_INSCRICAO"].nunique().rename("INSCRITOS")
+        else:
+            inscritos_agg = grouped.size().rename("INSCRITOS")
+
+        agg_parts: list[pd.Series] = [inscritos_agg]
         for col in DEFAULT_NOTA_COLUMNS:
             agg_parts.extend(
                 [

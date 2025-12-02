@@ -1,7 +1,9 @@
 from functools import lru_cache
 from typing import List, Annotated
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 
 from enem_project.infra.db_agent import DuckDBAgent
 from enem_project.infra.logging import logger
@@ -132,6 +134,44 @@ def get_socioeconomic_income(
 
 
 @router.get(
+    "/municipios",
+    response_model=List[str],
+    summary="Lista de municípios disponíveis (para autocomplete).",
+)
+@lru_cache(maxsize=32)
+def get_municipios(
+    uf: Annotated[str | None, Query(
+        description="Filtrar municípios por UF (opcional).",
+        min_length=2,
+        max_length=2,
+    )] = None
+) -> List[str]:
+    """
+    Retorna a lista de municípios distintos disponíveis no banco de dados.
+    Útil para popular combobox/autocomplete no frontend.
+    """
+    sql = "SELECT DISTINCT NO_MUNICIPIO_PROVA FROM tb_notas_geo"
+    params = []
+    
+    if uf:
+        sql += " WHERE SG_UF_PROVA = ?"
+        params.append(uf.upper())
+        
+    sql += " ORDER BY NO_MUNICIPIO_PROVA"
+
+    conn = db_agent._get_conn()
+    try:
+        rows, columns = db_agent.run_query(sql, params)
+    except Exception as exc:
+        logger.warning(f"Erro ao listar municípios: {exc}")
+        return []
+
+    # Normalização: Title Case e Remove Duplicatas de Casing (ex: "SÃO PAULO" e "São Paulo")
+    cities = {row[0].title() for row in rows if row[0]}
+    return sorted(list(cities))
+
+
+@router.get(
     "/anos-disponiveis",
     response_model=List[int],
     summary="Lista de anos disponíveis nas tabelas de dashboard.",
@@ -229,56 +269,47 @@ def get_notas_stats(
     return results
 
 
-@router.get(
-    "/notas/geo",
-    response_model=List[TbNotasGeoRow],
-    summary="Notas agregadas por ano/UF/município (tb_notas_geo).",
-)
-@lru_cache(maxsize=32)
-def get_notas_geo(
-    ano: Annotated[int | None, Query(
-        description="Ano de referência. Se omitido, retorna todos os anos.",
-    )] = None,
-    uf: Annotated[str | None, Query(
-        description="Sigla da UF da prova (SG_UF_PROVA) para filtrar.",
-        min_length=2,
-        max_length=2,
-    )] = None,
-    min_count: Annotated[int, Query(
-        ge=0,
-        description=(
-            "Filtro mínimo de participantes (NOTA_*_count) para reduzir "
-            "ruído em municípios com amostras muito pequenas."
-        ),
-    )] = 30,
-    limit: Annotated[int, Query(
-        ge=1,
-        le=100_000,
-        description="Limite máximo de linhas retornadas.",
-    )] = 5000,
-    page: Annotated[int, Query(
-        ge=1,
-        description=(
-            "Número da página para paginação simples, "
-            "combinado com o parâmetro 'limit'."
-        ),
-    )] = 1,
-) -> List[TbNotasGeoRow]:
+def _build_geo_query(
+    anos: List[int] | None,
+    ufs: List[str] | None,
+    municipios: List[str] | None,
+    min_count: int,
+    limit: int | None = None,
+    offset: int | None = None,
+    is_count_query: bool = False
+) -> tuple[str, list[object]]:
     """
-    Retorna agregados de notas por ano/UF/município a partir da tabela
-    tb_notas_geo materializada no backend SQL.
+    Construtor centralizado de Queries SQL (A "Função Paralela").
+    Garante que a tabela visualizada e o arquivo exportado usem EXATAMENTE
+    a mesma lógica de filtragem.
     """
     where_clauses: list[str] = []
     params: list[object] = []
 
-    if ano is not None:
-        where_clauses.append("ANO = ?")
-        params.append(ano)
-    if uf is not None:
-        where_clauses.append("SG_UF_PROVA = ?")
-        params.append(uf.upper())
+    # Filtro de Anos (Lista)
+    if anos:
+        placeholders = ",".join(["?"] * len(anos))
+        where_clauses.append(f"ANO IN ({placeholders})")
+        params.extend(anos)
+
+    # Filtro de UFs (Lista)
+    if ufs:
+        placeholders = ",".join(["?"] * len(ufs))
+        # Normaliza para UPPERcase
+        clean_ufs = [u.upper() for u in ufs]
+        where_clauses.append(f"SG_UF_PROVA IN ({placeholders})")
+        params.extend(clean_ufs)
+
+    # Filtro de Municípios (Lista)
+    if municipios:
+        placeholders = ",".join(["?"] * len(municipios))
+        # BLINDAGEM: Normaliza input e coluna para UPPERCASE para garantir match case-insensitive
+        clean_municipios = [m.upper() for m in municipios]
+        where_clauses.append(f"UPPER(NO_MUNICIPIO_PROVA) IN ({placeholders})")
+        params.extend(clean_municipios)
+
+    # Filtro de Amostra Mínima
     if min_count > 0:
-        # Aplica o filtro de amostra mínima em todas as áreas de forma conservadora.
         where_clauses.append(
             "NOTA_CIENCIAS_NATUREZA_count >= ? "
             "AND NOTA_CIENCIAS_HUMANAS_count >= ? "
@@ -292,12 +323,17 @@ def get_notas_geo(
     if where_clauses:
         where_sql = "WHERE " + " AND ".join(where_clauses)
 
+    if is_count_query:
+        sql = f"SELECT COUNT(*) FROM tb_notas_geo {where_sql}"
+        return sql, params
+
     sql = f"""
         SELECT
             ANO,
             SG_UF_PROVA,
             CAST(CO_MUNICIPIO_PROVA AS VARCHAR) AS CO_MUNICIPIO_PROVA,
             NO_MUNICIPIO_PROVA,
+            INSCRITOS,
             NOTA_CIENCIAS_NATUREZA_count,
             NOTA_CIENCIAS_NATUREZA_mean,
             NOTA_CIENCIAS_HUMANAS_count,
@@ -310,28 +346,220 @@ def get_notas_geo(
             NOTA_REDACAO_mean
         FROM tb_notas_geo
         {where_sql}
-        ORDER BY ANO, SG_UF_PROVA, NO_MUNICIPIO_PROVA
-        LIMIT ? OFFSET ?
+        ORDER BY ANO DESC, SG_UF_PROVA, NO_MUNICIPIO_PROVA
+    """
+    
+    if limit is not None:
+        sql += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset if offset else 0])
+        
+    return sql, params
+
+
+@router.get(
+    "/notas/geo",
+    response_model=List[TbNotasGeoRow],
+    summary="Notas agregadas por múltiplos anos/UFs/Municípios.",
+)
+# @lru_cache removido pois listas não são hashable
+def get_notas_geo(
+    ano: Annotated[List[int] | None, Query(
+        description="Lista de anos. Se omitido, retorna todos.",
+    )] = None,
+    uf: Annotated[List[str] | None, Query(
+        description="Lista de UFs. Se omitido, retorna todas.",
+    )] = None,
+    municipio: Annotated[List[str] | None, Query(
+        description="Lista de nomes de Municípios.",
+    )] = None,
+    min_count: Annotated[int, Query(
+        ge=0,
+        description="Filtro mínimo de participantes."
+    )] = 30,
+    limit: Annotated[int, Query(ge=1, le=100_000)] = 5000,
+    page: Annotated[int, Query(ge=1)] = 1,
+) -> List[TbNotasGeoRow]:
+    """
+    Endpoint otimizado com suporte a múltiplos filtros (Listas).
     """
     offset = (page - 1) * limit
-    params.extend([limit, offset])
+    
+    # Usa o construtor centralizado com argumentos nomeados (Segurança e Clareza)
+    sql, params = _build_geo_query(
+        anos=ano, 
+        ufs=uf, 
+        municipios=municipio, 
+        min_count=min_count, 
+        limit=limit, 
+        offset=offset
+    )
 
     conn = db_agent._get_conn()
     try:
         rows, columns = db_agent.run_query(sql, params)
     except Exception as exc:
-        # Se falhar (ex: ano sem partição), retorna lista vazia para não quebrar o frontend
-        logger.warning(f"Consulta a tb_notas_geo falhou (possível ano inexistente): {exc}")
+        logger.warning(f"Consulta a tb_notas_geo falhou: {exc}")
         return []
 
     results = []
     for row in rows:
         try:
-            results.append(TbNotasGeoRow(**dict(zip(columns, row))))
+            data_dict = dict(zip(columns, row))
+            # Padronização visual: Força Title Case no Município
+            if data_dict.get("NO_MUNICIPIO_PROVA"):
+                data_dict["NO_MUNICIPIO_PROVA"] = str(data_dict["NO_MUNICIPIO_PROVA"]).title()
+            
+            results.append(TbNotasGeoRow(**data_dict))
         except Exception as e:
-            logger.warning(f"Dados inválidos em tb_notas_geo (pulando linha): {e}")
             continue
     return results
+
+
+from enem_project.services.report_service import ReportService
+
+@router.get(
+    "/notas/geo/export",
+    summary="Exportação profissional de dados (Excel, PDF, CSV).",
+    response_class=StreamingResponse,
+)
+def download_notas_geo(
+    ano: Annotated[List[int] | None, Query()] = None,
+    uf: Annotated[List[str] | None, Query()] = None,
+    municipio: Annotated[List[str] | None, Query()] = None,
+    min_count: Annotated[int, Query()] = 30,
+    format: Annotated[str, Query(regex="^(csv|json|excel|pdf)$")] = "excel"
+):
+    """
+    Gera relatórios profissionais com os MESMOS filtros da tela.
+    Suporta:
+    - Excel (.xlsx): Formatado com estilos corporativos.
+    - PDF: Layout A4 Landscape paginado.
+    - CSV: Para interoperabilidade.
+    """
+    import pandas as pd
+    import io
+    from fastapi.responses import StreamingResponse
+
+    logger.info(f"--- INICIANDO EXPORTAÇÃO ({format.upper()}) ---")
+    logger.info(f"Filtros Recebidos: Anos={ano}, UFs={uf}, Municípios={municipio}, MinCount={min_count}")
+
+    # 1. Busca TODOS os dados filtrados
+    sql, params = _build_geo_query(
+        anos=ano, 
+        ufs=uf, 
+        municipios=municipio, 
+        min_count=min_count, 
+        limit=None, 
+        offset=None
+    )
+    
+    logger.debug(f"SQL Gerado: {sql}")
+    logger.debug(f"Params SQL: {params}")
+    
+    try:
+        rows, columns = db_agent.run_query(sql, params)
+        logger.info(f"Linhas recuperadas do DB: {len(rows)}")
+        
+        df = pd.DataFrame(rows, columns=columns)
+        
+        if df.empty:
+            logger.warning("DataFrame está VAZIO. O relatório será gerado sem dados.")
+        
+        # Padronização VISUAL: Converte Municípios para Title Case (ex: PORTO SEGURO -> Porto Seguro)
+        if 'NO_MUNICIPIO_PROVA' in df.columns:
+            df['NO_MUNICIPIO_PROVA'] = df['NO_MUNICIPIO_PROVA'].astype(str).str.title()
+
+        # Renomear colunas para ficar bonito no relatório
+        df.rename(columns={
+            'ANO': 'Ano',
+            'SG_UF_PROVA': 'Estado',
+            'NO_MUNICIPIO_PROVA': 'Município',
+            'INSCRITOS': 'Total Inscritos',
+            'NOTA_CIENCIAS_NATUREZA_mean': 'Natureza',
+            'NOTA_CIENCIAS_HUMANAS_mean': 'Humanas',
+            'NOTA_LINGUAGENS_CODIGOS_mean': 'Linguagens',
+            'NOTA_MATEMATICA_mean': 'Matemática',
+            'NOTA_REDACAO_mean': 'Redação',
+            'CO_MUNICIPIO_PROVA': 'Cód. IBGE',
+            'NOTA_MATEMATICA_count': 'Qtd. Provas'
+        }, inplace=True)
+
+        # Garantir que 'Qtd. Provas' seja inteiro
+        if 'Qtd. Provas' in df.columns:
+            df['Qtd. Provas'] = df['Qtd. Provas'].fillna(0).astype(int)
+        
+        if 'Total Inscritos' in df.columns:
+            df['Total Inscritos'] = df['Total Inscritos'].fillna(0).astype(int)
+        
+        # Selecionar colunas relevantes para o relatório (remove contagens internas exceto a principal)
+        cols_to_show = [
+            'Ano', 'Estado', 'Município', 'Total Inscritos', 'Natureza', 'Humanas', 
+            'Linguagens', 'Matemática', 'Redação', 'Qtd. Provas'
+        ]
+        # Garante que só mostra colunas que existem (caso a query mude)
+        final_cols = [c for c in cols_to_show if c in df.columns]
+        df_report = df[final_cols]
+
+        if format == 'excel':
+            # Gera binário XLSX via ReportService
+            file_content = ReportService.generate_excel(df_report)
+            media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            filename = f"enem_relatorio_{datetime.now().strftime('%Y%m%d')}.xlsx"
+            
+        elif format == 'pdf':
+            # Formatação limpa: Remove colchetes e parênteses técnicos
+            if ano:
+                anos_texto = ", ".join(str(a) for a in sorted(ano))
+            else:
+                anos_texto = "Todos os Anos Disponíveis"
+
+            # Formatação limpa de UFs: ["BA", "SP"] -> "BA, SP"
+            ufs_texto = "Todas as UFs"
+            if uf:
+                ufs_texto = ", ".join(sorted(uf))
+            
+            # Formatação limpa de Municípios: ["Porto Seguro"] -> "Porto Seguro"
+            municipios_texto = "Todos os Municípios"
+            if municipio:
+                # Resumo se muitos municípios
+                if len(municipio) > 3:
+                    municipios_texto = f"{', '.join(sorted(municipio[:3]))} e mais {len(municipio) - 3}"
+                else:
+                    municipios_texto = ", ".join(sorted(municipio))
+
+            # Gera binário PDF via ReportService com título profissional
+            file_content = ReportService.generate_pdf(
+                df_report, 
+                title=f"Relatório de Desempenho Municipal ENEM",
+                filter_summary=f"Anos: {anos_texto} | UFs: {ufs_texto} | Municípios: {municipios_texto}"
+            )
+            media_type = "application/pdf"
+            filename = f"enem_relatorio_{datetime.now().strftime('%Y%m%d')}.pdf"
+            
+        elif format == 'json':
+            stream = io.StringIO()
+            df_report.to_json(stream, orient="records", force_ascii=False)
+            file_content = stream.getvalue().encode('utf-8')
+            media_type = "application/json"
+            filename = "dados_enem.json"
+            
+        else: # CSV
+            stream = io.StringIO()
+            df_report.to_csv(stream, index=False, sep=';', decimal=',', encoding='utf-8-sig')
+            file_content = stream.getvalue().encode('utf-8-sig')
+            media_type = "text/csv"
+            filename = "dados_enem.csv"
+
+        # Retorna o Stream
+        return StreamingResponse(
+            io.BytesIO(file_content), 
+            media_type=media_type,
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except Exception as exc:
+        logger.error(f"Erro na exportação ({format}): {exc}")
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório: {str(exc)}")
 
 
 @router.get(

@@ -51,7 +51,10 @@ export function DashboardPage() {
     async function loadAllYearsGeoUf() {
       try {
         setGeoAllLoading(true);
-        const geoUfAll = await getNotasGeoUf({ minInscritos: 100 });
+        const geoUfAll = await getNotasGeoUf({ 
+          minInscritos: 100,
+          uf: uf === "all" ? undefined : uf 
+        });
         if (!cancelled) {
           setGeoUfRowsAllYears(geoUfAll || []);
         }
@@ -69,7 +72,7 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [uf]);
 
   const handleRefresh = async () => {
     if (!year) {
@@ -88,7 +91,7 @@ export function DashboardPage() {
           limit: 5000,
           page: 1
         }),
-        getNotasGeoUf({ ano: year, minInscritos: 100, uf: uf === "all" ? undefined : uf }),
+        getNotasGeoUf({ ano: year, minInscritos: 100 }),
       ]);
       setStatsRow(stats[0] ?? null);
       setGeoRows(geo || []);

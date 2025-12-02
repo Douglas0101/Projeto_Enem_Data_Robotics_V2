@@ -43,6 +43,7 @@ export interface TbNotasGeoRow {
   SG_UF_PROVA: string;
   CO_MUNICIPIO_PROVA: string;
   NO_MUNICIPIO_PROVA: string;
+  INSCRITOS?: number;
 
   NOTA_CIENCIAS_NATUREZA_count: number;
   NOTA_CIENCIAS_NATUREZA_mean: number | null;

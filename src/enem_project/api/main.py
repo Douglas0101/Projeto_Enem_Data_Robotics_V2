@@ -12,6 +12,8 @@ except ImportError:  # pragma: no cover - dependencia opcional em alguns ambient
     Instrumentator = None
 
 from ..orchestrator.workflows.sql_backend_workflow import run_sql_backend_workflow
+from ..config.settings import settings
+from ..infra.logging import logger
 from .dashboard_router import router as dashboard_router
 from .chat_router import router as chat_router
 from .schemas import HealthResponse
@@ -29,8 +31,19 @@ async def lifespan(app: FastAPI):
         yield
         return
 
-    # Startup: Materializa tabelas do dashboard
-    run_sql_backend_workflow(materialize_dashboard_tables=True)
+    db_path = settings.DATA_DIR / "enem.duckdb"
+    force_materialize = os.getenv("ENEM_FORCE_MATERIALIZE", "").lower() in ("1", "true", "yes", "on")
+
+    # Startup: Materializa tabelas do dashboard APENAS se necessário
+    if not db_path.exists() or force_materialize:
+        logger.info("Iniciando materialização do backend SQL...")
+        run_sql_backend_workflow(materialize_dashboard_tables=True)
+    else:
+        logger.info(
+            "Backend SQL encontrado em {}. Pulando materialização (use ENEM_FORCE_MATERIALIZE=1 para forçar).",
+            db_path
+        )
+
     yield
     # Shutdown: (Opcional) Fechar conexões ou liberar recursos se necessário
 

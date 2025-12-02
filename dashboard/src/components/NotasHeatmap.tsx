@@ -337,7 +337,10 @@ function EditorialHeatmap({ data }: EditorialHeatmapProps) {
     };
   }, [data]);
 
-  return <div ref={chartRef} className="w-full h-[1000px]" />;
+  const uniqueUfsCount = new Set(data.map(d => d.uf)).size;
+  const dynamicHeight = Math.max(300, uniqueUfsCount * 40);
+
+  return <div ref={chartRef} className="w-full" style={{ height: `${dynamicHeight}px` }} />;
 }
 
 // --- Main Component ---

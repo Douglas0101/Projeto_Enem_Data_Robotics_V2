@@ -56,6 +56,7 @@ class TbNotasGeoRow(BaseModel):
     SG_UF_PROVA: str
     CO_MUNICIPIO_PROVA: str
     NO_MUNICIPIO_PROVA: str
+    INSCRITOS: Optional[int] = None
 
     NOTA_CIENCIAS_NATUREZA_count: int
     NOTA_CIENCIAS_NATUREZA_mean: Optional[float]

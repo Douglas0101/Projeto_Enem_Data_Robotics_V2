@@ -9,7 +9,19 @@
 
 > **Uma plataforma avançada de Engenharia de Dados e Inteligência Artificial para análise profunda do Exame Nacional do Ensino Médio (ENEM).**
 
-O **ENEM Data Robotics V2** é uma solução "End-to-End" que combina pipelines de dados robustos, armazenamento OLAP de alta performance e um dashboard interativo moderno. O projeto visa democratizar o acesso a insights educacionais, focando em desigualdades socioeconômicas, raciais e regionais.
+O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combina pipelines de dados robustos, armazenamento OLAP de alta performance e um dashboard interativo moderno. O projeto visa democratizar o acesso a insights educacionais, focando em desigualdades socioeconômicas, raciais e regionais com rigor estatístico.
+
+---
+
+## ✨ Destaques da Versão Atual
+
+### 🎯 Rigor Estatístico e Qualidade de Dados
+- **Correção de Viés de Presença:** O pipeline ETL foi reescrito para distinguir estritamente entre **Total de Inscritos** (intenção) e **Total de Provas** (comparecimento efetivo). Notas de alunos ausentes (0.0) são excluídas das médias, garantindo indicadores fiéis à realidade.
+- **Materialização Inteligente:** O backend SQL implementa lógica de *start-up* inteligente, evitando reprocessamentos desnecessários em ambiente de desenvolvimento e garantindo persistência segura dos dados.
+
+### 🗺️ Inteligência Geográfica
+- **Mapa de Calor Unificado:** Visualização matricial dinâmica (Estado x Ano) que se ajusta automaticamente aos filtros, permitindo tanto uma visão macro (Brasil) quanto micro (Estados específicos).
+- **Evolução Municipal Detalhada:** Nova seção analítica que cruza dados de volume de inscritos vs. desempenho médio, permitindo identificar municípios "outliers" (alta performance ou alta carência).
 
 ---
 
@@ -20,13 +32,14 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" que combina pipelines 
 - **Análise Comparativa:** Radar charts para comparar desempenho de estados vs. média nacional.
 - **Evolução Histórica:** Acompanhamento temporal de notas (2009-2024) com eixos empilhados independentes.
 - **Georreferenciamento:** Mapas de calor e clusters de desempenho por município.
+- **Relatórios Profissionais:** Exportação de dados filtrados em Excel, PDF e CSV.
 - **Assistente IA:** Chat integrado para perguntas sobre os dados (Powered by Genkit).
 
 ### 🛠️ Engenharia de Dados (Backend)
 - **Arquitetura Medalhão:**
   - 🟤 **Raw:** Dados brutos do INEP.
-  - ⚪ **Silver:** Dados limpos, tipados e padronizados.
-  - 🟡 **Gold:** Agregações analíticas prontas para consumo (OLAP).
+  - ⚪ **Silver:** Dados limpos, tipados e padronizados (Parquet).
+  - 🟡 **Gold:** Agregações analíticas prontas para consumo (DuckDB + Parquet).
 - **DuckDB:** Banco de dados analítico embarcado para processamento massivo local.
 - **FastAPI:** API RESTful de alta performance e documentação automática (Swagger UI).
 - **Agentes de IA:** Orquestração inteligente de pipelines e análise de dados.
@@ -41,9 +54,9 @@ O projeto segue uma estrutura modular e escalável:
 graph TD
     A[Dados Públicos INEP] -->|Ingestão| B(Camada Raw)
     B -->|Limpeza & Validação| C(Camada Silver)
-    C -->|Agregação & Regras de Negócio| D(Camada Gold - DuckDB)
+    C -->|Regras de Negócio & Presença| D(Camada Gold - DuckDB)
     D -->|FastAPI| E[Backend Server]
-    E -->|JSON| F[Dashboard React/Vite]
+    E -->|JSON/Stream| F[Dashboard React/Vite]
     G[Usuário] -->|Interage| F
     G -->|Query NL| H[Agente IA Genkit]
     H -->|SQL Generation| D
@@ -93,6 +106,9 @@ poetry install
 
 # Ative o ambiente virtual
 poetry shell
+
+# (Opcional) Execute o pipeline de dados para um ano específico
+python -m enem_project.cli --ano 2023 --dashboard
 
 # Execute a API
 poetry run uvicorn src.enem_project.api.main:app --reload

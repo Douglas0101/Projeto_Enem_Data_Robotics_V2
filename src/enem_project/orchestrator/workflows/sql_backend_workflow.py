@@ -35,6 +35,12 @@ def run_sql_backend_workflow(
     Retorna o caminho do arquivo DuckDB criado/atualizado.
     """
     target_years = tuple(sorted(set(years))) if years is not None else settings.YEARS
+    agent = DuckDBAgent(read_only=False)
+    db_path = agent.db_path
+
+    # Falha rápido se já existir lock de escrita no arquivo DuckDB.
+    # Mantemos a conexão aberta para garantir posse do lock durante o workflow.
+    agent.get_connection()
 
     # Passo 1: Construir tabelas Gold a partir da Silver (cleaned)
     logger.info(
@@ -49,9 +55,6 @@ def run_sql_backend_workflow(
     logger.success("[workflow-sql] Tabelas Gold (Parquet) geradas com sucesso.")
 
     # Passos 2-5: Carregar e materializar no DuckDB usando Agente
-    agent = DuckDBAgent(read_only=False)
-    db_path = agent.db_path
-    
     try:
         agent.register_parquet_views()
 

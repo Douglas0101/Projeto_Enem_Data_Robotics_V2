@@ -16,6 +16,10 @@ _GLOBAL_CONN: Optional[duckdb.DuckDBPyConnection] = None
 _GLOBAL_DB_PATH: Optional[Path] = None
 
 
+class DuckDBLockError(RuntimeError):
+    """Erro lançado quando o arquivo DuckDB está bloqueado por outro processo."""
+
+
 def default_db_path() -> Path:
     """
     Caminho padrão do banco DuckDB usado para consultas SQL sobre
@@ -81,7 +85,17 @@ class DuckDBAgent:
             return self._conn
 
         logger.info(f"Connecting to DuckDB: {self.db_path} (read_only={self.read_only})")
-        self._conn = duckdb.connect(self.db_path.as_posix(), read_only=self.read_only)
+        try:
+            self._conn = duckdb.connect(self.db_path.as_posix(), read_only=self.read_only)
+        except duckdb.IOException as e:
+            if "lock" in str(e).lower():
+                raise DuckDBLockError(
+                    f"Não foi possível adquirir o lock de escrita no banco de dados ({self.db_path}).\n"
+                    "Provavelmente o servidor da API (Dashboard) ou outro processo CLI está rodando.\n"
+                    "Por favor, encerre o servidor/dashboard antes de executar operações de escrita (ETL/SQL Backend).\n"
+                    f"Detalhes: {e}"
+                ) from e
+            raise e
         return self._conn
 
     def get_connection(self) -> duckdb.DuckDBPyConnection:

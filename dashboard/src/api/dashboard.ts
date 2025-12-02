@@ -31,8 +31,9 @@ export async function getNotasStats(
 }
 
 export interface NotasGeoParams {
-  ano?: number;
-  uf?: string;
+  ano?: number | number[];
+  uf?: string | string[];
+  municipio?: string | string[];
   minCount?: number;
   limit?: number;
   page?: number;
@@ -42,12 +43,24 @@ export async function getNotasGeo(
   params: NotasGeoParams
 ): Promise<TbNotasGeoRow[]> {
   const search = new URLSearchParams();
+  
   if (params.ano != null) {
-    search.set("ano", String(params.ano));
+    const anos = Array.isArray(params.ano) ? params.ano : [params.ano];
+    anos.forEach(a => search.append("ano", String(a)));
   }
+  
   if (params.uf) {
-    search.set("uf", params.uf);
+    const ufs = Array.isArray(params.uf) ? params.uf : [params.uf];
+    ufs.forEach(u => {
+      if (u !== 'all') search.append("uf", u);
+    });
   }
+
+  if (params.municipio) {
+    const cities = Array.isArray(params.municipio) ? params.municipio : [params.municipio];
+    cities.forEach(c => search.append("municipio", c));
+  }
+  
   if (params.minCount != null) {
     search.set("min_count", String(params.minCount));
   }
@@ -60,6 +73,16 @@ export async function getNotasGeo(
   const query = search.toString();
   const path = query ? `/v1/dashboard/notas/geo?${query}` : "/v1/dashboard/notas/geo";
   return apiClient.get<TbNotasGeoRow[]>(path);
+}
+
+export async function getMunicipios(uf?: string): Promise<string[]> {
+  const search = new URLSearchParams();
+  if (uf && uf !== 'all') {
+    search.set("uf", uf);
+  }
+  const query = search.toString();
+  const path = query ? `/v1/dashboard/municipios?${query}` : "/v1/dashboard/municipios";
+  return apiClient.get<string[]>(path);
 }
 
 export interface NotasGeoUfParams {

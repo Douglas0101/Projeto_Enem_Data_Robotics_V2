@@ -16,12 +16,14 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combin
 ## ✨ Destaques da Versão Atual
 
 ### 🎯 Rigor Estatístico e Qualidade de Dados
-- **Correção de Viés de Presença:** O pipeline ETL foi reescrito para distinguir estritamente entre **Total de Inscritos** (intenção) e **Total de Provas** (comparecimento efetivo). Notas de alunos ausentes (0.0) são excluídas das médias, garantindo indicadores fiéis à realidade.
-- **Materialização Inteligente:** O backend SQL implementa lógica de *start-up* inteligente, evitando reprocessamentos desnecessários em ambiente de desenvolvimento e garantindo persistência segura dos dados.
+- **Correção de Viés de Presença:** O pipeline ETL distingue estritamente entre **Total de Inscritos** (intenção) e **Total de Provas** (comparecimento efetivo). Notas de alunos ausentes são tratadas adequadamente para garantir indicadores fiéis à realidade.
+- **Cálculo Dinâmico de Provas:** Os indicadores de desempenho consideram dinamicamente o número de provas realizadas por cada grupo demográfico, garantindo precisão mesmo em casos de dados parciais.
+- **Materialização Inteligente:** O backend SQL implementa lógica de *start-up* inteligente, evitando reprocessamentos desnecessários e garantindo persistência segura dos dados.
 
-### 🗺️ Inteligência Geográfica
-- **Mapa de Calor Unificado:** Visualização matricial dinâmica (Estado x Ano) que se ajusta automaticamente aos filtros, permitindo tanto uma visão macro (Brasil) quanto micro (Estados específicos).
-- **Evolução Municipal Detalhada:** Nova seção analítica que cruza dados de volume de inscritos vs. desempenho médio, permitindo identificar municípios "outliers" (alta performance ou alta carência).
+### 🗺️ Inteligência Geográfica e Demográfica
+- **Evolução Histórica por Raça/Cor:** Gráficos avançados que permitem a análise temporal do desempenho educacional segmentado por autodeclaração racial em cada município brasileiro.
+- **Tooltips Contextuais Inteligentes:** Visualizações de dados aprimoradas que exibem médias, contagens de participantes e número de provas contabilizadas ao interagir com os gráficos.
+- **Mapa de Calor Unificado:** Visualização matricial dinâmica que se ajusta automaticamente aos filtros, permitindo visões macro e micro.
 
 ---
 
@@ -29,9 +31,9 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combin
 
 ### 📊 Dashboard Interativo (Frontend)
 - **Visualizações Avançadas:** Gráficos interativos com **amCharts 5** e **Recharts**.
-- **Análise Comparativa:** Radar charts para comparar desempenho de estados vs. média nacional.
-- **Evolução Histórica:** Acompanhamento temporal de notas (2009-2024) com eixos empilhados independentes.
-- **Georreferenciamento:** Mapas de calor e clusters de desempenho por município.
+- **Análise Comparativa:** Radar charts para comparar desempenho de estados vs. média nacional e melhores benchmarks.
+- **Evolução Histórica:** Acompanhamento temporal de notas (2009-2024) com detalhamento por disciplinas.
+- **Recortes Socioeconômicos:** Análise detalhada de desempenho por raça, renda e localização geográfica.
 - **Relatórios Profissionais:** Exportação de dados filtrados em Excel, PDF e CSV.
 - **Assistente IA:** Chat integrado para perguntas sobre os dados (Powered by Genkit).
 

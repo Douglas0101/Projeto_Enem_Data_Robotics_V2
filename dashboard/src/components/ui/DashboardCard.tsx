@@ -10,7 +10,7 @@ export const DashboardCard = forwardRef<HTMLDivElement, BoxProps>(
       <Box
         ref={ref}
         className={cn(
-          "rounded-xl border bg-card text-card-foreground shadow-sm",
+          "rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
           className
         )}
         // Chakra props passed via ...props will override style if needed (e.g. w="100%")

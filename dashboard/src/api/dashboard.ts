@@ -174,6 +174,7 @@ export interface TbSocioIncomeRow {
 export interface SocioRaceParams {
   year: number;
   uf?: string;
+  municipio?: string;
 }
 
 export async function getSocioRace(
@@ -183,6 +184,9 @@ export async function getSocioRace(
   search.set("ano", String(params.year));
   if (params.uf && params.uf !== "all") {
     search.set("uf", params.uf);
+  }
+  if (params.municipio) {
+    search.set("municipio", params.municipio);
   }
   const query = search.toString();
   return apiClient.get<TbSocioRaceRow[]>(`/v1/dashboard/advanced/socioeconomic/race?${query}`);

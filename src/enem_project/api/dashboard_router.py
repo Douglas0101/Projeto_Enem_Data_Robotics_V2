@@ -27,6 +27,9 @@ def get_socioeconomic_race(
         min_length=2,
         max_length=2,
     )] = None,
+    municipio: Annotated[str | None, Query(
+        description="Nome do Município da prova (NO_MUNICIPIO_PROVA) para filtrar.",
+    )] = None,
 ) -> List[TbSocioRaceRow]:
     """
     Retorna a média das notas agrupadas por autodeclaração de cor/raça.
@@ -42,6 +45,10 @@ def get_socioeconomic_race(
     if uf:
         where_clauses.append("SG_UF_PROVA = ?")
         params.append(uf.upper())
+
+    if municipio:
+        where_clauses.append("UPPER(NO_MUNICIPIO_PROVA) = ?")
+        params.append(municipio.upper())
 
     where_sql = "WHERE " + " AND ".join(where_clauses)
     

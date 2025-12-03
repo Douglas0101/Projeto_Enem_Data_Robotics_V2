@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { PageType } from "../../App";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -39,17 +40,32 @@ interface NavItemProps {
 
 const NavItem = ({ icon: Icon, label, isActive, isCollapsed, onClick }: NavItemProps) => {
   const content = (
-    <div
+    <motion.div
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer",
-        isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground",
+        "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-accent-foreground cursor-pointer",
+        isActive ? "text-accent-foreground" : "text-muted-foreground hover:bg-accent/50",
         isCollapsed && "justify-center px-2"
       )}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      variants={{
+        hidden: { opacity: 0, x: -10 },
+        visible: { opacity: 1, x: 0 }
+      }}
     >
-      <Icon className="h-4 w-4" />
-      {!isCollapsed && <span>{label}</span>}
-    </div>
+      {isActive && (
+        <motion.div
+          layoutId="activeNav"
+          className="absolute inset-0 bg-accent rounded-md"
+          initial={false}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          style={{ zIndex: -1 }}
+        />
+      )}
+      <Icon className="h-4 w-4 z-10" />
+      {!isCollapsed && <span className="z-10">{label}</span>}
+    </motion.div>
   );
 
   if (isCollapsed) {
@@ -118,7 +134,19 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
               Analytics
             </h4>
           )}
-          <div className="space-y-1">
+          <motion.div 
+            className="space-y-1"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.1
+                }
+              }
+            }}
+          >
             <NavItem
               icon={LayoutDashboard}
               label="Dashboard Geral"
@@ -133,7 +161,7 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
               isCollapsed={isSidebarCollapsed}
               onClick={() => onNavigate("advanced")}
             />
-          </div>
+          </motion.div>
         </div>
       </div>
 

@@ -1,26 +1,17 @@
-from __future__ import annotations
+from typing import Generator
+from .infra.db_agent import DuckDBAgent
 
-from contextlib import contextmanager
-from typing import Iterator
-
-from duckdb import DuckDBPyConnection
-
-from ..infra.db import default_db_path, get_duckdb_conn
-
-
-@contextmanager
-def duckdb_readonly_conn() -> Iterator[DuckDBPyConnection]:
+def get_db_agent() -> Generator[DuckDBAgent, None, None]:
     """
-    Fornece uma conexão DuckDB em modo somente leitura, adequada para
-    uso pela API (dashboard, Horizon UI, etc.).
-
-    Pré-condição: o arquivo enem.duckdb e as tabelas/views de interesse
-    devem ter sido inicializados previamente via:
-        enem --sql-backend
+    Dependency provider for DuckDBAgent.
+    Ensures proper resource management in the FastAPI dependency lifecycle.
     """
-    conn = get_duckdb_conn(default_db_path(), read_only=True)
+    # Create an agent in read-only mode for dashboard/API usage.
+    agent = DuckDBAgent(read_only=True)
     try:
-        yield conn
+        yield agent
     finally:
-        conn.close()
-
+        # Although DuckDBAgent currently relies on internal connection pooling/checking,
+        # calling close() ensures we release resources if the implementation changes
+        # to use dedicated connections per request in the future.
+        agent.close()

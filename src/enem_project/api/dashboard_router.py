@@ -1,17 +1,29 @@
 from functools import lru_cache
-from typing import List, Annotated
+from typing import List, Annotated, Generator, Any
 from datetime import datetime
+import io
+import pandas as pd
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import StreamingResponse
+from fastapi.concurrency import run_in_threadpool
 
-from enem_project.infra.db_agent import DuckDBAgent
-from enem_project.infra.logging import logger
-from .schemas import TbNotasGeoRow, TbNotasStatsRow, TbNotasGeoUfRow, TbNotasHistogramRow, TbSocioRaceRow, TbSocioIncomeRow
+from ..infra.db_agent import DuckDBAgent
+from ..infra.logging import logger
+from ..services.report_service import ReportService
+from .schemas import (
+    TbNotasGeoRow,
+    TbNotasStatsRow,
+    TbNotasGeoUfRow,
+    TbNotasHistogramRow,
+    TbSocioRaceRow,
+    TbSocioIncomeRow,
+    TbRadarRow
+)
+from .dependencies import get_db_agent
 
 
 router = APIRouter(prefix="/v1/dashboard", tags=["dashboard"])
-db_agent = DuckDBAgent(read_only=True) # Global instance for read-only queries
 
 # Normalização para comparações acento/case-insensitive de municípios
 ACCENT_FROM = "ÁÀÂÃÄáàâãäÉÈÊËéèêëÍÌÎÏíìîïÓÒÔÕÖóòôõöÚÙÛÜúùûüÇç"
@@ -36,27 +48,17 @@ def _normalize_text(value: str | None) -> str:
     response_model=List[TbSocioRaceRow],
     summary="Médias de notas por Cor/Raça (Real Data).",
 )
-@lru_cache(maxsize=32)
-def get_socioeconomic_race(
-    ano: Annotated[int | None, Query(description="Ano de referência. Se omitido, retorna histórico completo.")] = None,
-    uf: Annotated[str | None, Query(
-        description="Sigla da UF da prova (SG_UF_PROVA) para filtrar.",
-        min_length=2,
-        max_length=2,
-    )] = None,
-    municipio: Annotated[str | None, Query(
-        description="Nome do Município da prova (NO_MUNICIPIO_PROVA) para filtrar.",
-    )] = None,
+async def get_socioeconomic_race(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
+    ano: Annotated[int | None, Query(description="Ano de referência.")] = None,
+    uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None,
+    municipio: Annotated[str | None, Query()] = None,
 ) -> List[TbSocioRaceRow]:
     """
     Retorna a média das notas agrupadas por autodeclaração de cor/raça.
-    Utiliza a tabela gold_classes (ou silver_microdados) para cálculo on-the-fly.
     """
-    # Mapeamento IBGE
-    # 0: Não declarado, 1: Branca, 2: Preta, 3: Parda, 4: Amarela, 5: Indígena
-    
     where_clauses: list[str] = []
-    params: list[object] = []
+    params: list[Any] = []
 
     if ano is not None:
         where_clauses.append("ANO = ?")
@@ -111,9 +113,8 @@ def get_socioeconomic_race(
         6: "Não Disp."
     }
 
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql, params)
+        rows, columns = await run_in_threadpool(agent.run_query, sql, params)
     except Exception as exc:
         raise HTTPException(
             status_code=500,
@@ -124,7 +125,6 @@ def get_socioeconomic_race(
     for row in rows:
         ano_val = row[0]
         tp_raca = row[1]
-        # Handle NULL or None as "Não Disp." (6) or use existing map
         if tp_raca is None:
              label = race_map[6]
         else:
@@ -147,17 +147,12 @@ def get_socioeconomic_race(
 @router.get(
     "/advanced/socioeconomic/income",
     response_model=List[TbSocioIncomeRow],
-    summary="Distribuição de Notas por Renda (Dados Reais - Dumbbell Chart).",
+    summary="Distribuição de Notas por Renda.",
 )
-@lru_cache(maxsize=32)
-def get_socioeconomic_income(
+async def get_socioeconomic_income(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[int, Query(description="Ano de referência.")],
 ) -> List[TbSocioIncomeRow]:
-    """
-    Retorna estatísticas de dispersão (Min, Q1, Mediana, Q3, Max) da Nota Geral
-    por classe de renda (Q006), filtrando apenas presentes.
-    Dados da tabela gold 'tb_socio_economico'.
-    """
     sql = """
         SELECT CLASSE, LOW, Q1, MEDIAN, Q3, HIGH
         FROM tb_socio_economico
@@ -165,13 +160,14 @@ def get_socioeconomic_income(
         ORDER BY CLASSE
     """
     
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql, [ano])
+        rows, columns = await run_in_threadpool(agent.run_query, sql, [ano])
     except Exception as exc:
-        # Fallback se a tabela não existir ainda (antes do primeiro ETL novo)
-        logger.warning(f"Erro ao ler tb_socio_economico: {exc}")
-        return []
+        logger.error(f"Erro ao ler tb_socio_economico: {exc}")
+        # Don't return empty list silently on DB error unless it's an expected "table missing" scenario
+        if "does not exist" in str(exc):
+            return []
+        raise HTTPException(status_code=500, detail="Database error processing income stats.")
 
     return [TbSocioIncomeRow(CLASSE=row[0], LOW=row[1], Q1=row[2], MEDIAN=row[3], Q3=row[4], HIGH=row[5]) for row in rows]
 
@@ -179,20 +175,12 @@ def get_socioeconomic_income(
 @router.get(
     "/municipios",
     response_model=List[str],
-    summary="Lista de municípios disponíveis (para autocomplete).",
+    summary="Lista de municípios disponíveis.",
 )
-@lru_cache(maxsize=32)
-def get_municipios(
-    uf: Annotated[str | None, Query(
-        description="Filtrar municípios por UF (opcional).",
-        min_length=2,
-        max_length=2,
-    )] = None
+async def get_municipios(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
+    uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None
 ) -> List[str]:
-    """
-    Retorna a lista de municípios distintos disponíveis no banco de dados.
-    Útil para popular combobox/autocomplete no frontend.
-    """
     sql = "SELECT DISTINCT NO_MUNICIPIO_PROVA FROM tb_notas_geo"
     params = []
     
@@ -202,14 +190,12 @@ def get_municipios(
         
     sql += " ORDER BY NO_MUNICIPIO_PROVA"
 
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql, params)
+        rows, columns = await run_in_threadpool(agent.run_query, sql, params)
     except Exception as exc:
-        logger.warning(f"Erro ao listar municípios: {exc}")
-        return []
+        logger.error(f"Erro ao listar municípios: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to fetch municipalities")
 
-    # Normalização: deduplica por chave sem acentos e prefere grafia acentuada quando disponível
     norm_to_city: dict[str, str] = {}
     for row in rows:
         raw_city = row[0]
@@ -227,17 +213,11 @@ def get_municipios(
 @router.get(
     "/anos-disponiveis",
     response_model=List[int],
-    summary="Lista de anos disponíveis nas tabelas de dashboard.",
+    summary="Lista de anos disponíveis.",
 )
-@lru_cache(maxsize=1) # Poucos anos, cache forte
-def get_anos_disponiveis() -> List[int]:
-    """
-    Retorna todos os anos disponíveis nas tabelas de dashboard, conforme
-    materializadas no backend SQL. A consulta é feita diretamente sobre
-    tb_notas_stats e filtra apenas anos que possuam notas carregadas
-    (evita expor anos sem dados, como 2024 enquanto o INEP não publica
-    as notas).
-    """
+async def get_anos_disponiveis(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)]
+) -> List[int]:
     sql = """
         SELECT DISTINCT ANO
         FROM tb_notas_stats
@@ -251,10 +231,9 @@ def get_anos_disponiveis() -> List[int]:
         ORDER BY ANO
     """
 
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql)
-    except Exception as exc:  # pragma: no cover - proteção defensiva
+        rows, columns = await run_in_threadpool(agent.run_query, sql)
+    except Exception as exc:
         raise HTTPException(
             status_code=500,
             detail=f"Erro ao consultar anos disponíveis: {exc}",
@@ -266,23 +245,15 @@ def get_anos_disponiveis() -> List[int]:
 @router.get(
     "/notas/stats",
     response_model=List[TbNotasStatsRow],
-    summary="Estatísticas anuais de notas (tb_notas_stats).",
+    summary="Estatísticas anuais de notas.",
 )
-@lru_cache(maxsize=32)
-def get_notas_stats(
-    ano_inicio: Annotated[int | None, Query(
-        description="Ano inicial (inclusive) para filtrar as estatísticas.",
-    )] = None,
-    ano_fim: Annotated[int | None, Query(
-        description="Ano final (inclusive) para filtrar as estatísticas.",
-    )] = None,
+async def get_notas_stats(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
+    ano_inicio: Annotated[int | None, Query()] = None,
+    ano_fim: Annotated[int | None, Query()] = None,
 ) -> List[TbNotasStatsRow]:
-    """
-    Retorna as estatísticas descritivas anuais das notas, conforme
-    tabela tb_notas_stats da camada gold.
-    """
     where_clauses: list[str] = []
-    params: list[object] = []
+    params: list[Any] = []
 
     if ano_inicio is not None:
         where_clauses.append("ANO >= ?")
@@ -302,21 +273,20 @@ def get_notas_stats(
         ORDER BY ANO
     """
 
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql, params)
+        rows, columns = await run_in_threadpool(agent.run_query, sql, params)
     except Exception as exc:
-        # Se falhar (ex: ano sem partição), retorna lista vazia para não quebrar o frontend
-        logger.warning(f"Consulta a tb_notas_stats falhou (possível ano inexistente): {exc}")
-        return []
+        logger.error(f"Query error in get_notas_stats: {exc}")
+        if "does not exist" in str(exc):
+             return []
+        raise HTTPException(status_code=500, detail="Database error.")
 
     results = []
     for row in rows:
         try:
             results.append(TbNotasStatsRow(**dict(zip(columns, row))))
         except Exception as e:
-            # Pula linhas com dados inválidos (ex: NULL em campo obrigatório) para não quebrar o dash
-            logger.warning(f"Dados inválidos em tb_notas_stats (pulando linha): {e}")
+            logger.warning(f"Invalid data in row, skipping: {e}")
             continue
             
     return results
@@ -330,37 +300,27 @@ def _build_geo_query(
     limit: int | None = None,
     offset: int | None = None,
     is_count_query: bool = False
-) -> tuple[str, list[object]]:
-    """
-    Construtor centralizado de Queries SQL (A "Função Paralela").
-    Garante que a tabela visualizada e o arquivo exportado usem EXATAMENTE
-    a mesma lógica de filtragem.
-    """
+) -> tuple[str, list[Any]]:
     where_clauses: list[str] = []
-    params: list[object] = []
+    params: list[Any] = []
 
-    # Filtro de Anos (Lista)
     if anos:
-        placeholders = ",".join(["?"] * len(anos))
+        placeholders = ",".join(["?" for _ in anos])
         where_clauses.append(f"ANO IN ({placeholders})")
         params.extend(anos)
 
-    # Filtro de UFs (Lista)
     if ufs:
-        placeholders = ",".join(["?"] * len(ufs))
-        # Normaliza para UPPERcase
+        placeholders = ",".join(["?" for _ in ufs])
         clean_ufs = [u.upper() for u in ufs]
         where_clauses.append(f"SG_UF_PROVA IN ({placeholders})")
         params.extend(clean_ufs)
 
-    # Filtro de Municípios (Lista)
     if municipios:
-        placeholders = ",".join(["?"] * len(municipios))
+        placeholders = ",".join(["?" for _ in municipios])
         clean_municipios = [_normalize_text(m) for m in municipios]
         where_clauses.append(f"{MUNICIPIO_SQL_NORMALIZED} IN ({placeholders})")
         params.extend(clean_municipios)
 
-    # Filtro de Amostra Mínima
     if min_count > 0:
         where_clauses.append(
             "NOTA_CIENCIAS_NATUREZA_count >= ? "
@@ -413,30 +373,16 @@ def _build_geo_query(
     response_model=List[TbNotasGeoRow],
     summary="Notas agregadas por múltiplos anos/UFs/Municípios.",
 )
-# @lru_cache removido pois listas não são hashable
-def get_notas_geo(
-    ano: Annotated[List[int] | None, Query(
-        description="Lista de anos. Se omitido, retorna todos.",
-    )] = None,
-    uf: Annotated[List[str] | None, Query(
-        description="Lista de UFs. Se omitido, retorna todas.",
-    )] = None,
-    municipio: Annotated[List[str] | None, Query(
-        description="Lista de nomes de Municípios.",
-    )] = None,
-    min_count: Annotated[int, Query(
-        ge=0,
-        description="Filtro mínimo de participantes."
-    )] = 30,
+async def get_notas_geo(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
+    ano: Annotated[List[int] | None, Query()] = None,
+    uf: Annotated[List[str] | None, Query()] = None,
+    municipio: Annotated[List[str] | None, Query()] = None,
+    min_count: Annotated[int, Query(ge=0)] = 30,
     limit: Annotated[int, Query(ge=1, le=100_000)] = 5000,
     page: Annotated[int, Query(ge=1)] = 1,
 ) -> List[TbNotasGeoRow]:
-    """
-    Endpoint otimizado com suporte a múltiplos filtros (Listas).
-    """
     offset = (page - 1) * limit
-    
-    # Usa o construtor centralizado com argumentos nomeados (Segurança e Clareza)
     sql, params = _build_geo_query(
         anos=ano, 
         ufs=uf, 
@@ -446,35 +392,31 @@ def get_notas_geo(
         offset=offset
     )
 
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql, params)
+        rows, columns = await run_in_threadpool(agent.run_query, sql, params)
     except Exception as exc:
         logger.warning(f"Consulta a tb_notas_geo falhou: {exc}")
-        return []
+        raise HTTPException(status_code=500, detail="Database Query Failed")
 
     results = []
     for row in rows:
         try:
             data_dict = dict(zip(columns, row))
-            # Padronização visual: Força Title Case no Município
             if data_dict.get("NO_MUNICIPIO_PROVA"):
                 data_dict["NO_MUNICIPIO_PROVA"] = str(data_dict["NO_MUNICIPIO_PROVA"]).title()
-            
             results.append(TbNotasGeoRow(**data_dict))
-        except Exception as e:
+        except Exception:
             continue
     return results
 
 
-from enem_project.services.report_service import ReportService
-
 @router.get(
     "/notas/geo/export",
-    summary="Exportação profissional de dados (Excel, PDF, CSV).",
+    summary="Exportação profissional de dados (Excel, PDF, CSV) com Streaming.",
     response_class=StreamingResponse,
 )
-def download_notas_geo(
+async def download_notas_geo(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[List[int] | None, Query()] = None,
     uf: Annotated[List[str] | None, Query()] = None,
     municipio: Annotated[List[str] | None, Query()] = None,
@@ -482,20 +424,11 @@ def download_notas_geo(
     format: Annotated[str, Query(regex="^(csv|json|excel|pdf)$")] = "excel"
 ):
     """
-    Gera relatórios profissionais com os MESMOS filtros da tela.
-    Suporta:
-    - Excel (.xlsx): Formatado com estilos corporativos.
-    - PDF: Layout A4 Landscape paginado.
-    - CSV: Para interoperabilidade.
+    Endpoint de exportação refatorado para Memory Safety e Non-blocking I/O.
     """
-    import pandas as pd
-    import io
-    from fastapi.responses import StreamingResponse
-
     logger.info(f"--- INICIANDO EXPORTAÇÃO ({format.upper()}) ---")
-    logger.info(f"Filtros Recebidos: Anos={ano}, UFs={uf}, Municípios={municipio}, MinCount={min_count}")
-
-    # 1. Busca TODOS os dados filtrados
+    
+    # Builds SQL without LIMIT/OFFSET for export
     sql, params = _build_geo_query(
         anos=ano, 
         ufs=uf, 
@@ -505,140 +438,143 @@ def download_notas_geo(
         offset=None
     )
     
-    logger.debug(f"SQL Gerado: {sql}")
-    logger.debug(f"Params SQL: {params}")
+    # Guardrail: Check row count before loading heavy formats
+    count_sql = f"SELECT COUNT(*) FROM ({sql})"
     
     try:
-        # Exportações precisam de dataset completo; aumenta row_limit para evitar truncamento automático.
-        rows, columns = db_agent.run_query(sql, params, row_limit=1_000_000)
-        logger.info(f"Linhas recuperadas do DB: {len(rows)}")
+        # Using run_in_threadpool for the count query to keep event loop free
+        count_res, _ = await run_in_threadpool(agent.run_query, count_sql, params)
+        total_rows = count_res[0][0]
         
-        df = pd.DataFrame(rows, columns=columns)
+        # Limit for in-memory generation formats (Excel/PDF)
+        MEMORY_LIMIT = 50000
         
-        if df.empty:
-            logger.warning("DataFrame está VAZIO. O relatório será gerado sem dados.")
-        
-        # Padronização VISUAL: Converte Municípios para Title Case (ex: PORTO SEGURO -> Porto Seguro)
-        if 'NO_MUNICIPIO_PROVA' in df.columns:
-            df['NO_MUNICIPIO_PROVA'] = df['NO_MUNICIPIO_PROVA'].astype(str).str.title()
-
-        # Renomear colunas para ficar bonito no relatório
-        df.rename(columns={
-            'ANO': 'Ano',
-            'SG_UF_PROVA': 'Estado',
-            'NO_MUNICIPIO_PROVA': 'Município',
-            'INSCRITOS': 'Total Inscritos',
-            'NOTA_CIENCIAS_NATUREZA_mean': 'Natureza',
-            'NOTA_CIENCIAS_HUMANAS_mean': 'Humanas',
-            'NOTA_LINGUAGENS_CODIGOS_mean': 'Linguagens',
-            'NOTA_MATEMATICA_mean': 'Matemática',
-            'NOTA_REDACAO_mean': 'Redação',
-            'CO_MUNICIPIO_PROVA': 'Cód. IBGE',
-            'NOTA_MATEMATICA_count': 'Qtd. Provas'
-        }, inplace=True)
-
-        # Garantir que 'Qtd. Provas' seja inteiro
-        if 'Qtd. Provas' in df.columns:
-            df['Qtd. Provas'] = df['Qtd. Provas'].fillna(0).astype(int)
-        
-        if 'Total Inscritos' in df.columns:
-            df['Total Inscritos'] = df['Total Inscritos'].fillna(0).astype(int)
-        
-        # Selecionar colunas relevantes para o relatório (remove contagens internas exceto a principal)
-        cols_to_show = [
-            'Ano', 'Estado', 'Município', 'Total Inscritos', 'Natureza', 'Humanas', 
-            'Linguagens', 'Matemática', 'Redação', 'Qtd. Provas'
-        ]
-        # Garante que só mostra colunas que existem (caso a query mude)
-        final_cols = [c for c in cols_to_show if c in df.columns]
-        df_report = df[final_cols]
-
-        if format == 'excel':
-            # Gera binário XLSX via ReportService
-            file_content = ReportService.generate_excel(df_report)
-            media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            filename = f"enem_relatorio_{datetime.now().strftime('%Y%m%d')}.xlsx"
-            
-        elif format == 'pdf':
-            # Formatação limpa: Remove colchetes e parênteses técnicos
-            if ano:
-                anos_texto = ", ".join(str(a) for a in sorted(ano))
-            else:
-                anos_texto = "Todos os Anos Disponíveis"
-
-            # Formatação limpa de UFs: ["BA", "SP"] -> "BA, SP"
-            ufs_texto = "Todas as UFs"
-            if uf:
-                ufs_texto = ", ".join(sorted(uf))
-            
-            # Formatação limpa de Municípios: ["Porto Seguro"] -> "Porto Seguro"
-            municipios_texto = "Todos os Municípios"
-            if municipio:
-                # Resumo se muitos municípios
-                if len(municipio) > 3:
-                    municipios_texto = f"{', '.join(sorted(municipio[:3]))} e mais {len(municipio) - 3}"
-                else:
-                    municipios_texto = ", ".join(sorted(municipio))
-
-            # Gera binário PDF via ReportService com título profissional
-            file_content = ReportService.generate_pdf(
-                df_report, 
-                title=f"Relatório de Desempenho Municipal ENEM",
-                filter_summary=f"Anos: {anos_texto} | UFs: {ufs_texto} | Municípios: {municipios_texto}"
+        if format in ('excel', 'pdf') and total_rows > MEMORY_LIMIT:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Exportação para {format.upper()} excedeu o limite de {MEMORY_LIMIT} linhas ({total_rows}). Por favor, filtre mais os dados ou use CSV."
             )
-            media_type = "application/pdf"
-            filename = f"enem_relatorio_{datetime.now().strftime('%Y%m%d')}.pdf"
+
+        # --- STREAMING GENERATORS ---
+        
+        async def iter_csv():
+            """Streams CSV rows directly from DB cursor without loading all to memory."""
+            conn = agent.get_connection() # Access connection safely
+            cursor = conn.cursor()
+            cursor.execute(sql, params)
+            
+            # Yield Header
+            columns = [col[0] for col in cursor.description]
+            yield ";".join(columns) + "\n"
+            
+            # Stream chunks
+            while True:
+                # Fetch in chunks to keep memory low
+                chunk = await run_in_threadpool(cursor.fetchmany, 5000)
+                if not chunk:
+                    break
+                for row in chunk:
+                    # Basic CSV formatting
+                    cleaned_row = [
+                        str(val).replace(";", ",") if val is not None else "" 
+                        for val in row
+                    ]
+                    yield ";".join(cleaned_row) + "\n"
+            
+            cursor.close()
+
+        async def iter_json():
+            """Streams JSON lines."""
+            import json
+            conn = agent.get_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql, params)
+            columns = [col[0] for col in cursor.description]
+            
+            yield "["
+            first = True
+            while True:
+                chunk = await run_in_threadpool(cursor.fetchmany, 5000)
+                if not chunk:
+                    break
+                for row in chunk:
+                    if not first:
+                        yield ","
+                    else:
+                        first = False
+                    
+                    data = dict(zip(columns, row))
+                    yield json.dumps(data, ensure_ascii=False)
+            yield "]"
+            cursor.close()
+
+        # --- RESPONSE DISPATCH ---
+
+        if format == 'csv':
+            return StreamingResponse(
+                iter_csv(),
+                media_type="text/csv",
+                headers={"Content-Disposition": f"attachment; filename=dados_enem_{datetime.now().strftime('%Y%m%d')}.csv"}
+            )
             
         elif format == 'json':
-            stream = io.StringIO()
-            df_report.to_json(stream, orient="records", force_ascii=False)
-            file_content = stream.getvalue().encode('utf-8')
-            media_type = "application/json"
-            filename = "dados_enem.json"
+            return StreamingResponse(
+                iter_json(),
+                media_type="application/json",
+                headers={"Content-Disposition": "attachment; filename=dados_enem.json"}
+            )
+
+        elif format in ('excel', 'pdf'):
+            # For Excel/PDF, we sadly still need to load into DataFrame for the libraries to work.
+            # But we are protected by MEMORY_LIMIT check above and run in threadpool.
+            def generate_binary():
+                rows, columns = agent.run_query(sql, params, row_limit=MEMORY_LIMIT + 1)
+                df = pd.DataFrame(rows, columns=columns)
+                
+                # Pre-processing
+                if 'NO_MUNICIPIO_PROVA' in df.columns:
+                    df['NO_MUNICIPIO_PROVA'] = df['NO_MUNICIPIO_PROVA'].astype(str).str.title()
+                
+                # Rename cols
+                df.rename(columns={
+                    'ANO': 'Ano', 'SG_UF_PROVA': 'Estado', 'NO_MUNICIPIO_PROVA': 'Município',
+                    'INSCRITOS': 'Total Inscritos', 'NOTA_MATEMATICA_count': 'Qtd. Provas'
+                }, inplace=True)
+                
+                if format == 'excel':
+                    return ReportService.generate_excel(df), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"
+                else:
+                    return ReportService.generate_pdf(df, title="Relatório de Desempenho"), "application/pdf", "pdf"
+
+            # Execute heavy generation in threadpool
+            file_content, media_type, ext = await run_in_threadpool(generate_binary)
             
-        else: # CSV
-            stream = io.StringIO()
-            df_report.to_csv(stream, index=False, sep=';', decimal=',', encoding='utf-8-sig')
-            file_content = stream.getvalue().encode('utf-8-sig')
-            media_type = "text/csv"
-            filename = "dados_enem.csv"
+            return StreamingResponse(
+                io.BytesIO(file_content),
+                media_type=media_type,
+                headers={"Content-Disposition": f"attachment; filename=enem_relatorio_{datetime.now().strftime('%Y%m%d')}.{ext}"}
+            )
 
-        # Retorna o Stream
-        return StreamingResponse(
-            io.BytesIO(file_content), 
-            media_type=media_type,
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
-        )
-
+    except HTTPException as he:
+        raise he
     except Exception as exc:
-        logger.error(f"Erro na exportação ({format}): {exc}")
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório: {str(exc)}")
+        logger.error(f"Export error: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to export data.")
 
 
 @router.get(
     "/notas/geo-uf",
     response_model=List[TbNotasGeoUfRow],
-    summary="Notas agregadas por ano/UF (tb_notas_geo_uf).",
+    summary="Notas agregadas por ano/UF.",
 )
-@lru_cache(maxsize=32)
-def get_notas_geo_uf(
-    ano: Annotated[int | None, Query(description="Ano de referência. Se omitido, retorna todos os anos.")] = None,
-    min_inscritos: Annotated[int, Query(
-        ge=0,
-        description="Filtro mínimo de inscritos para incluir a UF no resultado.",
-    )] = 100,
-    uf: Annotated[str | None, Query(
-        description="Sigla da UF da prova (SG_UF_PROVA) para filtrar.",
-        min_length=2,
-        max_length=2,
-    )] = None,
+async def get_notas_geo_uf(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
+    ano: Annotated[int | None, Query()] = None,
+    min_inscritos: Annotated[int, Query()] = 100,
+    uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None,
 ) -> List[TbNotasGeoUfRow]:
-    """
-    Retorna agregados de notas por ano/UF a partir da tabela
-    tb_notas_geo_uf materializada no backend SQL.
-    """
     where_clauses: list[str] = ["INSCRITOS >= ?"]
-    params: list[object] = [min_inscritos]
+    params: list[Any] = [min_inscritos]
 
     if ano is not None:
         where_clauses.append("ANO = ?")
@@ -657,34 +593,26 @@ def get_notas_geo_uf(
         ORDER BY ANO, SG_UF_PROVA
     """
 
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql, params)
+        rows, columns = await run_in_threadpool(agent.run_query, sql, params)
     except Exception as exc:
-        # Se falhar (ex: ano sem partição), retorna lista vazia para não quebrar o frontend
-        logger.warning(f"Consulta a tb_notas_geo_uf falhou (possível ano inexistente): {exc}")
-        return []
+        if "does not exist" in str(exc):
+            return []
+        logger.warning(f"Query fail: {exc}")
+        raise HTTPException(status_code=500, detail="Database query error.")
 
     required_fields = list(TbNotasGeoUfRow.model_fields.keys())
-
     results = []
+    
     for row in rows:
         try:
             record = dict(zip(columns, row))
-            # Preenche campos ausentes e converte contagens para int
+            # Data hygiene
             for field in required_fields:
                 if field not in record:
                     record[field] = None
-            for field in ("INSCRITOS", "NOTA_CIENCIAS_NATUREZA_count", "NOTA_CIENCIAS_HUMANAS_count",
-                          "NOTA_LINGUAGENS_CODIGOS_count", "NOTA_MATEMATICA_count", "NOTA_REDACAO_count"):
-                if record.get(field) is not None:
-                    try:
-                        record[field] = int(record[field])
-                    except Exception:
-                        pass
             results.append(TbNotasGeoUfRow(**record))
-        except Exception as e:
-            logger.warning(f"Dados inválidos em tb_notas_geo_uf (pulando linha): {e}")
+        except Exception:
             continue
     return results
 
@@ -692,56 +620,37 @@ def get_notas_geo_uf(
 @router.get(
     "/notas/histograma",
     response_model=List[TbNotasHistogramRow],
-    summary="Dados para histograma de notas (tb_notas_histogram).",
+    summary="Dados para histograma de notas.",
 )
-@lru_cache(maxsize=32)
-def get_notas_histograma(
-    ano: Annotated[int, Query(description="Ano de referência.")],
-    disciplina: Annotated[str, Query(description="Disciplina para o histograma.")],
+async def get_notas_histograma(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
+    ano: Annotated[int, Query()],
+    disciplina: Annotated[str, Query()],
 ) -> List[TbNotasHistogramRow]:
-    """
-    Retorna dados pré-calculados para a construção de histogramas de notas
-    a partir da tabela tb_notas_histogram.
-    """
     sql = """
         SELECT ANO, DISCIPLINA, BIN_START, BIN_END, CONTAGEM
         FROM tb_notas_histogram
         WHERE ANO = ? AND DISCIPLINA = ?
         ORDER BY BIN_START
     """
-    params = [ano, disciplina]
-
-    conn = db_agent._get_conn()
     try:
-        rows, columns = db_agent.run_query(sql, params)
+        rows, columns = await run_in_threadpool(agent.run_query, sql, [ano, disciplina])
     except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao consultar tb_notas_histogram: {exc}",
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"DB Error: {exc}")
 
     return [TbNotasHistogramRow(**dict(zip(columns, row))) for row in rows]
 
 
 @router.get(
     "/advanced/radar",
-    summary="Dados para o gráfico de radar comparativo (UF vs BR vs Melhor UF).",
+    response_model=List[TbRadarRow],
+    summary="Dados para radar comparativo.",
 )
-@lru_cache(maxsize=32)
-def get_radar_data(
-    ano: Annotated[int, Query(description="Ano de referência.")],
-    uf: Annotated[str | None, Query(
-        description="Sigla da UF para comparação (opcional).",
-        min_length=2,
-        max_length=2,
-    )] = None,
-):
-    """
-    Retorna dados formatados para o gráfico de radar, comparando:
-    1. Média da UF selecionada (se informada)
-    2. Média Nacional (BR)
-    3. Média da melhor UF em cada disciplina (Benchmark)
-    """
+async def get_radar_data(
+    agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
+    ano: Annotated[int, Query()],
+    uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None,
+) -> List[TbRadarRow]:
     disciplinas = {
         "NOTA_MATEMATICA_mean": "Matemática",
         "NOTA_CIENCIAS_NATUREZA_mean": "Ciências da Natureza",
@@ -750,50 +659,51 @@ def get_radar_data(
         "NOTA_REDACAO_mean": "Redação",
     }
 
-    conn = db_agent._get_conn()
-    
     try:
-        # 1. Média Nacional (BR)
-        sql_br = "SELECT * FROM tb_notas_stats WHERE ANO = ?"
-        row_br, cols_br = db_agent.run_query(sql_br, [ano])
-        row_br = row_br[0] if row_br else None
-        
-        # Se não tiver dados nacionais, retorna vazio (ou erro)
-        if not row_br:
-            return []
-                
-        dict_br = dict(zip(cols_br, row_br))
+        # run_in_threadpool used for multiple sequential queries
+        def fetch_radar():
+            # 1. BR Mean
+            row_br, cols_br = agent.run_query("SELECT * FROM tb_notas_stats WHERE ANO = ?", [ano])
+            row_br = row_br[0] if row_br else None
+            dict_br = dict(zip(cols_br, row_br)) if row_br else {}
 
-        # 2. Média da UF Selecionada
-        dict_uf = {}
-        if uf:
-            sql_uf = "SELECT * FROM tb_notas_geo_uf WHERE ANO = ? AND SG_UF_PROVA = ?"
-            row_uf, cols_uf = db_agent.run_query(sql_uf, [ano, uf.upper()])
-            row_uf = row_uf[0] if row_uf else None
-            if row_uf:
-                dict_uf = dict(zip(cols_uf, row_uf))
+            # 2. UF Mean
+            dict_uf = {}
+            if uf:
+                row_uf, cols_uf = agent.run_query(
+                    "SELECT * FROM tb_notas_geo_uf WHERE ANO = ? AND SG_UF_PROVA = ?", 
+                    [ano, uf.upper()]
+                )
+                row_uf = row_uf[0] if row_uf else None
+                if row_uf:
+                    dict_uf = dict(zip(cols_uf, row_uf))
 
-        # 3. Melhor UF por disciplina (Benchmark)
-        # Query otimizada para pegar o MAX de cada coluna
-        selects = [f"MAX({k}) as {k}" for k in disciplinas.keys()]
-        sql_best = f"SELECT {', '.join(selects)} FROM tb_notas_geo_uf WHERE ANO = ?"
-        row_best, cols_best = db_agent.run_query(sql_best, [ano])
-        row_best = row_best[0] if row_best else None
-        dict_best = dict(zip(cols_best, row_best)) if row_best else {}
-        
+            # 3. Best UF
+            selects = [f"MAX({k}) as {k}" for k in disciplinas.keys()]
+            sql_best = f"SELECT {', '.join(selects)} FROM tb_notas_geo_uf WHERE ANO = ?"
+            row_best, cols_best = agent.run_query(sql_best, [ano])
+            row_best = row_best[0] if row_best else None
+            dict_best = dict(zip(cols_best, row_best)) if row_best else {}
+            
+            return dict_br, dict_uf, dict_best
+
+        dict_br, dict_uf, dict_best = await run_in_threadpool(fetch_radar)
+
+        if not dict_br:
+             return []
+
     except Exception as exc:
-        logger.warning(f"Erro ao consultar dados para radar: {exc}")
-        return []
+        logger.error(f"Radar query failed: {exc}")
+        raise HTTPException(status_code=500, detail="Error processing radar chart data.")
 
-    # Montar resposta estruturada
     response = []
     for db_col, label in disciplinas.items():
-        response.append({
-            "metric": label,
-            "br_mean": dict_br.get(db_col),
-            "uf_mean": dict_uf.get(db_col),
-            "best_uf_mean": dict_best.get(db_col),
-            "full_mark": 1000 # Referência visual para o gráfico
-        })
+        response.append(TbRadarRow(
+            metric=label,
+            br_mean=dict_br.get(db_col),
+            uf_mean=dict_uf.get(db_col),
+            best_uf_mean=dict_best.get(db_col),
+            full_mark=1000
+        ))
 
     return response

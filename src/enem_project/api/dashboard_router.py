@@ -13,6 +13,23 @@ from .schemas import TbNotasGeoRow, TbNotasStatsRow, TbNotasGeoUfRow, TbNotasHis
 router = APIRouter(prefix="/v1/dashboard", tags=["dashboard"])
 db_agent = DuckDBAgent(read_only=True) # Global instance for read-only queries
 
+# Normalização para comparações acento/case-insensitive de municípios
+ACCENT_FROM = "ÁÀÂÃÄáàâãäÉÈÊËéèêëÍÌÎÏíìîïÓÒÔÕÖóòôõöÚÙÛÜúùûüÇç"
+ACCENT_TO = "AAAAAaaaaaEEEEeeeeIIIIiiiiOOOOOoooooUUUUuuuuCc"
+ACCENT_TRANSLATION = str.maketrans(ACCENT_FROM, ACCENT_TO)
+MUNICIPIO_SQL_NORMALIZED = (
+    "translate(upper(NO_MUNICIPIO_PROVA), "
+    f"'{ACCENT_FROM}', "
+    f"'{ACCENT_TO}')"
+)
+
+
+def _normalize_text(value: str | None) -> str:
+    """Remove acentos e aplica upper/trim para comparação estável."""
+    if not value:
+        return ""
+    return value.translate(ACCENT_TRANSLATION).upper().strip()
+
 
 @router.get(
     "/advanced/socioeconomic/race",
@@ -21,7 +38,7 @@ db_agent = DuckDBAgent(read_only=True) # Global instance for read-only queries
 )
 @lru_cache(maxsize=32)
 def get_socioeconomic_race(
-    ano: Annotated[int, Query(description="Ano de referência.")],
+    ano: Annotated[int | None, Query(description="Ano de referência. Se omitido, retorna histórico completo.")] = None,
     uf: Annotated[str | None, Query(
         description="Sigla da UF da prova (SG_UF_PROVA) para filtrar.",
         min_length=2,
@@ -33,27 +50,43 @@ def get_socioeconomic_race(
 ) -> List[TbSocioRaceRow]:
     """
     Retorna a média das notas agrupadas por autodeclaração de cor/raça.
-    Utiliza a tabela gold_classes (ou silver_microdados) para cálculo on-the-fly
-    sobre o ano selecionado.
+    Utiliza a tabela gold_classes (ou silver_microdados) para cálculo on-the-fly.
     """
     # Mapeamento IBGE
     # 0: Não declarado, 1: Branca, 2: Preta, 3: Parda, 4: Amarela, 5: Indígena
     
-    where_clauses: list[str] = ["ANO = ?"]
-    params: list[object] = [ano]
+    where_clauses: list[str] = []
+    params: list[object] = []
+
+    if ano is not None:
+        where_clauses.append("ANO = ?")
+        params.append(ano)
 
     if uf:
         where_clauses.append("SG_UF_PROVA = ?")
         params.append(uf.upper())
 
     if municipio:
-        where_clauses.append("UPPER(NO_MUNICIPIO_PROVA) = ?")
-        params.append(municipio.upper())
+        where_clauses.append(f"{MUNICIPIO_SQL_NORMALIZED} = ?")
+        params.append(_normalize_text(municipio))
 
-    where_sql = "WHERE " + " AND ".join(where_clauses)
+    where_sql = ""
+    if where_clauses:
+        where_sql = "WHERE " + " AND ".join(where_clauses)
     
+    # Conditional Grouping
+    group_cols = ["TP_COR_RACA"]
+    select_ano = "NULL as ANO"
+    
+    if ano is None:
+        group_cols.insert(0, "ANO")
+        select_ano = "ANO"
+        
+    group_sql = ", ".join(group_cols)
+
     sql = f"""
         SELECT 
+            {select_ano},
             TP_COR_RACA,
             AVG(NOTA_MATEMATICA) as NOTA_MATEMATICA,
             AVG(NOTA_CIENCIAS_NATUREZA) as NOTA_CIENCIAS_NATUREZA,
@@ -63,8 +96,9 @@ def get_socioeconomic_race(
             COUNT(*) as COUNT
         FROM gold_classes
         {where_sql}
-        GROUP BY TP_COR_RACA
+        GROUP BY {group_sql}
         HAVING COUNT(*) > 100
+        ORDER BY ANO DESC, COUNT DESC
     """
     
     race_map = {
@@ -88,7 +122,8 @@ def get_socioeconomic_race(
 
     result = []
     for row in rows:
-        tp_raca = row[0]
+        ano_val = row[0]
+        tp_raca = row[1]
         # Handle NULL or None as "Não Disp." (6) or use existing map
         if tp_raca is None:
              label = race_map[6]
@@ -96,16 +131,17 @@ def get_socioeconomic_race(
              label = race_map.get(tp_raca, f"Outros ({tp_raca})")
              
         result.append(TbSocioRaceRow(
+            ANO=ano_val,
             RACA=label,
-            NOTA_MATEMATICA=row[1],
-            NOTA_CIENCIAS_NATUREZA=row[2],
-            NOTA_CIENCIAS_HUMANAS=row[3],
-            NOTA_LINGUAGENS_CODIGOS=row[4],
-            NOTA_REDACAO=row[5],
-            COUNT=row[6]
+            NOTA_MATEMATICA=row[2],
+            NOTA_CIENCIAS_NATUREZA=row[3],
+            NOTA_CIENCIAS_HUMANAS=row[4],
+            NOTA_LINGUAGENS_CODIGOS=row[5],
+            NOTA_REDACAO=row[6],
+            COUNT=row[7]
         ))
     
-    return sorted(result, key=lambda x: x.COUNT, reverse=True)
+    return result
 
 
 @router.get(
@@ -173,9 +209,19 @@ def get_municipios(
         logger.warning(f"Erro ao listar municípios: {exc}")
         return []
 
-    # Normalização: Title Case e Remove Duplicatas de Casing (ex: "SÃO PAULO" e "São Paulo")
-    cities = {row[0].title() for row in rows if row[0]}
-    return sorted(list(cities))
+    # Normalização: deduplica por chave sem acentos e prefere grafia acentuada quando disponível
+    norm_to_city: dict[str, str] = {}
+    for row in rows:
+        raw_city = row[0]
+        if not raw_city:
+            continue
+        display = raw_city.title()
+        norm_key = _normalize_text(display)
+        current = norm_to_city.get(norm_key)
+        if current is None or (current.isascii() and not display.isascii()):
+            norm_to_city[norm_key] = display
+
+    return sorted(norm_to_city.values())
 
 
 @router.get(
@@ -310,9 +356,8 @@ def _build_geo_query(
     # Filtro de Municípios (Lista)
     if municipios:
         placeholders = ",".join(["?"] * len(municipios))
-        # BLINDAGEM: Normaliza input e coluna para UPPERCASE para garantir match case-insensitive
-        clean_municipios = [m.upper() for m in municipios]
-        where_clauses.append(f"UPPER(NO_MUNICIPIO_PROVA) IN ({placeholders})")
+        clean_municipios = [_normalize_text(m) for m in municipios]
+        where_clauses.append(f"{MUNICIPIO_SQL_NORMALIZED} IN ({placeholders})")
         params.extend(clean_municipios)
 
     # Filtro de Amostra Mínima
@@ -464,7 +509,8 @@ def download_notas_geo(
     logger.debug(f"Params SQL: {params}")
     
     try:
-        rows, columns = db_agent.run_query(sql, params)
+        # Exportações precisam de dataset completo; aumenta row_limit para evitar truncamento automático.
+        rows, columns = db_agent.run_query(sql, params, row_limit=1_000_000)
         logger.info(f"Linhas recuperadas do DB: {len(rows)}")
         
         df = pd.DataFrame(rows, columns=columns)

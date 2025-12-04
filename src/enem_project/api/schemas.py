@@ -96,6 +96,7 @@ class TbNotasHistogramRow(BaseModel):
 
 
 class TbSocioRaceRow(BaseModel):
+    ANO: Optional[int] = None
     RACA: str
     NOTA_MATEMATICA: Optional[float]
     NOTA_CIENCIAS_NATUREZA: Optional[float]

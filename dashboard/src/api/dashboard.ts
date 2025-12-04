@@ -153,6 +153,7 @@ export async function getRadarData(
 }
 
 export interface TbSocioRaceRow {
+  ANO?: number;
   RACA: string;
   NOTA_MATEMATICA?: number;
   NOTA_CIENCIAS_NATUREZA?: number;
@@ -172,7 +173,7 @@ export interface TbSocioIncomeRow {
 }
 
 export interface SocioRaceParams {
-  year: number;
+  year?: number;
   uf?: string;
   municipio?: string;
 }
@@ -181,7 +182,9 @@ export async function getSocioRace(
   params: SocioRaceParams
 ): Promise<TbSocioRaceRow[]> {
   const search = new URLSearchParams();
-  search.set("ano", String(params.year));
+  if (params.year) {
+    search.set("ano", String(params.year));
+  }
   if (params.uf && params.uf !== "all") {
     search.set("uf", params.uf);
   }

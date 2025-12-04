@@ -3,32 +3,31 @@ import { useFilters } from "../context/FilterContext";
 import { FilterBar } from "../components/FilterBar";
 import { ComparativoRadar } from "../components/ComparativoRadar";
 import { SocioRaceChart } from "../components/SocioRaceChart";
+import { RaceHistoryChart } from "../components/RaceHistoryChart";
 import { StatePerformanceChart } from "../components/StatePerformanceChart";
 import { StateHistoryChart } from "../components/StateHistoryChart"; 
 import { VerticallyStackedAxesChart } from "../components/VerticallyStackedAxesChart";
 import { PremiumReport } from "../components/PremiumReport"; 
-import { MunicipalityChartSection } from "../components/MunicipalityChartSection"; // New import
+import { MunicipalityChartSection } from "../components/MunicipalityChartSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"; 
 import {
   getRadarData,
-  getSocioRace,
   getNotasGeoUf,
   getNotasStats, 
   TbRadarRow,
-  TbSocioRaceRow,
   TbNotasGeoUfRow,
 } from "../api/dashboard";
 
 export function AdvancedPage() {
   const { year, uf, setUf } = useFilters();
   const [radarData, setRadarData] = useState<TbRadarRow[]>([]);
-  const [raceData, setRaceData] = useState<TbSocioRaceRow[]>([]);
   const [geoUfData, setGeoUfData] = useState<TbNotasGeoUfRow[]>([]);
   
   // History Data State
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-
+  
+  // Loading/Error State for overview
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,15 +39,13 @@ export function AdvancedPage() {
       setLoading(true);
       setError(null);
       try {
-        const [radar, race, geoUf] = await Promise.all([
+        const [radar, geoUf] = await Promise.all([
           getRadarData({ year, uf }),
-          getSocioRace({ year, uf }), // Added uf filter here too for consistency if supported, or keep as is
           getNotasGeoUf({ ano: year, minInscritos: 500 }), 
         ]);
 
         if (!cancelled) {
           setRadarData(radar);
-          setRaceData(race);
           setGeoUfData(geoUf);
         }
       } catch (err) {
@@ -135,9 +132,10 @@ export function AdvancedPage() {
       )}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full md:w-[800px] grid-cols-4">
+        <TabsList className="grid w-full md:w-[900px] grid-cols-5">
           <TabsTrigger value="overview">Visão Geral ({year})</TabsTrigger>
           <TabsTrigger value="history">Evolução Histórica</TabsTrigger>
+          <TabsTrigger value="race">Desempenho por Raça 🧬</TabsTrigger>
           <TabsTrigger value="municipal" className="font-semibold text-primary">Evolução Municipal 💎</TabsTrigger>
           <TabsTrigger value="reports" className="font-semibold text-primary">Relatórios Premium 💎</TabsTrigger>
         </TabsList>
@@ -147,11 +145,6 @@ export function AdvancedPage() {
               {/* Top Row: Radar Chart (Full Width) */}
               <div className="col-span-1 lg:col-span-2">
                   <ComparativoRadar data={radarData} isLoading={loading} uf={uf} />
-              </div>
-
-              {/* Second Row: Socioeconomic Analysis (Race Chart) */}
-              <div className="col-span-1 lg:col-span-2">
-                <SocioRaceChart data={raceData} isLoading={loading} />
               </div>
 
               {/* Third Row: State Performance Ranking */}
@@ -177,6 +170,10 @@ export function AdvancedPage() {
             isLoading={historyLoading} 
             entityName={uf === "all" ? "Brasil (Média Nacional)" : uf}
           />
+        </TabsContent>
+
+        <TabsContent value="race" className="mt-6">
+             <RaceHistoryChart />
         </TabsContent>
 
         <TabsContent value="municipal" className="mt-6">

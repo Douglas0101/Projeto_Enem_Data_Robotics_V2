@@ -17,8 +17,7 @@ import {
 } from "./ui/popover";
 import { MultiSelect, Option } from "./ui/multi-select";
 import { MunicipalityMixedChart } from "./MunicipalityMixedChart";
-import { MunicipalityRaceHistoryChart, RaceHistoryData } from "./MunicipalityRaceHistoryChart";
-import { getNotasGeo, getMunicipios, getAvailableYears, getSocioRace } from "../api/dashboard";
+import { getNotasGeo, getMunicipios, getAvailableYears } from "../api/dashboard";
 
 const UFS = [
   { value: "AC", label: "Acre" },
@@ -57,7 +56,6 @@ export function MunicipalityChartSection() {
   const [cities, setCities] = useState<string[]>([]);
   const [availableYears, setAvailableYears] = useState<Option[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
-  const [raceHistoryData, setRaceHistoryData] = useState<RaceHistoryData[]>([]);
   const [loading, setLoading] = useState(false);
   
   const [openUf, setOpenUf] = useState(false);
@@ -99,21 +97,13 @@ export function MunicipalityChartSection() {
       const years = selectedYears.map(Number);
       
       // Fetch Geo Data (Mixed Chart)
-      const geoDataPromise = getNotasGeo({
+      const data = await getNotasGeo({
         ano: years,
         uf: selectedUf,
         municipio: selectedCity,
         minCount: 0, // No minimum for specific city query usually
         limit: 100
       });
-
-      // Fetch Race Data (History Chart) - Parallel Requests for each year
-      const raceDataPromises = years.map(year => 
-        getSocioRace({ year, uf: selectedUf, municipio: selectedCity })
-          .then(rows => ({ year, rows }))
-      );
-
-      const [data, ...raceResults] = await Promise.all([geoDataPromise, ...raceDataPromises]);
 
       // Process Geo Data
       const formatted = data.map(row => ({
@@ -127,32 +117,6 @@ export function MunicipalityChartSection() {
         redacao: parseFloat((row.NOTA_REDACAO_mean || 0).toFixed(1))
       }));
       setChartData(formatted);
-
-      // Process Race Data
-      const processedRaceData: RaceHistoryData[] = [];
-      raceResults.forEach(({ year, rows }) => {
-        rows.forEach(row => {
-            processedRaceData.push({
-                year: year,
-                race: row.RACA,
-                grades: {
-                    media_geral: parseFloat((
-                        ((row.NOTA_CIENCIAS_NATUREZA || 0) + 
-                         (row.NOTA_CIENCIAS_HUMANAS || 0) + 
-                         (row.NOTA_LINGUAGENS_CODIGOS || 0) + 
-                         (row.NOTA_MATEMATICA || 0) + 
-                         (row.NOTA_REDACAO || 0)) / 5
-                    ).toFixed(1)),
-                    matematica: row.NOTA_MATEMATICA || 0,
-                    redacao: row.NOTA_REDACAO || 0,
-                    linguagens: row.NOTA_LINGUAGENS_CODIGOS || 0,
-                    humanas: row.NOTA_CIENCIAS_HUMANAS || 0,
-                    natureza: row.NOTA_CIENCIAS_NATUREZA || 0
-                }
-            });
-        });
-      });
-      setRaceHistoryData(processedRaceData);
 
     } catch (error) {
       console.error("Error fetching chart data:", error);
@@ -304,10 +268,6 @@ export function MunicipalityChartSection() {
           data={chartData} 
           title={`Evolução - ${selectedCity}/${selectedUf}`} 
         />
-      )}
-      
-      {raceHistoryData.length > 0 && (
-          <MunicipalityRaceHistoryChart data={raceHistoryData} />
       )}
     </div>
   );

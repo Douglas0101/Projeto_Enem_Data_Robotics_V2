@@ -118,3 +118,12 @@ class TbSocioIncomeRow(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     detail: str
+
+
+class ErrorResponse(BaseModel):
+    """
+    Schema padrão para retorno de erros da API.
+    """
+    error: str
+    message: str
+    request_id: Optional[str] = None

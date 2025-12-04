@@ -20,6 +20,11 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combin
 - **Cálculo Dinâmico de Provas:** Os indicadores de desempenho consideram dinamicamente o número de provas realizadas por cada grupo demográfico, garantindo precisão mesmo em casos de dados parciais.
 - **Materialização Inteligente:** O backend SQL implementa lógica de *start-up* inteligente, evitando reprocessamentos desnecessários e garantindo persistência segura dos dados.
 
+### 🛡️ API e Estabilidade Profissional
+- **Rastreabilidade Total:** Implementação de **Request ID Middleware** que adiciona identificadores únicos (`X-Request-ID`) a todas as requisições, permitindo rastreamento preciso de logs e erros.
+- **Tratamento Global de Erros:** Handler de exceções centralizado que garante que todos os erros, mesmo os inesperados (500), retornem respostas JSON estruturadas e seguras, prevenindo vazamento de stack traces.
+- **Observabilidade:** Logs estruturados (JSON em produção) e instrumentação preparada para Prometheus.
+
 ### 🗺️ Inteligência Geográfica e Demográfica
 - **Evolução Histórica por Raça/Cor:** Gráficos avançados que permitem a análise temporal do desempenho educacional segmentado por autodeclaração racial em cada município brasileiro.
 - **Tooltips Contextuais Inteligentes:** Visualizações de dados aprimoradas que exibem médias, contagens de participantes e número de provas contabilizadas ao interagir com os gráficos.

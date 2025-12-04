@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 
 try:
     from prometheus_fastapi_instrumentator import Instrumentator
@@ -16,7 +16,8 @@ from ..config.settings import settings
 from ..infra.logging import logger
 from .dashboard_router import router as dashboard_router
 from .chat_router import router as chat_router
-from .schemas import HealthResponse
+from .schemas import HealthResponse, ErrorResponse
+from .middlewares import RequestIDMiddleware
 
 
 @asynccontextmanager
@@ -58,6 +59,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# --- Middlewares (Ordem importa: o último adicionado é o primeiro a ser executado) ---
+
+# 1. Request ID (Rastreabilidade)
+app.add_middleware(RequestIDMiddleware)
+
+# 2. CORS (Segurança/Acesso)
 # Permite consumo pelo dashboard (localhost:5173/4173 ou domínios externos).
 # Em produção, defina VITE_API_BASE_URL para o domínio da API e, se quiser,
 # restrinja allow_origins a esse domínio.
@@ -69,6 +76,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- Exception Handlers (Estabilidade) ---
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Captura erros não tratados para garantir que a API sempre retorne JSON estruturado
+    e não vaze stack traces em produção, além de logar o erro com o Request ID.
+    """
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.exception(f"Unhandled error processing request {request_id}: {exc}")
+    
+    return JSONResponse(
+        status_code=500,
+        content=ErrorResponse(
+            error="Internal Server Error",
+            message="An unexpected error occurred. Please contact support with the Request ID.",
+            request_id=request_id
+        ).model_dump()
+    )
 
 @app.get("/", include_in_schema=False)
 def root():

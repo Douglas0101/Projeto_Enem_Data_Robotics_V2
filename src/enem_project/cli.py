@@ -286,7 +286,7 @@ def _run_default(
         typer.echo(f"▶ Rodando ETL isolado para ano {target_year}...")
         code = subprocess.call(
             [sys.executable, "-m", "enem_project.cli", "--ano", str(target_year)],
-        )
+        )  # nosec B603, B607
         if code != 0:
             raise typer.Exit(code)
         anos_processados.append(int(target_year))

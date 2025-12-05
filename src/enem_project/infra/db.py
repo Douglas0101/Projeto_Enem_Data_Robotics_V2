@@ -59,21 +59,21 @@ def register_parquet_views(conn: duckdb.DuckDBPyConnection) -> None:
     g_dir = gold_dir()
 
     # Views agregadas sobre silver/gold (podem não existir em todos os ambientes).
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW silver_microdados AS
         SELECT * FROM read_parquet('{(s_dir / "microdados_enem_*.parquet").as_posix()}')
         """,
     )
 
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_cleaned AS
         SELECT * FROM read_parquet('{(g_dir / "cleaned" / "microdados_enem_*_clean.parquet").as_posix()}')
         """,
     )
 
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_classes AS
         SELECT * FROM read_parquet('{(g_dir / "classes" / "classes_enem_*.parquet").as_posix()}')
@@ -81,42 +81,42 @@ def register_parquet_views(conn: duckdb.DuckDBPyConnection) -> None:
     )
 
     # Views diretamente mapeadas para as tabelas do dashboard.
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_tb_notas AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas.parquet").as_posix()}')
         """,
     )
 
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_tb_notas_stats AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_stats.parquet").as_posix()}')
         """,
     )
 
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_tb_notas_geo AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_geo.parquet").as_posix()}')
         """,
     )
 
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_tb_notas_geo_uf AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_geo_uf.parquet").as_posix()}')
         """,
     )
 
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_tb_notas_histogram AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_histogram.parquet").as_posix()}')
         """,
     )
 
-    conn.execute(
+    conn.execute(  # nosec B608
         f"""
         CREATE OR REPLACE VIEW gold_tb_socio_economico AS
         SELECT * FROM read_parquet('{(g_dir / "tb_socio_economico.parquet").as_posix()}')

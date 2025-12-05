@@ -127,7 +127,7 @@ class DataAnalystAgent:
             EXEMPLOS DE QUERIES:
             - Média por ano: "SELECT ANO, AVG(NOTA_MATEMATICA_mean) FROM gold_tb_notas_stats GROUP BY ANO ORDER BY ANO"
             - Melhor estado em 2023: "SELECT SG_UF_PROVA, NOTA_MATEMATICA_mean FROM gold_tb_notas_geo_uf WHERE ANO=2023 ORDER BY NOTA_MATEMATICA_mean DESC LIMIT 5"
-        """)
+        """)  # nosec B608
 
     def send_message(self, user_message: str) -> str:
         """

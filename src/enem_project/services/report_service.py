@@ -62,8 +62,6 @@ class ReportService:
 
         return output.getvalue()
 
-        return output.getvalue()
-
     @staticmethod
     def generate_pdf(
         df: pd.DataFrame,

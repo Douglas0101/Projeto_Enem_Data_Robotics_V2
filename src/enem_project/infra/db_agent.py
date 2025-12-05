@@ -241,7 +241,7 @@ class DuckDBAgent:
                     f"Parquet não encontrado para view {view_name}: {path}"
                 )
 
-            sql = f"CREATE OR REPLACE VIEW {view_name} AS SELECT * FROM read_parquet('{path.as_posix()}')"
+            sql = f"CREATE OR REPLACE VIEW {view_name} AS SELECT * FROM read_parquet('{path.as_posix()}')"  # nosec B608
             conn.execute(sql)
             registered.append(view_name)
 

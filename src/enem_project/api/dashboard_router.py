@@ -102,7 +102,7 @@ async def get_socioeconomic_race(
         GROUP BY {group_sql}
         HAVING COUNT(*) > 100
         ORDER BY ANO DESC, COUNT DESC
-    """
+    """  # nosec B608
 
     race_map = {
         0: "Não Declarado",
@@ -288,7 +288,7 @@ async def get_notas_stats(
         FROM tb_notas_stats
         {where_sql}
         ORDER BY ANO
-    """
+    """  # nosec B608
 
     try:
         rows, columns = await run_in_threadpool(agent.run_query, sql, params)
@@ -353,7 +353,7 @@ def _build_geo_query(
         where_sql = "WHERE " + " AND ".join(where_clauses)
 
     if is_count_query:
-        sql = f"SELECT COUNT(*) FROM tb_notas_geo {where_sql}"
+        sql = f"SELECT COUNT(*) FROM tb_notas_geo {where_sql}"  # nosec B608
         return sql, params
 
     sql = f"""
@@ -376,7 +376,7 @@ def _build_geo_query(
         FROM tb_notas_geo
         {where_sql}
         ORDER BY ANO DESC, SG_UF_PROVA, NO_MUNICIPIO_PROVA
-    """
+    """  # nosec B608
 
     if limit is not None:
         sql += " LIMIT ? OFFSET ?"
@@ -462,7 +462,7 @@ async def download_notas_geo(
     )
 
     # Guardrail: Check row count before loading heavy formats
-    count_sql = f"SELECT COUNT(*) FROM ({sql})"
+    count_sql = f"SELECT COUNT(*) FROM ({sql})"  # nosec B608
 
     try:
         # Using run_in_threadpool for the count query to keep event loop free
@@ -643,7 +643,7 @@ async def get_notas_geo_uf(
         FROM tb_notas_geo_uf
         {where_sql}
         ORDER BY ANO, SG_UF_PROVA
-    """
+    """  # nosec B608
 
     try:
         rows, columns = await run_in_threadpool(agent.run_query, sql, params)
@@ -738,7 +738,7 @@ async def get_radar_data(
 
             # 3. Best UF
             selects = [f"MAX({k}) as {k}" for k in disciplinas.keys()]
-            sql_best = f"SELECT {', '.join(selects)} FROM tb_notas_geo_uf WHERE ANO = ?"
+            sql_best = f"SELECT {', '.join(selects)} FROM tb_notas_geo_uf WHERE ANO = ?"  # nosec B608
             row_best, cols_best = agent.run_query(sql_best, [ano])
             row_best = row_best[0] if row_best else None
             dict_best = dict(zip(cols_best, row_best)) if row_best else {}

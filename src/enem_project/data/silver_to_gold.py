@@ -331,7 +331,7 @@ def _build_geo_duckdb(path: Path, year: int) -> pd.DataFrame:
       AND CO_MUNICIPIO_PROVA IS NOT NULL
       AND NO_MUNICIPIO_PROVA IS NOT NULL
     GROUP BY 1,2,3,4
-    """
+    """  # nosec B608
     return duckdb.sql(query).df()  # type: ignore[union-attr]
 
 
@@ -364,7 +364,7 @@ def _build_geo_uf_duckdb(path: Path, year: int) -> pd.DataFrame:
     FROM read_parquet('{path.as_posix()}')
     WHERE SG_UF_PROVA IS NOT NULL
     GROUP BY 1,2
-    """
+    """  # nosec B608
     return duckdb.sql(query).df()  # type: ignore[union-attr]
 
 

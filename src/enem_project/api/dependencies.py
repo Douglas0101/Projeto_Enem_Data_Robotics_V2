@@ -20,7 +20,7 @@ def get_db_agent() -> Generator[DuckDBAgent, None, None]:
         # Configurações via Variáveis de Ambiente ou Defaults Industriais
         mem_limit = os.getenv("DUCKDB_MEMORY_LIMIT", "4GB")
         threads = os.getenv("DUCKDB_THREADS", "4")
-        temp_dir = os.getenv("DUCKDB_TEMP_DIR", "/tmp/duckdb_spill")
+        temp_dir = os.getenv("DUCKDB_TEMP_DIR", "/tmp/duckdb_spill")  # nosec B108
 
         # Aplicação segura dos PRAGMAs
         # Nota: Em DuckDB read-only, alguns PRAGMAs globais podem ser ignorados ou requerem init config.

@@ -11,6 +11,7 @@ router = APIRouter(prefix="/v1/chat", tags=["chat"])
 # Em produção, usaríamos sessões persistentes.
 _agent_instance: Optional[DataAnalystAgent] = None
 
+
 def get_agent() -> DataAnalystAgent:
     global _agent_instance
     if _agent_instance is None:
@@ -18,12 +19,15 @@ def get_agent() -> DataAnalystAgent:
             _agent_instance = DataAnalystAgent()
         except Exception as e:
             logger.error(f"Falha ao inicializar agente de IA: {e}")
-            raise HTTPException(status_code=503, detail="Serviço de IA indisponível (verifique API KEY)")
+            raise HTTPException(
+                status_code=503, detail="Serviço de IA indisponível (verifique API KEY)"
+            )
     return _agent_instance
 
 
 class ChatRequest(BaseModel):
     message: str
+
 
 class ChatResponse(BaseModel):
     response: str
@@ -36,12 +40,12 @@ async def chat_message(request: ChatRequest):
     O agente tem acesso autônomo ao banco de dados DuckDB para responder perguntas factuais.
     """
     agent = get_agent()
-    
+
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="Mensagem vazia")
 
     logger.info(f"💬 Chat recebido: {request.message}")
-    
+
     try:
         # Processamento síncrono (o Gemini SDK é síncrono por padrão, mas rápido o suficiente para demo)
         # Se demorar muito, considerar rodar em threadpool.
@@ -49,4 +53,6 @@ async def chat_message(request: ChatRequest):
         return ChatResponse(response=response_text)
     except Exception as e:
         logger.error(f"Erro ao processar mensagem: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno no processamento da IA")
+        raise HTTPException(
+            status_code=500, detail="Erro interno no processamento da IA"
+        )

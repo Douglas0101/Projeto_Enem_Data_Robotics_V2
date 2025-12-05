@@ -16,10 +16,14 @@ from enem_project.data.silver_to_gold import (
     build_tb_notas_geo_uf_from_cleaned,
     build_tb_socio_economico_from_cleaned,
 )
-from enem_project.orchestrator.workflows.audit_workflow import run_quality_audit_for_years
+from enem_project.orchestrator.workflows.audit_workflow import (
+    run_quality_audit_for_years,
+)
 from enem_project.orchestrator.workflows.class_workflow import run_class_workflow
 from enem_project.orchestrator.workflows.etl_workflow import run_etl_full
-from enem_project.orchestrator.workflows.sql_backend_workflow import run_sql_backend_workflow
+from enem_project.orchestrator.workflows.sql_backend_workflow import (
+    run_sql_backend_workflow,
+)
 from enem_project.infra.db_agent import DuckDBLockError
 from enem_project.infra.logging import logger
 
@@ -28,21 +32,25 @@ from enem_project.infra.logging import logger
 class MCPConfigError(Exception):
     pass
 
+
 class MCPRemoteError(Exception):
     pass
+
 
 class Context7DocsClient:
     def __init__(self, **kwargs):
         pass
-    
+
     def list_whitelisted_resources(self):
         return []
-        
+
     def list_remote_resources(self, **kwargs):
         return []
-        
+
     def search(self, **kwargs):
         return {"status": "mock", "data": []}
+
+
 # -----------------------------------------------------------
 
 
@@ -171,9 +179,7 @@ def _run_default(
             "Tabelas tb_notas, tb_notas_stats e tb_notas_geo disponíveis para consumo.",
             db_path,
         )
-        typer.echo(
-            f"✅ Backend SQL (DuckDB) inicializado em: {db_path}"
-        )
+        typer.echo(f"✅ Backend SQL (DuckDB) inicializado em: {db_path}")
         return
 
     if dashboard:
@@ -182,11 +188,15 @@ def _run_default(
             from enem_project.config.paths import gold_dir
 
             def _cleaned_exists(y: int) -> bool:
-                return (gold_dir() / "cleaned" / f"microdados_enem_{y}_clean.parquet").exists()
+                return (
+                    gold_dir() / "cleaned" / f"microdados_enem_{y}_clean.parquet"
+                ).exists()
 
             anos_exec = [y for y in anos_alvo if not _cleaned_exists(y)]
             if not anos_exec:
-                typer.echo("✅ Nenhum ano a processar (cleaned já existente). Materializando DuckDB...")
+                typer.echo(
+                    "✅ Nenhum ano a processar (cleaned já existente). Materializando DuckDB..."
+                )
                 db_path = _run_sql_backend_or_exit(anos_alvo)
                 typer.echo(f"✅ Backend SQL (DuckDB) materializado em: {db_path}")
                 return
@@ -282,7 +292,9 @@ def _run_default(
         anos_processados.append(int(target_year))
 
     anos_processados = sorted(set(anos_processados))
-    logger.info(f"Workflows ETL finalizados para anos (multi-processo): {anos_processados}")
+    logger.info(
+        f"Workflows ETL finalizados para anos (multi-processo): {anos_processados}"
+    )
     typer.echo(f"✅ ETL concluído para anos: {anos_processados}")
 
 
@@ -356,7 +368,7 @@ def cli_entrypoint(
             "em data/02_gold/cleaned para evitar reprocessamento desnecessário."
         ),
     ),
-    ) -> None:
+) -> None:
     """
     Entry-point chamado pelo console script `enem`.
     """
@@ -471,7 +483,9 @@ def mcp_docs(
     if list_remote:
         resources = client.list_remote_resources(refresh_cache=True)
         if not resources:
-            typer.echo("Nenhum recurso retornado pelo MCP remoto (verifique token ou rede).")
+            typer.echo(
+                "Nenhum recurso retornado pelo MCP remoto (verifique token ou rede)."
+            )
             raise typer.Exit(code=1)
         for res in resources:
             typer.echo(f"- {res.id} | {res.title} | trustScore={res.trust_score}")

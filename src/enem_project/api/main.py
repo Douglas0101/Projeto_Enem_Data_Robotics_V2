@@ -21,14 +21,18 @@ from .middlewares import RequestIDMiddleware
 
 # --- Rate Limiting Imports ---
 from .limiter import limiter
+
 try:
     from slowapi import _rate_limit_exceeded_handler
     from slowapi.errors import RateLimitExceeded
     from slowapi.middleware import SlowAPIMiddleware
+
     SLOWAPI_AVAILABLE = True
 except ImportError:
     SLOWAPI_AVAILABLE = False
-    logger.warning("SlowAPI not installed. Rate limiting middleware will NOT be active.")
+    logger.warning(
+        "SlowAPI not installed. Rate limiting middleware will NOT be active."
+    )
 
 
 @asynccontextmanager
@@ -41,11 +45,16 @@ async def lifespan(app: FastAPI):
         return
 
     db_path = settings.DATA_DIR / "enem.duckdb"
-    force_materialize = os.getenv("ENEM_FORCE_MATERIALIZE", "").lower() in ("1", "true", "yes", "on")
+    force_materialize = os.getenv("ENEM_FORCE_MATERIALIZE", "").lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
 
     if not db_path.exists() or force_materialize:
         logger.info("Iniciando materialização do backend SQL...")
-        # Note: run_sql_backend_workflow uses DuckDBAgent internally, 
+        # Note: run_sql_backend_workflow uses DuckDBAgent internally,
         # which is synchronous. We run it as is during startup (blocking is okay here).
         run_sql_backend_workflow(materialize_dashboard_tables=True)
     else:
@@ -72,7 +81,9 @@ if SLOWAPI_AVAILABLE:
 app.add_middleware(RequestIDMiddleware)
 
 # Security: Load allowed origins from env, default to safe localhost
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+allowed_origins = os.getenv(
+    "ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+).split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -84,6 +95,7 @@ app.add_middleware(
 
 # --- Global Exception Handler ---
 
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     request_id = getattr(request.state, "request_id", "unknown")
@@ -93,18 +105,21 @@ async def global_exception_handler(request: Request, exc: Exception):
         content=ErrorResponse(
             error="Internal Server Error",
             message="An unexpected error occurred.",
-            request_id=request_id
-        ).model_dump()
+            request_id=request_id,
+        ).model_dump(),
     )
+
 
 @app.get("/", include_in_schema=False)
 def root():
     return RedirectResponse(url="/docs")
 
+
 @app.get("/health", response_model=HealthResponse, tags=["infra"])
 @limiter.limit("100/minute")
 def health_check(request: Request) -> HealthResponse:
     return HealthResponse(status="ok", detail="Operational")
+
 
 app.include_router(dashboard_router)
 app.include_router(chat_router)

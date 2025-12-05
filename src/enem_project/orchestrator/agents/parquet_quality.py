@@ -79,13 +79,7 @@ class SilverParquetQualityAgent(Agent):
         subset = self.metadata[self.metadata["ano"] == self.year]
         if subset.empty:
             return []
-        return (
-            subset["nome_padrao"]
-            .dropna()
-            .astype(str)
-            .unique()
-            .tolist()
-        )
+        return subset["nome_padrao"].dropna().astype(str).unique().tolist()
 
     def run(self, ctx: OrchestratorContext) -> OrchestratorContext:
         silver_path = paths.silver_dir() / f"microdados_enem_{self.year}.parquet"
@@ -175,14 +169,20 @@ class GoldParquetAuditAgent(Agent):
                 len(columns),
             )
 
-        summary = pd.concat(records, ignore_index=True) if records else pd.DataFrame(
-            columns=ParquetQualityResult(
-                layer="gold",
-                parquet_path="",
-                row_count=0,
-                column_count=0,
-                column_sample=[],
-            ).to_frame().columns,
+        summary = (
+            pd.concat(records, ignore_index=True)
+            if records
+            else pd.DataFrame(
+                columns=ParquetQualityResult(
+                    layer="gold",
+                    parquet_path="",
+                    row_count=0,
+                    column_count=0,
+                    column_sample=[],
+                )
+                .to_frame()
+                .columns,
+            )
         )
 
         handle = DataHandle(

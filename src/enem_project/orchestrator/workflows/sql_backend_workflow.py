@@ -62,12 +62,17 @@ def run_sql_backend_workflow(
             logger.info(
                 "[workflow-sql] Materializando tabelas de dashboard a partir de script SQL externo.",
             )
-            
+
             # Carrega script SQL externalizado
-            sql_path = Path(__file__).parents[2] / "sql" / "marts" / "materialize_dashboard_tables.sql"
+            sql_path = (
+                Path(__file__).parents[2]
+                / "sql"
+                / "marts"
+                / "materialize_dashboard_tables.sql"
+            )
             if not sql_path.exists():
-                 raise FileNotFoundError(f"Script SQL não encontrado em: {sql_path}")
-            
+                raise FileNotFoundError(f"Script SQL não encontrado em: {sql_path}")
+
             sql_script = sql_path.read_text(encoding="utf-8")
             agent.execute_script(sql_script)
 

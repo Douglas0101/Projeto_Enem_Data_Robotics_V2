@@ -10,7 +10,12 @@ import pandas as pd
 from enem_project.config import paths
 from enem_project.config.hardware import PROFILE
 from enem_project.config.settings import settings
-from enem_project.infra.io import read_csv, write_parquet, iter_csv_chunks, append_to_parquet
+from enem_project.infra.io import (
+    read_csv,
+    write_parquet,
+    iter_csv_chunks,
+    append_to_parquet,
+)
 from enem_project.infra.logging import logger
 
 
@@ -43,11 +48,23 @@ NOTE_COLUMNS: tuple[str, ...] = (
 )
 
 BASE_COLUMNS: tuple[ColumnSpec, ...] = (
-    ColumnSpec("ID_INSCRICAO", ("NU_SEQUENCIAL", "ID_INSCRICAO", "NU_INSCRICAO", "INSCRICAO"), "string"),
+    ColumnSpec(
+        "ID_INSCRICAO",
+        ("NU_SEQUENCIAL", "ID_INSCRICAO", "NU_INSCRICAO", "INSCRICAO"),
+        "string",
+    ),
     ColumnSpec("ANO", ("ANO", "NU_ANO"), "integer"),
     ColumnSpec("SG_UF_PROVA", ("SG_UF_PROVA", "SG_UF_RESIDENCIA", "UF_PROVA"), "upper"),
-    ColumnSpec("CO_MUNICIPIO_PROVA", ("CO_MUNICIPIO_PROVA", "CO_MUNICIPIO_RESIDENCIA", "COD_MUNICIPIO_PROVA"), "string"),
-    ColumnSpec("NO_MUNICIPIO_PROVA", ("NO_MUNICIPIO_PROVA", "NO_MUNICIPIO_RESIDENCIA", "MUNICIPIO_PROVA"), "string"),
+    ColumnSpec(
+        "CO_MUNICIPIO_PROVA",
+        ("CO_MUNICIPIO_PROVA", "CO_MUNICIPIO_RESIDENCIA", "COD_MUNICIPIO_PROVA"),
+        "string",
+    ),
+    ColumnSpec(
+        "NO_MUNICIPIO_PROVA",
+        ("NO_MUNICIPIO_PROVA", "NO_MUNICIPIO_RESIDENCIA", "MUNICIPIO_PROVA"),
+        "string",
+    ),
     ColumnSpec("TP_SEXO", ("TP_SEXO", "SEXO", "CAT_SEXO"), "upper"),
     ColumnSpec("TP_COR_RACA", ("TP_COR_RACA", "TP_ETNIA"), "integer"),
     ColumnSpec("TP_FAIXA_ETARIA", ("TP_FAIXA_ETARIA",), "integer"),
@@ -58,11 +75,31 @@ BASE_COLUMNS: tuple[ColumnSpec, ...] = (
     ColumnSpec("TP_PRESENCA_LC", ("TP_PRESENCA_LC",), "integer"),
     ColumnSpec("TP_PRESENCA_MT", ("TP_PRESENCA_MT",), "integer"),
     ColumnSpec("TP_STATUS_REDACAO", ("TP_STATUS_REDACAO",), "integer"),
-    ColumnSpec("NOTA_CIENCIAS_NATUREZA", ("NOTA_CIENCIAS_NATUREZA", "NU_NOTA_CN", "NOTA_CN", "NT_CN"), "numeric"),
-    ColumnSpec("NOTA_CIENCIAS_HUMANAS", ("NOTA_CIENCIAS_HUMANAS", "NU_NOTA_CH", "NOTA_CH", "NT_CH"), "numeric"),
-    ColumnSpec("NOTA_LINGUAGENS_CODIGOS", ("NOTA_LINGUAGENS_CODIGOS", "NU_NOTA_LC", "NOTA_LC", "NT_LC"), "numeric"),
-    ColumnSpec("NOTA_MATEMATICA", ("NOTA_MATEMATICA", "NU_NOTA_MT", "NOTA_MT", "NT_MT"), "numeric"),
-    ColumnSpec("NOTA_REDACAO", ("NOTA_REDACAO", "NU_NOTA_REDACAO", "NU_NOTA_COMP5", "NT_REDACAO"), "numeric"),
+    ColumnSpec(
+        "NOTA_CIENCIAS_NATUREZA",
+        ("NOTA_CIENCIAS_NATUREZA", "NU_NOTA_CN", "NOTA_CN", "NT_CN"),
+        "numeric",
+    ),
+    ColumnSpec(
+        "NOTA_CIENCIAS_HUMANAS",
+        ("NOTA_CIENCIAS_HUMANAS", "NU_NOTA_CH", "NOTA_CH", "NT_CH"),
+        "numeric",
+    ),
+    ColumnSpec(
+        "NOTA_LINGUAGENS_CODIGOS",
+        ("NOTA_LINGUAGENS_CODIGOS", "NU_NOTA_LC", "NOTA_LC", "NT_LC"),
+        "numeric",
+    ),
+    ColumnSpec(
+        "NOTA_MATEMATICA",
+        ("NOTA_MATEMATICA", "NU_NOTA_MT", "NOTA_MT", "NT_MT"),
+        "numeric",
+    ),
+    ColumnSpec(
+        "NOTA_REDACAO",
+        ("NOTA_REDACAO", "NU_NOTA_REDACAO", "NU_NOTA_COMP5", "NT_REDACAO"),
+        "numeric",
+    ),
 )
 
 
@@ -161,7 +198,17 @@ def load_raw_microdados(year: int) -> pd.DataFrame:
         if not p.exists():
             return False
         try:
-            read_csv(p, usecols=["NU_NOTA_CN", "NU_NOTA_CH", "NU_NOTA_LC", "NU_NOTA_MT", "NU_NOTA_REDACAO"], chunk_rows=10)
+            read_csv(
+                p,
+                usecols=[
+                    "NU_NOTA_CN",
+                    "NU_NOTA_CH",
+                    "NU_NOTA_LC",
+                    "NU_NOTA_MT",
+                    "NU_NOTA_REDACAO",
+                ],
+                chunk_rows=10,
+            )
             return True
         except Exception:
             return False
@@ -177,7 +224,12 @@ def load_raw_microdados(year: int) -> pd.DataFrame:
         )
         return read_csv(results_path)
 
-    logger.error("Nenhum CSV com notas encontrado para o ano {} (checado {} e {}).", year, path, results_path)
+    logger.error(
+        "Nenhum CSV com notas encontrado para o ano {} (checado {} e {}).",
+        year,
+        path,
+        results_path,
+    )
     return read_csv(path)
 
 
@@ -219,7 +271,9 @@ def clean_and_standardize(df: pd.DataFrame, year: int) -> pd.DataFrame:
     df_out = pd.DataFrame(coerced_columns)
 
     # Normaliza ANO e ID_INSCRICAO (sempre presentes no schema final).
-    df_out["ANO"] = pd.to_numeric(df_out["ANO"], errors="coerce").fillna(year).astype(int)
+    df_out["ANO"] = (
+        pd.to_numeric(df_out["ANO"], errors="coerce").fillna(year).astype(int)
+    )
     df_out["ID_INSCRICAO"] = _coerce_string(df_out["ID_INSCRICAO"], upper=False)
 
     df_out = _apply_score_sanitization(df_out)
@@ -231,7 +285,7 @@ def clean_and_standardize(df: pd.DataFrame, year: int) -> pd.DataFrame:
 def stream_raw_to_silver(reference: RawDatasetReference) -> StreamToSilverResult:
     year = _infer_year_from_path(reference.path)
     silver_path = paths.silver_dir() / reference.path.name.replace(".csv", ".parquet")
-    
+
     # Garante que começamos um arquivo novo
     if silver_path.exists():
         silver_path.unlink()
@@ -239,20 +293,26 @@ def stream_raw_to_silver(reference: RawDatasetReference) -> StreamToSilverResult
     total_rows = 0
     last_columns = tuple()
 
-    logger.info(f"Iniciando processamento streaming de {reference.path} para {silver_path}...")
+    logger.info(
+        f"Iniciando processamento streaming de {reference.path} para {silver_path}..."
+    )
 
     # Itera sobre chunks do CSV para não estourar a memória
     for chunk_df in iter_csv_chunks(reference.path, chunk_rows=PROFILE.csv_chunk_rows):
         clean_chunk = clean_and_standardize(chunk_df, year)
-        
+
         if not clean_chunk.empty:
             append_to_parquet(clean_chunk, silver_path)
             total_rows += len(clean_chunk)
             last_columns = tuple(clean_chunk.columns)
-            
-            logger.debug(f"Processado chunk com {len(clean_chunk)} linhas. Total acumulado: {total_rows}")
 
-    logger.success(f"Streaming concluído. Arquivo salvo em {silver_path} com {total_rows} linhas.")
+            logger.debug(
+                f"Processado chunk com {len(clean_chunk)} linhas. Total acumulado: {total_rows}"
+            )
+
+    logger.success(
+        f"Streaming concluído. Arquivo salvo em {silver_path} com {total_rows} linhas."
+    )
 
     return StreamToSilverResult(
         path=silver_path,

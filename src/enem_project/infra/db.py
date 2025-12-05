@@ -123,4 +123,6 @@ def register_parquet_views(conn: duckdb.DuckDBPyConnection) -> None:
         """,
     )
 
-    logger.info("Views DuckDB registradas para silver/gold (incluindo tabelas de dashboard).")
+    logger.info(
+        "Views DuckDB registradas para silver/gold (incluindo tabelas de dashboard)."
+    )

@@ -16,9 +16,9 @@ if settings.ENVIRONMENT == "production":
         sys.stdout,
         level="INFO",
         serialize=True,  # Habilita o formato JSON
-        diagnose=False, # Não mostrar variáveis locais em caso de exceção em produção
-        backtrace=True, # Mostrar backtrace completo
-        colorize=False # Sem cores em logs JSON
+        diagnose=False,  # Não mostrar variáveis locais em caso de exceção em produção
+        backtrace=True,  # Mostrar backtrace completo
+        colorize=False,  # Sem cores em logs JSON
     )
     # Adicionar um handler para erros críticos em stderr, em JSON também.
     _logger.add(
@@ -27,7 +27,7 @@ if settings.ENVIRONMENT == "production":
         serialize=True,
         diagnose=False,
         backtrace=True,
-        colorize=False
+        colorize=False,
     )
     _logger.info("Configurando logging em modo JSON para produção.")
 else:
@@ -41,9 +41,11 @@ else:
             "<level>{message}</level>"
         ),
         colorize=True,
-        diagnose=True, # Mostrar variáveis locais em caso de exceção em desenvolvimento
-        backtrace=True
+        diagnose=True,  # Mostrar variáveis locais em caso de exceção em desenvolvimento
+        backtrace=True,
     )
-    _logger.info("Configurando logging em modo de console legível para desenvolvimento.")
+    _logger.info(
+        "Configurando logging em modo de console legível para desenvolvimento."
+    )
 
 logger = _logger

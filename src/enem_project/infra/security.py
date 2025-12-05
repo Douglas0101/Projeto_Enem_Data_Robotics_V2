@@ -4,6 +4,7 @@ import pandas as pd
 
 logger = logging.getLogger("security")
 
+
 class SecurityEngine:
     """
     Motor de segurança para aplicação de políticas de proteção de dados (LGPD),
@@ -34,8 +35,10 @@ class SecurityEngine:
             # Lógica heurística ou explicita para identificar PII
             if col_upper in ["NU_INSCRICAO", "CPF", "NOME_CANDIDATO", "EMAIL"]:
                 # Aplica máscara
-                masked_df[col] = masked_df[col].apply(lambda x: SecurityEngine._mask_value(str(x), "partial"))
-            
+                masked_df[col] = masked_df[col].apply(
+                    lambda x: SecurityEngine._mask_value(str(x), "partial")
+                )
+
         return masked_df
 
     @staticmethod
@@ -45,7 +48,7 @@ class SecurityEngine:
         """
         if not value or value.lower() == "nan" or value.lower() == "none":
             return ""
-        
+
         if len(value) <= 4:
             return "*" * len(value)
 
@@ -53,7 +56,7 @@ class SecurityEngine:
             # Mostra os primeiros 2 e últimos 2 caracteres
             return f"{value[:2]}{'*' * (len(value) - 4)}{value[-2:]}"
         elif method == "hash":
-             return hashlib.sha256(value.encode()).hexdigest()[:16]
+            return hashlib.sha256(value.encode()).hexdigest()[:16]
         else:
             return "*" * len(value)
 
@@ -62,7 +65,7 @@ class SecurityEngine:
         """
         Stub para validação de não-repúdio.
         Verifica se o hash do arquivo exportado corresponde a um registro auditado válido.
-        
+
         Args:
             file_hash (str): Hash SHA-256 do arquivo gerado.
 
@@ -73,6 +76,6 @@ class SecurityEngine:
         # Por enquanto, simula uma validação bem-sucedida para hashes não nulos
         if not file_hash:
             return False
-            
+
         logger.info(f"Verificando assinatura digital do arquivo: {file_hash}")
         return True

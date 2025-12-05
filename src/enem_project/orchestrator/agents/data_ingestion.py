@@ -14,7 +14,9 @@ class DataIngestionAgent(Agent):
         self.allowed_sensitivity_write = ["RAW"]
 
     def run(self, ctx: OrchestratorContext) -> OrchestratorContext:
-        logger.info(f"[{self.name}] Iniciando ingestão de dados RAW para {self.year}...")
+        logger.info(
+            f"[{self.name}] Iniciando ingestão de dados RAW para {self.year}..."
+        )
         ref = resolve_streaming_reference(self.year)
 
         if ref is not None:

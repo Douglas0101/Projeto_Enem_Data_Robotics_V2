@@ -16,7 +16,7 @@ class DatasetArtifact:
 class DataHandle:
     name: str
     sensitivity: str  # "RAW", "SENSITIVE", "AGGREGATED"
-    payload: Any      # DataFrame, caminho de arquivo, etc.
+    payload: Any  # DataFrame, caminho de arquivo, etc.
 
 
 @dataclass

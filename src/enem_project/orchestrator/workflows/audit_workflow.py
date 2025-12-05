@@ -41,7 +41,9 @@ def run_quality_audit_for_years(
         security_manager = SecurityManager(policies={})
         agents = [SilverParquetQualityAgent(year, metadata)]
         orchestrator = Orchestrator(agents=agents, security_manager=security_manager)
-        run_id = f"audit-silver-{year}-{datetime.now(UTC).isoformat(timespec='seconds')}"
+        run_id = (
+            f"audit-silver-{year}-{datetime.now(UTC).isoformat(timespec='seconds')}"
+        )
         ctx = OrchestratorContext(run_id=run_id, params={"year": year})
         ctx = orchestrator.run(ctx)
         results[year] = ctx
@@ -49,9 +51,7 @@ def run_quality_audit_for_years(
         silver_frames.append(handle.payload)
 
     silver_df = (
-        pd.concat(silver_frames, ignore_index=True)
-        if silver_frames
-        else pd.DataFrame()
+        pd.concat(silver_frames, ignore_index=True) if silver_frames else pd.DataFrame()
     )
 
     gold_security = SecurityManager(policies={})

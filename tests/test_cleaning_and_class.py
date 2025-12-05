@@ -112,7 +112,12 @@ def test_class_pipeline_generates_expected_columns(tmp_path: Path, monkeypatch):
     assert "CLASS_FAIXA_ETARIA" in result.classes_df.columns
     assert "CLASS_NOTA_GLOBAL" in result.classes_df.columns
     assert "CLASS_RENDA_FAMILIAR" in result.classes_df.columns
-    assert result.summary_df[result.summary_df["class_name"] == "CLASS_FAIXA_ETARIA"]["total"].sum() == 1
+    assert (
+        result.summary_df[result.summary_df["class_name"] == "CLASS_FAIXA_ETARIA"][
+            "total"
+        ].sum()
+        == 1
+    )
 
 
 def test_class_pipeline_respects_chunk_size(monkeypatch):
@@ -137,7 +142,9 @@ def test_class_pipeline_respects_chunk_size(monkeypatch):
 
     result = run_class_pipeline(df, chunk_size=3)
     assert len(result.classes_df) == len(df)
-    assert call_counter["count"] >= 4  # 10 linhas em chunks de 3 → pelo menos 4 chamadas
+    assert (
+        call_counter["count"] >= 4
+    )  # 10 linhas em chunks de 3 → pelo menos 4 chamadas
 
 
 def test_stream_cleaning_matches_batch(tmp_path: Path):
@@ -172,7 +179,10 @@ def test_stream_cleaning_matches_batch(tmp_path: Path):
         check_like=True,
     )
     assert streaming.row_count == len(batch.cleaned_df)
-    assert streaming.cleaning_report["affected_rows"].sum() == batch.cleaning_report["affected_rows"].sum()
+    assert (
+        streaming.cleaning_report["affected_rows"].sum()
+        == batch.cleaning_report["affected_rows"].sum()
+    )
     assert len(streaming.invalid_rows) == len(batch.invalid_rows)
 
 
@@ -199,8 +209,12 @@ def test_stream_class_pipeline_matches_batch(tmp_path: Path):
         batch_result.classes_df.reset_index(drop=True),
         check_like=True,
     )
-    summary_stream = stream_result.summary_df.sort_values(["class_name", "class_value"]).reset_index(drop=True)
-    summary_batch = batch_result.summary_df.sort_values(["class_name", "class_value"]).reset_index(drop=True)
+    summary_stream = stream_result.summary_df.sort_values(
+        ["class_name", "class_value"]
+    ).reset_index(drop=True)
+    summary_batch = batch_result.summary_df.sort_values(
+        ["class_name", "class_value"]
+    ).reset_index(drop=True)
     pd.testing.assert_frame_equal(summary_stream, summary_batch, check_like=True)
 
 

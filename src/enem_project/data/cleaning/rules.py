@@ -34,7 +34,9 @@ DEFAULT_NUMERIC_RULES: tuple[NumericRule, ...] = (
 )
 
 
-def build_cleaning_plan(year: int, socio_domains: dict[str, set[str]] | None = None) -> CleaningPlan:
+def build_cleaning_plan(
+    year: int, socio_domains: dict[str, set[str]] | None = None
+) -> CleaningPlan:
     domain_rules: list[DomainRule] = []
     if socio_domains:
         for column, values in socio_domains.items():

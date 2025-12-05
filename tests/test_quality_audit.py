@@ -28,7 +28,9 @@ def _setup_tmp_paths(tmp_path: Path, monkeypatch) -> tuple[Path, Path]:
     return silver_root, gold_root
 
 
-def test_silver_parquet_quality_agent_detects_extra_columns(tmp_path: Path, monkeypatch):
+def test_silver_parquet_quality_agent_detects_extra_columns(
+    tmp_path: Path, monkeypatch
+):
     silver_root, _ = _setup_tmp_paths(tmp_path, monkeypatch)
     df = pd.DataFrame(
         {

@@ -12,7 +12,9 @@ class ClassPipelineResult:
     summary_df: pd.DataFrame
 
 
-def apply_class_definitions(df: pd.DataFrame, definitions: Iterable[Callable[[pd.DataFrame], pd.Series]]) -> pd.DataFrame:
+def apply_class_definitions(
+    df: pd.DataFrame, definitions: Iterable[Callable[[pd.DataFrame], pd.Series]]
+) -> pd.DataFrame:
     output = df.copy()
     for func in definitions:
         series = func(output)
@@ -24,12 +26,15 @@ def _class_faixa_etaria(df: pd.DataFrame) -> pd.Series:
     idade = df.get("NU_IDADE", pd.Series([], dtype=float))
     bins = [0, 17, 24, 34, 200]
     labels = ["ATE_17", "18_A_24", "25_A_34", "35_MAIS"]
-    return pd.cut(idade, bins=bins, labels=labels, include_lowest=True).rename("CLASS_FAIXA_ETARIA")
+    return pd.cut(idade, bins=bins, labels=labels, include_lowest=True).rename(
+        "CLASS_FAIXA_ETARIA"
+    )
 
 
 def _class_nota_global(df: pd.DataFrame) -> pd.Series:
     notas = df[[c for c in df.columns if c.startswith("NOTA_")]]
     media = notas.mean(axis=1)
+
     def _classify(value: float) -> str:
         if pd.isna(value):
             return "NA"
@@ -54,11 +59,15 @@ def _build_summary(df: pd.DataFrame, class_columns: list[str]) -> pd.DataFrame:
     for col in class_columns:
         counts = df[col].value_counts(dropna=False)
         for value, total in counts.items():
-            records.append({"class_name": col, "class_value": str(value), "total": int(total)})
+            records.append(
+                {"class_name": col, "class_value": str(value), "total": int(total)}
+            )
     return pd.DataFrame(records)
 
 
-def run_class_pipeline(df: pd.DataFrame, *, chunk_size: int = 100_000) -> ClassPipelineResult:
+def run_class_pipeline(
+    df: pd.DataFrame, *, chunk_size: int = 100_000
+) -> ClassPipelineResult:
     definitions = [_class_faixa_etaria, _class_nota_global, _class_renda]
     chunks = []
     class_columns = ["CLASS_FAIXA_ETARIA", "CLASS_NOTA_GLOBAL", "CLASS_RENDA_FAMILIAR"]

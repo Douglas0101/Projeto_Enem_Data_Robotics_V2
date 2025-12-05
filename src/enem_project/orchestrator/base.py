@@ -15,8 +15,7 @@ class Agent(ABC):
     allowed_sensitivity_write: List[str] = ["AGGREGATED", "SENSITIVE", "RAW"]
 
     @abstractmethod
-    def run(self, ctx: OrchestratorContext) -> OrchestratorContext:
-        ...
+    def run(self, ctx: OrchestratorContext) -> OrchestratorContext: ...
 
 
 class Orchestrator:

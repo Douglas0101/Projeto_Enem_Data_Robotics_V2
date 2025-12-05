@@ -24,7 +24,9 @@ def test_assert_dashboard_data_checks_success(mock_run_soda, mock_db_connection)
     try:
         assert_dashboard_data_checks(mock_db_connection)
     except RuntimeError:
-        pytest.fail("assert_dashboard_data_checks levantou RuntimeError inesperadamente com exit_code=0")
+        pytest.fail(
+            "assert_dashboard_data_checks levantou RuntimeError inesperadamente com exit_code=0"
+        )
 
     mock_run_soda.assert_called_once_with(mock_db_connection)
 
@@ -40,7 +42,6 @@ def test_assert_dashboard_data_checks_failure(mock_run_soda, mock_db_connection)
 
     with pytest.raises(RuntimeError) as excinfo:
         assert_dashboard_data_checks(mock_db_connection)
-    
+
     assert "Soda Data Quality Check falhou com código 1" in str(excinfo.value)
     mock_run_soda.assert_called_once_with(mock_db_connection)
-

@@ -28,7 +28,9 @@ def _normalize_tipo(tipo: str) -> str:
     return "string"
 
 
-def build_contract_for_year(year: int, metadata: pd.DataFrame | None = None) -> dict[str, ColumnContract]:
+def build_contract_for_year(
+    year: int, metadata: pd.DataFrame | None = None
+) -> dict[str, ColumnContract]:
     """
     Constrói um contrato de schema (nome->tipo/domínio) com base no metadata.
     """
@@ -45,13 +47,17 @@ def build_contract_for_year(year: int, metadata: pd.DataFrame | None = None) -> 
         contrato = ColumnContract(
             nome_padrao=nome,
             tipo_padrao=_normalize_tipo(str(row["tipo_padrao"])),
-            dominio_valores=row["dominio_valores"] if isinstance(row["dominio_valores"], list) else None,
+            dominio_valores=row["dominio_valores"]
+            if isinstance(row["dominio_valores"], list)
+            else None,
         )
         contracts[nome] = contrato
     return contracts
 
 
-def select_known_columns(df: pd.DataFrame, contract: Mapping[str, ColumnContract]) -> pd.DataFrame:
+def select_known_columns(
+    df: pd.DataFrame, contract: Mapping[str, ColumnContract]
+) -> pd.DataFrame:
     """
     Mantém apenas colunas presentes no contrato, preservando ordem original.
     """

@@ -32,8 +32,12 @@ class ValidationAgent(Agent):
         for req_col in self.required_columns:
             # Tenta encontrar a especificação da coluna em BASE_COLUMNS
             spec = next(
-                (s for s in BASE_COLUMNS if req_col == s.target or req_col in s.aliases),
-                None
+                (
+                    s
+                    for s in BASE_COLUMNS
+                    if req_col == s.target or req_col in s.aliases
+                ),
+                None,
             )
 
             if spec:

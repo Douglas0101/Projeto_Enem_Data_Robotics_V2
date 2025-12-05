@@ -120,7 +120,9 @@ def read_csv(
     if _should_use_duckdb(encoding):
         try:
             df = _read_csv_with_duckdb(path, separator)
-            logger.success(f"Leitura concluída via DuckDB: {len(df)} linhas em {path.name}")
+            logger.success(
+                f"Leitura concluída via DuckDB: {len(df)} linhas em {path.name}"
+            )
             return df
         except Exception as exc:  # noqa: BLE001
             logger.warning(
@@ -130,7 +132,11 @@ def read_csv(
                 chunk_size,
             )
     else:
-        reason = "DuckDB indisponível" if duckdb is None else f"encoding '{encoding}' não suportado pelo DuckDB"
+        reason = (
+            "DuckDB indisponível"
+            if duckdb is None
+            else f"encoding '{encoding}' não suportado pelo DuckDB"
+        )
         logger.debug(
             "Pulando leitura via DuckDB para {} ({}). Usando pandas com chunks de {} linhas.",
             path,

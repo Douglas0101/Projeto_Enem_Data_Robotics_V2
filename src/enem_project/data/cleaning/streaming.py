@@ -47,7 +47,11 @@ def stream_clean_to_parquet(
             metadata = load_metadata()
         except FileNotFoundError:
             metadata = pd.DataFrame()
-    metadata_year = filter_metadata_for_year(metadata, year) if metadata is not None else pd.DataFrame()
+    metadata_year = (
+        filter_metadata_for_year(metadata, year)
+        if metadata is not None
+        else pd.DataFrame()
+    )
 
     pf = pq.ParquetFile(silver_path)
     writer: pq.ParquetWriter | None = None
@@ -107,14 +111,24 @@ def stream_clean_to_parquet(
     else:
         writer.close()
 
-    invalid_rows_df = pd.concat(invalid_parts, ignore_index=True) if invalid_parts else pd.DataFrame()
-    duplicates_df = pd.concat(duplicate_parts, ignore_index=True) if duplicate_parts else pd.DataFrame()
+    invalid_rows_df = (
+        pd.concat(invalid_parts, ignore_index=True) if invalid_parts else pd.DataFrame()
+    )
+    duplicates_df = (
+        pd.concat(duplicate_parts, ignore_index=True)
+        if duplicate_parts
+        else pd.DataFrame()
+    )
 
     report_records: list[dict[str, int | str]] = []
     if report_counter.get("invalid_rows"):
-        report_records.append({"rule": "invalid_rows", "affected_rows": report_counter["invalid_rows"]})
+        report_records.append(
+            {"rule": "invalid_rows", "affected_rows": report_counter["invalid_rows"]}
+        )
     if report_counter.get("duplicates"):
-        report_records.append({"rule": "duplicates", "affected_rows": report_counter["duplicates"]})
+        report_records.append(
+            {"rule": "duplicates", "affected_rows": report_counter["duplicates"]}
+        )
     for rule, count in sorted(report_counter.items()):
         if rule in {"invalid_rows", "duplicates"}:
             continue

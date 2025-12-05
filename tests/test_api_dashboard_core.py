@@ -123,9 +123,37 @@ class FakeAgent:
                 "NOTA_REDACAO_mean",
             ]
             rows = [
-                (2024, "SP", 500, 500, 610.0, 500, 620.0, 500, 630.0, 500, 640.0, 500, 650.0),
+                (
+                    2024,
+                    "SP",
+                    500,
+                    500,
+                    610.0,
+                    500,
+                    620.0,
+                    500,
+                    630.0,
+                    500,
+                    640.0,
+                    500,
+                    650.0,
+                ),
                 # Linha com contagens em float e campo ausente (será preenchido com None)
-                (2024, "RJ", 200.0, 100.5, 600.0, 100.5, 610.0, 100.5, 620.0, 100.5, 630.0, None, None),
+                (
+                    2024,
+                    "RJ",
+                    200.0,
+                    100.5,
+                    600.0,
+                    100.5,
+                    610.0,
+                    100.5,
+                    620.0,
+                    100.5,
+                    630.0,
+                    None,
+                    None,
+                ),
             ]
             return rows, columns
 
@@ -232,16 +260,18 @@ def test_openapi_available(test_app: FastAPI):
     assert schema["info"]["title"] == "ENEM Data Robotics API"
 
 
-
 def test_notas_stats(patched_router):
     mock_request = Mock(spec=Request)
     fake_agent = FakeAgent()
     # Pass request and agent as required by the new signature
-    body = patched_router.get_notas_stats(mock_request, fake_agent, ano_inicio=2024, ano_fim=2024)
+    body = patched_router.get_notas_stats(
+        mock_request, fake_agent, ano_inicio=2024, ano_fim=2024
+    )
     # Result is a coroutine because functions are async
     import asyncio
+
     body = asyncio.run(body)
-    
+
     assert len(body) == 1
     assert body[0].ANO == 2024
     assert body[0].NOTA_MATEMATICA_mean == 630.0
@@ -250,10 +280,13 @@ def test_notas_stats(patched_router):
 def test_notas_geo(patched_router):
     mock_request = Mock(spec=Request)
     fake_agent = FakeAgent()
-    body = patched_router.get_notas_geo(mock_request, fake_agent, ano=[2024], min_count=10, limit=5, page=1)
+    body = patched_router.get_notas_geo(
+        mock_request, fake_agent, ano=[2024], min_count=10, limit=5, page=1
+    )
     import asyncio
+
     body = asyncio.run(body)
-    
+
     assert len(body) == 1
     assert body[0].SG_UF_PROVA == "SP"
     assert body[0].NO_MUNICIPIO_PROVA == "São Paulo"
@@ -262,10 +295,13 @@ def test_notas_geo(patched_router):
 def test_notas_geo_uf(patched_router):
     mock_request = Mock(spec=Request)
     fake_agent = FakeAgent()
-    body = patched_router.get_notas_geo_uf(mock_request, fake_agent, ano=2024, min_inscritos=100)
+    body = patched_router.get_notas_geo_uf(
+        mock_request, fake_agent, ano=2024, min_inscritos=100
+    )
     import asyncio
+
     body = asyncio.run(body)
-    
+
     assert len(body) == 1
     assert body[0].SG_UF_PROVA == "SP"
     assert body[0].INSCRITOS == 500
@@ -274,10 +310,13 @@ def test_notas_geo_uf(patched_router):
 def test_notas_histograma(patched_router):
     mock_request = Mock(spec=Request)
     fake_agent = FakeAgent()
-    body = patched_router.get_notas_histograma(mock_request, fake_agent, ano=2024, disciplina="MATEMATICA")
+    body = patched_router.get_notas_histograma(
+        mock_request, fake_agent, ano=2024, disciplina="MATEMATICA"
+    )
     import asyncio
+
     body = asyncio.run(body)
-    
+
     assert len(body) == 1
     assert body[0].DISCIPLINA == "MATEMATICA"
     assert body[0].CONTAGEM == 10

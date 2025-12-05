@@ -200,7 +200,9 @@ def test_build_tb_notas_and_stats(tmp_path: Path, monkeypatch):
         assert col in geo.columns
 
 
-def test_build_tb_notas_parquet_streaming_handles_mixed_dtypes(tmp_path: Path, monkeypatch):
+def test_build_tb_notas_parquet_streaming_handles_mixed_dtypes(
+    tmp_path: Path, monkeypatch
+):
     """
     Garante que build_tb_notas_parquet_streaming não falha quando
     diferentes anos possuem NOTA_REDACAO com dtypes distintos
@@ -258,7 +260,9 @@ def test_build_tb_notas_parquet_streaming_handles_mixed_dtypes(tmp_path: Path, m
     assert is_float_dtype(tb_notas["NOTA_REDACAO"].dtype)
 
 
-def test_build_tb_notas_parquet_streaming_uses_alias_columns(tmp_path: Path, monkeypatch):
+def test_build_tb_notas_parquet_streaming_uses_alias_columns(
+    tmp_path: Path, monkeypatch
+):
     """
     Garante que o modo streaming lê apenas colunas necessárias e ainda
     reconstroi as notas canônicas a partir das colunas NU_NOTA_*.

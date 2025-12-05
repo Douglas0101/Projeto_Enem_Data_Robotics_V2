@@ -132,6 +132,7 @@ class ErrorResponse(BaseModel):
     """
     Schema padrão para retorno de erros da API.
     """
+
     error: str
     message: str
     request_id: Optional[str] = None

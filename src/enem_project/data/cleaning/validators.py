@@ -24,7 +24,9 @@ class ValidationReport:
         }
 
 
-def enforce_numeric_rules(df: pd.DataFrame, rules: Sequence[NumericRule]) -> tuple[pd.DataFrame, list[ValidationReport], pd.DataFrame]:
+def enforce_numeric_rules(
+    df: pd.DataFrame, rules: Sequence[NumericRule]
+) -> tuple[pd.DataFrame, list[ValidationReport], pd.DataFrame]:
     reports: list[ValidationReport] = []
     invalid_rows: list[pd.DataFrame] = []
 
@@ -51,11 +53,15 @@ def enforce_numeric_rules(df: pd.DataFrame, rules: Sequence[NumericRule]) -> tup
                 )
             )
             cleaned = cleaned[~mask]
-    invalid = pd.concat(invalid_rows, ignore_index=True) if invalid_rows else pd.DataFrame()
+    invalid = (
+        pd.concat(invalid_rows, ignore_index=True) if invalid_rows else pd.DataFrame()
+    )
     return cleaned, reports, invalid
 
 
-def enforce_domain_rules(df: pd.DataFrame, rules: Sequence[DomainRule]) -> tuple[pd.DataFrame, list[ValidationReport]]:
+def enforce_domain_rules(
+    df: pd.DataFrame, rules: Sequence[DomainRule]
+) -> tuple[pd.DataFrame, list[ValidationReport]]:
     cleaned = df.copy()
     reports: list[ValidationReport] = []
     for rule in rules:
@@ -76,7 +82,9 @@ def enforce_domain_rules(df: pd.DataFrame, rules: Sequence[DomainRule]) -> tuple
     return cleaned, reports
 
 
-def drop_duplicates(df: pd.DataFrame, keys: Sequence[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
+def drop_duplicates(
+    df: pd.DataFrame, keys: Sequence[str]
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     available_keys = [k for k in keys if k in df.columns]
     if not available_keys:
         return df, pd.DataFrame()

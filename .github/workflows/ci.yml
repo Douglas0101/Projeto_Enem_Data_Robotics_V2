@@ -37,10 +37,11 @@ jobs:
           docker compose -f docker-compose.test.yml up --build --exit-code-from test-runner
 
       - name: Auditoria de Segurança (Bandit)
-        # Executa o Bandit (SAST) de forma containerizada para não poluir o runner.
+        # Executa o Bandit (SAST) via pip para garantir estabilidade.
         # Verifica vulnerabilidades comuns em código Python na pasta src/
         run: |
-          docker run --rm -v $(pwd):/code pyfound/bandit:latest -r /code/src -ll
+          pip install bandit
+          bandit -r src/ -ll
 
   # ==============================================================================
   # Job 2: Frontend Quality Assurance

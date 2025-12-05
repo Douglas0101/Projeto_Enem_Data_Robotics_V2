@@ -7,6 +7,7 @@ from weasyprint import HTML
 
 logger = logging.getLogger(__name__)
 
+
 class ReportService:
     """
     Serviço profissional de geração de relatórios (Excel e PDF).
@@ -19,46 +20,56 @@ class ReportService:
         Gera um arquivo Excel (.xlsx) altamente formatado em memória.
         """
         output = io.BytesIO()
-        
+
         # Engine xlsxwriter permite formatação avançada
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Dados ENEM')
-            
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="Dados ENEM")
+
             workbook = writer.book
-            worksheet = writer.sheets['Dados ENEM']
-            
+            worksheet = writer.sheets["Dados ENEM"]
+
             # Definição de Estilos Profissionais
-            header_format = workbook.add_format({
-                'bold': True,
-                'text_wrap': True,
-                'valign': 'top',
-                'fg_color': '#1F4E78', # Azul Corporativo
-                'font_color': '#FFFFFF',
-                'border': 1
-            })
-            
-            string_format = workbook.add_format({'border': 1})
-            number_format = workbook.add_format({'num_format': '0.0', 'border': 1})
-            
+            header_format = workbook.add_format(
+                {
+                    "bold": True,
+                    "text_wrap": True,
+                    "valign": "top",
+                    "fg_color": "#1F4E78",  # Azul Corporativo
+                    "font_color": "#FFFFFF",
+                    "border": 1,
+                }
+            )
+
+            string_format = workbook.add_format({"border": 1})
+            number_format = workbook.add_format({"num_format": "0.0", "border": 1})
+
             # Aplica formatação nas colunas
             for col_num, value in enumerate(df.columns.values):
                 worksheet.write(0, col_num, value, header_format)
-                
+
                 # Aplica formatação condicional baseada no tipo da coluna
                 cell_format = string_format
                 if pd.api.types.is_numeric_dtype(df[value]):
                     cell_format = number_format
-                
+
                 # Ajuste de largura (Auto-fit aproximado)
-                column_len = max(df[value].astype(str).map(len).max(), len(str(value))) + 2
-                worksheet.set_column(col_num, col_num, min(column_len, 50), cell_format) # Max 50 chars width + format
+                column_len = (
+                    max(df[value].astype(str).map(len).max(), len(str(value))) + 2
+                )
+                worksheet.set_column(
+                    col_num, col_num, min(column_len, 50), cell_format
+                )  # Max 50 chars width + format
 
         return output.getvalue()
 
         return output.getvalue()
 
     @staticmethod
-    def generate_pdf(df: pd.DataFrame, title: str = "Relatório de Dados ENEM", filter_summary: str = "Filtros: N/A") -> bytes:
+    def generate_pdf(
+        df: pd.DataFrame,
+        title: str = "Relatório de Dados ENEM",
+        filter_summary: str = "Filtros: N/A",
+    ) -> bytes:
         """
         Gera um PDF vetorial profissional usando HTML/CSS (WeasyPrint).
         """
@@ -70,7 +81,9 @@ class ReportService:
             if original_count > limit_pdf:
                 df = df.head(limit_pdf)
                 truncated = True
-                logger.warning(f"PDF truncado: {original_count} linhas reduzidas para {limit_pdf} para evitar OOM.")
+                logger.warning(
+                    f"PDF truncado: {original_count} linhas reduzidas para {limit_pdf} para evitar OOM."
+                )
 
             # Template HTML Minimalista e Elegante
             html_template = """
@@ -167,13 +180,15 @@ class ReportService:
             </body>
             </html>
             """
-            
+
             # Renderiza o HTML com os dados
             template = jinja2.Template(html_template)
-            
+
             # Converte DataFrame para HTML limpo (sem classes default do pandas)
-            table_html = df.to_html(index=False, border=0, classes=[], float_format="%.1f")
-            
+            table_html = df.to_html(
+                index=False, border=0, classes=[], float_format="%.1f"
+            )
+
             # Prepara o contexto
             context = {
                 "title": title,
@@ -182,17 +197,15 @@ class ReportService:
                 "table_html": table_html,
                 "truncated": truncated,
                 "limit": limit_pdf,
-                "total_rows": original_count
+                "total_rows": original_count,
             }
-            
+
             rendered_html = template.render(context)
-            
+
             # Gera o PDF
             pdf_file = HTML(string=rendered_html).write_pdf()
             return pdf_file
-            
+
         except Exception as e:
             logger.error(f"Erro crítico ao gerar PDF: {e}", exc_info=True)
             raise e
-
-    

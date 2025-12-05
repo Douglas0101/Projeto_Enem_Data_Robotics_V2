@@ -24,78 +24,85 @@ def _validate_numeric_ranges(df: pd.DataFrame) -> pd.Series:
     Marca como inválida a linha que tiver valor PRESENTE fora do intervalo.
     """
     invalid_mask = pd.Series(False, index=df.index)
-    
+
     for rule in DEFAULT_NUMERIC_RULES:
         col = rule.column
         if col not in df.columns:
             continue
-            
+
         # Obtém a série numérica
         series = pd.to_numeric(df[col], errors="coerce")
-        
+
         # Apenas verifica onde NÃO é nulo
         not_na = series.notna()
-        
+
         # Condição de falha: valor < min OU valor > max
         rule_violation = pd.Series(False, index=df.index)
-        
+
         if rule.min_value is not None:
-            rule_violation |= (series < rule.min_value)
-        
+            rule_violation |= series < rule.min_value
+
         if rule.max_value is not None:
-            rule_violation |= (series > rule.max_value)
-            
+            rule_violation |= series > rule.max_value
+
         # Atualiza a máscara global de invalidez
         # Linha é inválida se violar a regra E não for nula
-        invalid_mask |= (rule_violation & not_na)
+        invalid_mask |= rule_violation & not_na
 
     return invalid_mask
 
 
-def _apply_domains(df: pd.DataFrame, metadata: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def _apply_domains(
+    df: pd.DataFrame, metadata: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     df_out = df.copy()
     domain_fixes = []
 
     # Colunas que têm domínio definido
     cols_with_domain = metadata.dropna(subset=["dominio_valores"])
-    
+
     for _, row in cols_with_domain.iterrows():
         col = row["nome_padrao"]
         domain = row["dominio_valores"]
-        
+
         if col in df_out.columns and domain is not None:
             # domain vem como numpy array ou lista do parquet
             valid_values = set(domain)
-            
+
             # Verifica valores fora do domínio
             mask_invalid = ~df_out[col].isin(valid_values) & df_out[col].notna()
-            
+
             if mask_invalid.any():
                 # Decide o valor de substituição baseado no tipo da coluna
                 if pd.api.types.is_numeric_dtype(df_out[col]):
                     replacement = pd.NA
                 else:
                     replacement = "UNKNOWN"
-                
+
                 df_out.loc[mask_invalid, col] = replacement
-                
-                domain_fixes.append({
-                    "column": col, 
-                    "affected_rows": int(mask_invalid.sum())
-                })
+
+                domain_fixes.append(
+                    {"column": col, "affected_rows": int(mask_invalid.sum())}
+                )
 
     domain_report = pd.DataFrame(domain_fixes)
     return df_out, domain_report
 
 
-def run_cleaning_pipeline(df: pd.DataFrame, year: int, metadata: pd.DataFrame | None = None) -> CleaningArtifacts:
+def run_cleaning_pipeline(
+    df: pd.DataFrame, year: int, metadata: pd.DataFrame | None = None
+) -> CleaningArtifacts:
     if metadata is None:
         try:
             metadata = load_metadata()
         except FileNotFoundError:
             metadata = pd.DataFrame()
 
-    metadata_year = filter_metadata_for_year(metadata, year) if metadata is not None else pd.DataFrame()
+    metadata_year = (
+        filter_metadata_for_year(metadata, year)
+        if metadata is not None
+        else pd.DataFrame()
+    )
 
     invalid_mask = _validate_numeric_ranges(df)
     invalid_rows = df[invalid_mask].copy()
@@ -112,7 +119,9 @@ def run_cleaning_pipeline(df: pd.DataFrame, year: int, metadata: pd.DataFrame | 
 
     cleaning_steps = []
     if not invalid_rows.empty:
-        cleaning_steps.append({"rule": "invalid_rows", "affected_rows": len(invalid_rows)})
+        cleaning_steps.append(
+            {"rule": "invalid_rows", "affected_rows": len(invalid_rows)}
+        )
     if not duplicates.empty:
         cleaning_steps.append({"rule": "duplicates", "affected_rows": len(duplicates)})
     if not domain_report.empty:

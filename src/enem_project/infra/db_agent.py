@@ -51,23 +51,23 @@ class DuckDBAgent:
         """
         if self.read_only:
             global _GLOBAL_CONN, _GLOBAL_DB_PATH
-            
+
             # Check if connection is already established
             if _GLOBAL_CONN is not None:
-                 return _GLOBAL_CONN
-            
+                return _GLOBAL_CONN
+
             # If not, initialization logic (caller must hold _DB_LOCK if concurrent access is possible)
             if _GLOBAL_DB_PATH and _GLOBAL_DB_PATH != self.db_path:
                 logger.warning(
                     f"Reutilizando conexão global existente para {_GLOBAL_DB_PATH}, "
                     f"pedido veio para {self.db_path}."
                 )
-            
+
             max_mem = os.getenv("DUCKDB_MAX_MEMORY", "4GB")
             logger.info(
                 f"Connecting to DuckDB (singleton, read_only=True, max_memory={max_mem}): {self.db_path}"
             )
-            
+
             try:
                 _GLOBAL_CONN = duckdb.connect(
                     self.db_path.as_posix(),
@@ -84,9 +84,13 @@ class DuckDBAgent:
         if self._conn is not None:
             return self._conn
 
-        logger.info(f"Connecting to DuckDB: {self.db_path} (read_only={self.read_only})")
+        logger.info(
+            f"Connecting to DuckDB: {self.db_path} (read_only={self.read_only})"
+        )
         try:
-            self._conn = duckdb.connect(self.db_path.as_posix(), read_only=self.read_only)
+            self._conn = duckdb.connect(
+                self.db_path.as_posix(), read_only=self.read_only
+            )
         except duckdb.IOException as e:
             if "lock" in str(e).lower():
                 raise DuckDBLockError(
@@ -113,25 +117,38 @@ class DuckDBAgent:
         sql_lower = sql.lower().strip()
 
         if self.read_only:
-            forbidden = ["drop ", "delete ", "truncate ", "update ", "insert ", "alter "]
+            forbidden = [
+                "drop ",
+                "delete ",
+                "truncate ",
+                "update ",
+                "insert ",
+                "alter ",
+            ]
             if any(cmd in sql_lower for cmd in forbidden):
-                raise ValueError(f"Comando potencialmente destrutivo bloqueado em modo read-only: {sql[:50]}...")
+                raise ValueError(
+                    f"Comando potencialmente destrutivo bloqueado em modo read-only: {sql[:50]}..."
+                )
 
         if sql_lower.startswith("select") and "limit" not in sql_lower:
-            logger.warning(f"Query sem LIMIT detectada. Aplicando LIMIT {row_limit} automaticamente.")
+            logger.warning(
+                f"Query sem LIMIT detectada. Aplicando LIMIT {row_limit} automaticamente."
+            )
             if sql.strip().endswith(";"):
                 sql = sql.strip()[:-1] + f" LIMIT {row_limit};"
             else:
                 sql = sql + f" LIMIT {row_limit}"
-        
+
         return sql
 
-    def run_query(self, sql: str, params: Optional[list[Any]] = None, row_limit: int = 50000) -> tuple[list[Any], list[str]]:
+    def run_query(
+        self, sql: str, params: Optional[list[Any]] = None, row_limit: int = 50000
+    ) -> tuple[list[Any], list[str]]:
         """
         Executa uma query SQL de forma thread-safe e retorna resultados e colunas.
         """
         guarded_sql = self._enforce_guardrails(sql, row_limit=row_limit)
-        
+
         if self.read_only:
             # CRITICAL: Acquire lock BEFORE getting connection or executing anything.
             # This prevents race conditions during connection init or liveness checks.
@@ -139,10 +156,14 @@ class DuckDBAgent:
                 conn = self._get_conn()
                 try:
                     # Execute and fetch inside the lock
-                    cursor = conn.execute(guarded_sql, params) if params else conn.execute(guarded_sql)
+                    cursor = (
+                        conn.execute(guarded_sql, params)
+                        if params
+                        else conn.execute(guarded_sql)
+                    )
                     rows = cursor.fetchall()
                     description = cursor.description
-                    
+
                     columns = [d[0] for d in description] if description else []
                     return rows, columns
                 except Exception as e:
@@ -155,7 +176,11 @@ class DuckDBAgent:
             conn = self._get_conn()
             try:
                 logger.debug(f"Executando query (RW): {guarded_sql[:200]}...")
-                cursor = conn.execute(guarded_sql, params) if params else conn.execute(guarded_sql)
+                cursor = (
+                    conn.execute(guarded_sql, params)
+                    if params
+                    else conn.execute(guarded_sql)
+                )
                 rows = cursor.fetchall()
                 description = cursor.description
                 columns = [d[0] for d in description] if description else []
@@ -166,8 +191,8 @@ class DuckDBAgent:
 
     def execute_script(self, sql_script: str):
         if self.read_only:
-             raise ValueError("Não é possível executar scripts DDL em modo read-only.")
-        
+            raise ValueError("Não é possível executar scripts DDL em modo read-only.")
+
         conn = self._get_conn()
         try:
             conn.execute(sql_script)
@@ -178,8 +203,8 @@ class DuckDBAgent:
 
     def register_parquet_views(self):
         if self.read_only:
-             logger.warning("Tentativa de registrar views em modo read-only ignorada.")
-             return
+            logger.warning("Tentativa de registrar views em modo read-only ignorada.")
+            return
 
         s_dir = silver_dir()
         g_dir = gold_dir()
@@ -202,27 +227,36 @@ class DuckDBAgent:
 
         for view_name, path in views.items():
             has_wildcard = any(ch in path.name for ch in ("*", "?", "["))
-            matches = list(path.parent.glob(path.name)) if has_wildcard else ([path] if path.exists() else [])
+            matches = (
+                list(path.parent.glob(path.name))
+                if has_wildcard
+                else ([path] if path.exists() else [])
+            )
 
             if not matches:
                 if view_name in optional_views:
                     skipped_optional.append(view_name)
                     continue
-                raise FileNotFoundError(f"Parquet não encontrado para view {view_name}: {path}")
+                raise FileNotFoundError(
+                    f"Parquet não encontrado para view {view_name}: {path}"
+                )
 
             sql = f"CREATE OR REPLACE VIEW {view_name} AS SELECT * FROM read_parquet('{path.as_posix()}')"
             conn.execute(sql)
             registered.append(view_name)
-        
+
         logger.info(f"Views registradas: {registered}")
         if skipped_optional:
             logger.info(f"Views opcionais ignoradas: {skipped_optional}")
 
 
 # Compatibilidade com código antigo
-def get_duckdb_conn(db_path: Optional[Path | str] = None, read_only: bool = False) -> duckdb.DuckDBPyConnection:
+def get_duckdb_conn(
+    db_path: Optional[Path | str] = None, read_only: bool = False
+) -> duckdb.DuckDBPyConnection:
     agent = DuckDBAgent(db_path, read_only=read_only)
     return agent.get_connection()
+
 
 def register_parquet_views(_conn: duckdb.DuckDBPyConnection) -> None:
     pass

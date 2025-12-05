@@ -18,7 +18,7 @@ from .schemas import (
     TbNotasHistogramRow,
     TbSocioRaceRow,
     TbSocioIncomeRow,
-    TbRadarRow
+    TbRadarRow,
 )
 from .dependencies import get_db_agent
 from .limiter import limiter
@@ -31,9 +31,7 @@ ACCENT_FROM = "ÁÀÂÃÄáàâãäÉÈÊËéèêëÍÌÎÏíìîïÓÒÔÕÖó�
 ACCENT_TO = "AAAAAaaaaaEEEEeeeeIIIIiiiiOOOOOoooooUUUUuuuuCc"
 ACCENT_TRANSLATION = str.maketrans(ACCENT_FROM, ACCENT_TO)
 MUNICIPIO_SQL_NORMALIZED = (
-    "translate(upper(NO_MUNICIPIO_PROVA), "
-    f"'{ACCENT_FROM}', "
-    f"'{ACCENT_TO}')"
+    f"translate(upper(NO_MUNICIPIO_PROVA), '{ACCENT_FROM}', '{ACCENT_TO}')"
 )
 
 
@@ -78,15 +76,15 @@ async def get_socioeconomic_race(
     where_sql = ""
     if where_clauses:
         where_sql = "WHERE " + " AND ".join(where_clauses)
-    
+
     # Conditional Grouping
     group_cols = ["TP_COR_RACA"]
     select_ano = "NULL as ANO"
-    
+
     if ano is None:
         group_cols.insert(0, "ANO")
         select_ano = "ANO"
-        
+
     group_sql = ", ".join(group_cols)
 
     sql = f"""
@@ -105,7 +103,7 @@ async def get_socioeconomic_race(
         HAVING COUNT(*) > 100
         ORDER BY ANO DESC, COUNT DESC
     """
-    
+
     race_map = {
         0: "Não Declarado",
         1: "Branca",
@@ -113,7 +111,7 @@ async def get_socioeconomic_race(
         3: "Parda",
         4: "Amarela",
         5: "Indígena",
-        6: "Não Disp."
+        6: "Não Disp.",
     }
 
     try:
@@ -129,21 +127,23 @@ async def get_socioeconomic_race(
         ano_val = row[0]
         tp_raca = row[1]
         if tp_raca is None:
-             label = race_map[6]
+            label = race_map[6]
         else:
-             label = race_map.get(tp_raca, f"Outros ({tp_raca})")
-             
-        result.append(TbSocioRaceRow(
-            ANO=ano_val,
-            RACA=label,
-            NOTA_MATEMATICA=row[2],
-            NOTA_CIENCIAS_NATUREZA=row[3],
-            NOTA_CIENCIAS_HUMANAS=row[4],
-            NOTA_LINGUAGENS_CODIGOS=row[5],
-            NOTA_REDACAO=row[6],
-            COUNT=row[7]
-        ))
-    
+            label = race_map.get(tp_raca, f"Outros ({tp_raca})")
+
+        result.append(
+            TbSocioRaceRow(
+                ANO=ano_val,
+                RACA=label,
+                NOTA_MATEMATICA=row[2],
+                NOTA_CIENCIAS_NATUREZA=row[3],
+                NOTA_CIENCIAS_HUMANAS=row[4],
+                NOTA_LINGUAGENS_CODIGOS=row[5],
+                NOTA_REDACAO=row[6],
+                COUNT=row[7],
+            )
+        )
+
     return result
 
 
@@ -164,7 +164,7 @@ async def get_socioeconomic_income(
         WHERE ANO = ?
         ORDER BY CLASSE
     """
-    
+
     try:
         rows, columns = await run_in_threadpool(agent.run_query, sql, [ano])
     except Exception as exc:
@@ -172,9 +172,16 @@ async def get_socioeconomic_income(
         # Don't return empty list silently on DB error unless it's an expected "table missing" scenario
         if "does not exist" in str(exc):
             return []
-        raise HTTPException(status_code=500, detail="Database error processing income stats.")
+        raise HTTPException(
+            status_code=500, detail="Database error processing income stats."
+        )
 
-    return [TbSocioIncomeRow(CLASSE=row[0], LOW=row[1], Q1=row[2], MEDIAN=row[3], Q3=row[4], HIGH=row[5]) for row in rows]
+    return [
+        TbSocioIncomeRow(
+            CLASSE=row[0], LOW=row[1], Q1=row[2], MEDIAN=row[3], Q3=row[4], HIGH=row[5]
+        )
+        for row in rows
+    ]
 
 
 @router.get(
@@ -186,15 +193,15 @@ async def get_socioeconomic_income(
 async def get_municipios(
     request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
-    uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None
+    uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None,
 ) -> List[str]:
     sql = "SELECT DISTINCT NO_MUNICIPIO_PROVA FROM tb_notas_geo"
     params = []
-    
+
     if uf:
         sql += " WHERE SG_UF_PROVA = ?"
         params.append(uf.upper())
-        
+
     sql += " ORDER BY NO_MUNICIPIO_PROVA"
 
     try:
@@ -224,8 +231,7 @@ async def get_municipios(
 )
 @limiter.limit("100/minute")
 async def get_anos_disponiveis(
-    request: Request,
-    agent: Annotated[DuckDBAgent, Depends(get_db_agent)]
+    request: Request, agent: Annotated[DuckDBAgent, Depends(get_db_agent)]
 ) -> List[int]:
     sql = """
         SELECT DISTINCT ANO
@@ -289,7 +295,7 @@ async def get_notas_stats(
     except Exception as exc:
         logger.error(f"Query error in get_notas_stats: {exc}")
         if "does not exist" in str(exc):
-             return []
+            return []
         raise HTTPException(status_code=500, detail="Database error.")
 
     results = []
@@ -299,7 +305,7 @@ async def get_notas_stats(
         except Exception as e:
             logger.warning(f"Invalid data in row, skipping: {e}")
             continue
-            
+
     return results
 
 
@@ -310,7 +316,7 @@ def _build_geo_query(
     min_count: int,
     limit: int | None = None,
     offset: int | None = None,
-    is_count_query: bool = False
+    is_count_query: bool = False,
 ) -> tuple[str, list[Any]]:
     where_clauses: list[str] = []
     params: list[Any] = []
@@ -371,11 +377,11 @@ def _build_geo_query(
         {where_sql}
         ORDER BY ANO DESC, SG_UF_PROVA, NO_MUNICIPIO_PROVA
     """
-    
+
     if limit is not None:
         sql += " LIMIT ? OFFSET ?"
         params.extend([limit, offset if offset else 0])
-        
+
     return sql, params
 
 
@@ -397,12 +403,12 @@ async def get_notas_geo(
 ) -> List[TbNotasGeoRow]:
     offset = (page - 1) * limit
     sql, params = _build_geo_query(
-        anos=ano, 
-        ufs=uf, 
-        municipios=municipio, 
-        min_count=min_count, 
-        limit=limit, 
-        offset=offset
+        anos=ano,
+        ufs=uf,
+        municipios=municipio,
+        min_count=min_count,
+        limit=limit,
+        offset=offset,
     )
 
     try:
@@ -416,7 +422,9 @@ async def get_notas_geo(
         try:
             data_dict = dict(zip(columns, row))
             if data_dict.get("NO_MUNICIPIO_PROVA"):
-                data_dict["NO_MUNICIPIO_PROVA"] = str(data_dict["NO_MUNICIPIO_PROVA"]).title()
+                data_dict["NO_MUNICIPIO_PROVA"] = str(
+                    data_dict["NO_MUNICIPIO_PROVA"]
+                ).title()
             results.append(TbNotasGeoRow(**data_dict))
         except Exception:
             continue
@@ -436,52 +444,52 @@ async def download_notas_geo(
     uf: Annotated[List[str] | None, Query()] = None,
     municipio: Annotated[List[str] | None, Query()] = None,
     min_count: Annotated[int, Query()] = 30,
-    format: Annotated[str, Query(pattern="^(csv|json|excel|pdf)$")] = "excel"
+    format: Annotated[str, Query(pattern="^(csv|json|excel|pdf)$")] = "excel",
 ):
     """
     Endpoint de exportação refatorado para Memory Safety e Non-blocking I/O.
     """
     logger.info(f"--- INICIANDO EXPORTAÇÃO ({format.upper()}) ---")
-    
+
     # Builds SQL without LIMIT/OFFSET for export
     sql, params = _build_geo_query(
-        anos=ano, 
-        ufs=uf, 
-        municipios=municipio, 
-        min_count=min_count, 
-        limit=None, 
-        offset=None
+        anos=ano,
+        ufs=uf,
+        municipios=municipio,
+        min_count=min_count,
+        limit=None,
+        offset=None,
     )
-    
+
     # Guardrail: Check row count before loading heavy formats
     count_sql = f"SELECT COUNT(*) FROM ({sql})"
-    
+
     try:
         # Using run_in_threadpool for the count query to keep event loop free
         count_res, _ = await run_in_threadpool(agent.run_query, count_sql, params)
         total_rows = count_res[0][0]
-        
+
         # Limit for in-memory generation formats (Excel/PDF)
         MEMORY_LIMIT = 50000
-        
-        if format in ('excel', 'pdf') and total_rows > MEMORY_LIMIT:
+
+        if format in ("excel", "pdf") and total_rows > MEMORY_LIMIT:
             raise HTTPException(
-                status_code=400, 
-                detail=f"Exportação para {format.upper()} excedeu o limite de {MEMORY_LIMIT} linhas ({total_rows}). Por favor, filtre mais os dados ou use CSV."
+                status_code=400,
+                detail=f"Exportação para {format.upper()} excedeu o limite de {MEMORY_LIMIT} linhas ({total_rows}). Por favor, filtre mais os dados ou use CSV.",
             )
 
         # --- STREAMING GENERATORS ---
-        
+
         async def iter_csv():
             """Streams CSV rows directly from DB cursor without loading all to memory."""
-            conn = agent.get_connection() # Access connection safely
+            conn = agent.get_connection()  # Access connection safely
             cursor = conn.cursor()
             cursor.execute(sql, params)
-            
+
             # Yield Header
             columns = [col[0] for col in cursor.description]
             yield ";".join(columns) + "\n"
-            
+
             # Stream chunks
             while True:
                 # Fetch in chunks to keep memory low
@@ -491,21 +499,22 @@ async def download_notas_geo(
                 for row in chunk:
                     # Basic CSV formatting
                     cleaned_row = [
-                        str(val).replace(";", ",") if val is not None else "" 
+                        str(val).replace(";", ",") if val is not None else ""
                         for val in row
                     ]
                     yield ";".join(cleaned_row) + "\n"
-            
+
             cursor.close()
 
         async def iter_json():
             """Streams JSON lines."""
             import json
+
             conn = agent.get_connection()
             cursor = conn.cursor()
             cursor.execute(sql, params)
             columns = [col[0] for col in cursor.description]
-            
+
             yield "["
             first = True
             while True:
@@ -517,7 +526,7 @@ async def download_notas_geo(
                         yield ","
                     else:
                         first = False
-                    
+
                     data = dict(zip(columns, row))
                     yield json.dumps(data, ensure_ascii=False)
             yield "]"
@@ -525,55 +534,75 @@ async def download_notas_geo(
 
         # --- RESPONSE DISPATCH ---
 
-        if format == 'csv':
+        if format == "csv":
             return StreamingResponse(
                 iter_csv(),
                 media_type="text/csv",
-                headers={"Content-Disposition": f"attachment; filename=dados_enem_{datetime.now().strftime('%Y%m%d')}.csv"}
+                headers={
+                    "Content-Disposition": f"attachment; filename=dados_enem_{datetime.now().strftime('%Y%m%d')}.csv"
+                },
             )
-            
-        elif format == 'json':
+
+        elif format == "json":
             return StreamingResponse(
                 iter_json(),
                 media_type="application/json",
-                headers={"Content-Disposition": "attachment; filename=dados_enem.json"}
+                headers={"Content-Disposition": "attachment; filename=dados_enem.json"},
             )
 
-        elif format in ('excel', 'pdf'):
+        elif format in ("excel", "pdf"):
             # For Excel/PDF, we sadly still need to load into DataFrame for the libraries to work.
             # But we are protected by MEMORY_LIMIT check above and run in threadpool.
             def generate_binary():
                 rows, columns = agent.run_query(sql, params, row_limit=MEMORY_LIMIT + 1)
                 df = pd.DataFrame(rows, columns=columns)
-                
+
                 # Pre-processing
-                if 'NO_MUNICIPIO_PROVA' in df.columns:
-                    df['NO_MUNICIPIO_PROVA'] = df['NO_MUNICIPIO_PROVA'].astype(str).str.title()
-                
+                if "NO_MUNICIPIO_PROVA" in df.columns:
+                    df["NO_MUNICIPIO_PROVA"] = (
+                        df["NO_MUNICIPIO_PROVA"].astype(str).str.title()
+                    )
+
                 # --- SECURITY: DYNAMIC MASKING ---
                 # Apply LGPD protection for non-admin users.
                 # Since we don't have AUTH yet, we default to 'user' (safe by default).
                 # In future, extract role from request.user.role
                 df = SecurityEngine.apply_dynamic_masking(df, role="user")
-                
+
                 # Rename cols
-                df.rename(columns={
-                    'ANO': 'Ano', 'SG_UF_PROVA': 'Estado', 'NO_MUNICIPIO_PROVA': 'Município',
-                    'INSCRITOS': 'Total Inscritos', 'NOTA_MATEMATICA_count': 'Qtd. Provas'
-                }, inplace=True)
-                
-                if format == 'excel':
-                    return ReportService.generate_excel(df), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"
+                df.rename(
+                    columns={
+                        "ANO": "Ano",
+                        "SG_UF_PROVA": "Estado",
+                        "NO_MUNICIPIO_PROVA": "Município",
+                        "INSCRITOS": "Total Inscritos",
+                        "NOTA_MATEMATICA_count": "Qtd. Provas",
+                    },
+                    inplace=True,
+                )
+
+                if format == "excel":
+                    return (
+                        ReportService.generate_excel(df),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "xlsx",
+                    )
                 else:
-                    return ReportService.generate_pdf(df, title="Relatório de Desempenho"), "application/pdf", "pdf"
+                    return (
+                        ReportService.generate_pdf(df, title="Relatório de Desempenho"),
+                        "application/pdf",
+                        "pdf",
+                    )
 
             # Execute heavy generation in threadpool
             file_content, media_type, ext = await run_in_threadpool(generate_binary)
-            
+
             return StreamingResponse(
                 io.BytesIO(file_content),
                 media_type=media_type,
-                headers={"Content-Disposition": f"attachment; filename=enem_relatorio_{datetime.now().strftime('%Y%m%d')}.{ext}"}
+                headers={
+                    "Content-Disposition": f"attachment; filename=enem_relatorio_{datetime.now().strftime('%Y%m%d')}.{ext}"
+                },
             )
 
     except HTTPException as he:
@@ -602,7 +631,7 @@ async def get_notas_geo_uf(
     if ano is not None:
         where_clauses.append("ANO = ?")
         params.append(ano)
-        
+
     if uf is not None:
         where_clauses.append("SG_UF_PROVA = ?")
         params.append(uf.upper())
@@ -626,7 +655,7 @@ async def get_notas_geo_uf(
 
     required_fields = list(TbNotasGeoUfRow.model_fields.keys())
     results = []
-    
+
     for row in rows:
         try:
             record = dict(zip(columns, row))
@@ -690,7 +719,9 @@ async def get_radar_data(
         # run_in_threadpool used for multiple sequential queries
         def fetch_radar():
             # 1. BR Mean
-            row_br, cols_br = agent.run_query("SELECT * FROM tb_notas_stats WHERE ANO = ?", [ano])
+            row_br, cols_br = agent.run_query(
+                "SELECT * FROM tb_notas_stats WHERE ANO = ?", [ano]
+            )
             row_br = row_br[0] if row_br else None
             dict_br = dict(zip(cols_br, row_br)) if row_br else {}
 
@@ -698,8 +729,8 @@ async def get_radar_data(
             dict_uf = {}
             if uf:
                 row_uf, cols_uf = agent.run_query(
-                    "SELECT * FROM tb_notas_geo_uf WHERE ANO = ? AND SG_UF_PROVA = ?", 
-                    [ano, uf.upper()]
+                    "SELECT * FROM tb_notas_geo_uf WHERE ANO = ? AND SG_UF_PROVA = ?",
+                    [ano, uf.upper()],
                 )
                 row_uf = row_uf[0] if row_uf else None
                 if row_uf:
@@ -711,26 +742,30 @@ async def get_radar_data(
             row_best, cols_best = agent.run_query(sql_best, [ano])
             row_best = row_best[0] if row_best else None
             dict_best = dict(zip(cols_best, row_best)) if row_best else {}
-            
+
             return dict_br, dict_uf, dict_best
 
         dict_br, dict_uf, dict_best = await run_in_threadpool(fetch_radar)
 
         if not dict_br:
-             return []
+            return []
 
     except Exception as exc:
         logger.error(f"Radar query failed: {exc}")
-        raise HTTPException(status_code=500, detail="Error processing radar chart data.")
+        raise HTTPException(
+            status_code=500, detail="Error processing radar chart data."
+        )
 
     response = []
     for db_col, label in disciplinas.items():
-        response.append(TbRadarRow(
-            metric=label,
-            br_mean=dict_br.get(db_col),
-            uf_mean=dict_uf.get(db_col),
-            best_uf_mean=dict_best.get(db_col),
-            full_mark=1000
-        ))
+        response.append(
+            TbRadarRow(
+                metric=label,
+                br_mean=dict_br.get(db_col),
+                uf_mean=dict_uf.get(db_col),
+                best_uf_mean=dict_best.get(db_col),
+                full_mark=1000,
+            )
+        )
 
     return response

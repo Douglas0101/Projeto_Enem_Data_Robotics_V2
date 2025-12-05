@@ -161,7 +161,7 @@ def load_raw_microdados(year: int) -> pd.DataFrame:
         if not p.exists():
             return False
         try:
-            sample = read_csv(p, usecols=["NU_NOTA_CN", "NU_NOTA_CH", "NU_NOTA_LC", "NU_NOTA_MT", "NU_NOTA_REDACAO"], chunk_rows=10)
+            read_csv(p, usecols=["NU_NOTA_CN", "NU_NOTA_CH", "NU_NOTA_LC", "NU_NOTA_MT", "NU_NOTA_REDACAO"], chunk_rows=10)
             return True
         except Exception:
             return False

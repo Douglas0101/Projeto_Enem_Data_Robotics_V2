@@ -24,6 +24,27 @@ from enem_project.infra.db_agent import DuckDBLockError
 from enem_project.infra.logging import logger
 
 
+# --- Mocks para MCP (evita quebra se libs não existirem) ---
+class MCPConfigError(Exception):
+    pass
+
+class MCPRemoteError(Exception):
+    pass
+
+class Context7DocsClient:
+    def __init__(self, **kwargs):
+        pass
+    
+    def list_whitelisted_resources(self):
+        return []
+        
+    def list_remote_resources(self, **kwargs):
+        return []
+        
+    def search(self, **kwargs):
+        return {"status": "mock", "data": []}
+# -----------------------------------------------------------
+
 
 app = typer.Typer(add_completion=False, no_args_is_help=False)
 

@@ -3,9 +3,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import os
-from pathlib import Path
-
 import pandas as pd
 
 from ..base import Agent
@@ -13,7 +10,7 @@ from ..context import DataHandle, DatasetArtifact, OrchestratorContext
 from ...config import paths
 from ...config.hardware import PROFILE
 from ...data.class_engineering.transformers import run_class_pipeline
-from ...data.class_engineering.streaming import StreamingClassResult, stream_class_pipeline
+from ...data.class_engineering.streaming import stream_class_pipeline
 from ...infra.logging import logger
 from ...infra.io import read_parquet, write_parquet
 

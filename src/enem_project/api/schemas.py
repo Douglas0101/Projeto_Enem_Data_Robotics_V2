@@ -115,6 +115,14 @@ class TbSocioIncomeRow(BaseModel):
     HIGH: float
 
 
+class TbRadarRow(BaseModel):
+    metric: str
+    br_mean: Optional[float]
+    uf_mean: Optional[float]
+    best_uf_mean: Optional[float]
+    full_mark: int
+
+
 class HealthResponse(BaseModel):
     status: str
     detail: str

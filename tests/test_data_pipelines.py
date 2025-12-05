@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 
 from enem_project.data.metadata import _collect_small_domain
-from enem_project.data.raw_to_silver import clean_and_standardize, run_raw_to_silver
+from enem_project.data.raw_to_silver import clean_and_standardize
 from enem_project.infra.io import read_csv
 from enem_project.config import paths as paths_module
 from enem_project.config.settings import Settings, settings as global_settings

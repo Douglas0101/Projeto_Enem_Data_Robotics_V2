@@ -6,9 +6,23 @@ import type {
   TbNotasHistogramRow,
 } from "../types/dashboard";
 
+// --- Endpoints de Referência ---
+
 export async function getAvailableYears(): Promise<number[]> {
   return apiClient.get<number[]>("/v1/dashboard/anos-disponiveis");
 }
+
+export async function getMunicipios(uf?: string): Promise<string[]> {
+  const search = new URLSearchParams();
+  if (uf && uf !== 'all') {
+    search.set("uf", uf);
+  }
+  const query = search.toString();
+  const path = query ? `/v1/dashboard/municipios?${query}` : "/v1/dashboard/municipios";
+  return apiClient.get<string[]>(path);
+}
+
+// --- Endpoints de Dados (Analytics) ---
 
 export interface NotasStatsParams {
   anoInicio?: number;
@@ -75,15 +89,54 @@ export async function getNotasGeo(
   return apiClient.get<TbNotasGeoRow[]>(path);
 }
 
-export async function getMunicipios(uf?: string): Promise<string[]> {
-  const search = new URLSearchParams();
-  if (uf && uf !== 'all') {
-    search.set("uf", uf);
-  }
-  const query = search.toString();
-  const path = query ? `/v1/dashboard/municipios?${query}` : "/v1/dashboard/municipios";
-  return apiClient.get<string[]>(path);
+// --- Endpoint de Exportação (NOVO) ---
+
+export interface ExportParams extends NotasGeoParams {
+  format: 'csv' | 'excel' | 'pdf' | 'json';
 }
+
+/**
+ * Realiza o download seguro de dados (CSV/Excel/PDF).
+ * Utiliza o apiClient para interceptar erros (429, 500) e exibir Toasts.
+ */
+export async function downloadNotasGeo(params: ExportParams): Promise<Blob | null> {
+  const search = new URLSearchParams();
+
+  // Reutiliza lógica de query params
+  if (params.ano != null) {
+    const anos = Array.isArray(params.ano) ? params.ano : [params.ano];
+    anos.forEach(a => search.append("ano", String(a)));
+  }
+  if (params.uf) {
+    const ufs = Array.isArray(params.uf) ? params.uf : [params.uf];
+    ufs.forEach(u => {
+      if (u !== 'all') search.append("uf", u);
+    });
+  }
+  if (params.municipio) {
+    const cities = Array.isArray(params.municipio) ? params.municipio : [params.municipio];
+    cities.forEach(c => search.append("municipio", c));
+  }
+  if (params.minCount != null) search.set("min_count", String(params.minCount));
+  
+  // Parâmetro de formato obrigatório
+  search.set("format", params.format);
+
+  const query = search.toString();
+  const path = `/v1/dashboard/notas/geo/export?${query}`;
+
+  try {
+    // O apiClient já trata erros e retorna Blob para arquivos binários
+    const result = await apiClient.get<Blob>(path);
+    return result;
+  } catch (error) {
+    // O erro já foi notificado via Toast pelo interceptor.
+    // Retornamos null ou propagamos para o componente parar o loading.
+    throw error;
+  }
+}
+
+// --- Outros Endpoints ---
 
 export interface NotasGeoUfParams {
   ano?: number;

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import importlib
 from typing import Any
+from unittest.mock import Mock
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 
 class FakeAgent:
@@ -210,9 +210,9 @@ def patched_router(monkeypatch):
         dr.get_socioeconomic_race,
         dr.get_radar_data,
     ):
-        fn.cache_clear()
+        if hasattr(fn, "cache_clear"):
+            fn.cache_clear()
 
-    dr.db_agent = FakeAgent()
     return dr
 
 
@@ -232,29 +232,52 @@ def test_openapi_available(test_app: FastAPI):
     assert schema["info"]["title"] == "ENEM Data Robotics API"
 
 
+
 def test_notas_stats(patched_router):
-    body = patched_router.get_notas_stats(ano_inicio=2024, ano_fim=2024)
+    mock_request = Mock(spec=Request)
+    fake_agent = FakeAgent()
+    # Pass request and agent as required by the new signature
+    body = patched_router.get_notas_stats(mock_request, fake_agent, ano_inicio=2024, ano_fim=2024)
+    # Result is a coroutine because functions are async
+    import asyncio
+    body = asyncio.run(body)
+    
     assert len(body) == 1
     assert body[0].ANO == 2024
     assert body[0].NOTA_MATEMATICA_mean == 630.0
 
 
 def test_notas_geo(patched_router):
-    body = patched_router.get_notas_geo(ano=2024, min_count=10, limit=5, page=1)
+    mock_request = Mock(spec=Request)
+    fake_agent = FakeAgent()
+    body = patched_router.get_notas_geo(mock_request, fake_agent, ano=[2024], min_count=10, limit=5, page=1)
+    import asyncio
+    body = asyncio.run(body)
+    
     assert len(body) == 1
     assert body[0].SG_UF_PROVA == "SP"
     assert body[0].NO_MUNICIPIO_PROVA == "São Paulo"
 
 
 def test_notas_geo_uf(patched_router):
-    body = patched_router.get_notas_geo_uf(ano=2024, min_inscritos=100)
+    mock_request = Mock(spec=Request)
+    fake_agent = FakeAgent()
+    body = patched_router.get_notas_geo_uf(mock_request, fake_agent, ano=2024, min_inscritos=100)
+    import asyncio
+    body = asyncio.run(body)
+    
     assert len(body) == 1
     assert body[0].SG_UF_PROVA == "SP"
     assert body[0].INSCRITOS == 500
 
 
 def test_notas_histograma(patched_router):
-    body = patched_router.get_notas_histograma(ano=2024, disciplina="MATEMATICA")
+    mock_request = Mock(spec=Request)
+    fake_agent = FakeAgent()
+    body = patched_router.get_notas_histograma(mock_request, fake_agent, ano=2024, disciplina="MATEMATICA")
+    import asyncio
+    body = asyncio.run(body)
+    
     assert len(body) == 1
     assert body[0].DISCIPLINA == "MATEMATICA"
     assert body[0].CONTAGEM == 10

@@ -1,0 +1,35 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: enem_data_robotics_api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Hot Reload: Mapeia o código local para o container
+      - ./src:/app/src
+      # Persistência: Volume nomeado para dados do DuckDB
+      - duckdb_data:/app/data
+    environment:
+      # Define onde a aplicação deve buscar/salvar o banco de dados
+      - ENEM_DATA_DIR=/app/data
+      # Força a localização do módulo python
+      - PYTHONPATH=/app/src
+      # Configurações opcionais de tuning (já aplicadas no código, mas configuráveis aqui)
+      - DUCKDB_MEMORY_LIMIT=3GB
+      - DUCKDB_THREADS=2
+      - DUCKDB_TEMP_DIR=/app/data/tmp
+    deploy:
+      resources:
+        limits:
+          # Cota Rígida de CPU (2 cores)
+          cpus: '2.0'
+          # Cota Rígida de Memória (4GB) para evitar OOM no host
+          memory: 4G
+    # Reinicia automaticamente apenas se falhar
+    restart: on-failure
+
+volumes:
+  duckdb_data:
+    name: enem_duckdb_persistence

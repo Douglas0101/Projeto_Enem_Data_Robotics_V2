@@ -5,7 +5,6 @@ from typing import Sequence
 
 import pandas as pd
 
-from ..contracts.schema_registry import ColumnContract
 from .rules import NumericRule, DomainRule
 
 

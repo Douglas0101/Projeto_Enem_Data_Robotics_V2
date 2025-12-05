@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
+import { Toaster } from "sonner";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AdvancedPage } from "./pages/AdvancedPage";
 import { Sidebar } from "./components/layout/Sidebar";
@@ -13,6 +14,7 @@ export function App() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-zinc-50">
+      <Toaster richColors position="top-right" />
       <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar />
@@ -33,4 +35,3 @@ export function App() {
     </div>
   );
 }
-

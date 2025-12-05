@@ -1,16 +1,18 @@
 from fastapi.testclient import TestClient
 from enem_project.api.main import app
 from enem_project.infra.db_agent import DuckDBAgent
+from enem_project.api.dependencies import get_db_agent
 import pytest
 from unittest.mock import MagicMock
 
 client = TestClient(app)
 
 @pytest.fixture
-def mock_db_agent(monkeypatch):
+def mock_db_agent():
     """
     Mocka o DuckDBAgent para não depender de um banco real durante os testes de API.
     Simula o retorno de `run_query` com dados fake.
+    Substitui a dependência global get_db_agent via app.dependency_overrides.
     """
     mock_agent = MagicMock(spec=DuckDBAgent)
     
@@ -29,18 +31,20 @@ def mock_db_agent(monkeypatch):
         
         if "gold_classes" in sql: # Race endpoint
             return [
-                (1, 600.0, 600.0, 600.0, 600.0, 600.0, 500)
-            ], ["TP_COR_RACA", "NOTA_MATEMATICA", "NOTA_CIENCIAS_NATUREZA", "NOTA_CIENCIAS_HUMANAS", "NOTA_LINGUAGENS_CODIGOS", "NOTA_REDACAO", "COUNT"]
+                (None, 1, 600.0, 600.0, 600.0, 600.0, 600.0, 500)
+            ], ["ANO", "TP_COR_RACA", "NOTA_MATEMATICA", "NOTA_CIENCIAS_NATUREZA", "NOTA_CIENCIAS_HUMANAS", "NOTA_LINGUAGENS_CODIGOS", "NOTA_REDACAO", "COUNT"]
             
         return [], []
 
     mock_agent.run_query.side_effect = side_effect_run_query
     
-    # Inject mock into dashboard_router
-    from enem_project.api import dashboard_router
-    monkeypatch.setattr(dashboard_router, "db_agent", mock_agent)
+    # Inject mock using FastAPI dependency overrides
+    app.dependency_overrides[get_db_agent] = lambda: mock_agent
     
-    return mock_agent
+    yield mock_agent
+    
+    # Clean up
+    app.dependency_overrides.clear()
 
 def test_api_socioeconomic_income_returns_correct_structure(mock_db_agent):
     """
@@ -70,8 +74,11 @@ def test_api_socioeconomic_race_returns_correct_structure(mock_db_agent):
     assert data[0]["RACA"] == "Branca" # 1 mapped to Branca
 
 def test_api_guardrails_are_active(mock_db_agent):
-    # This test implicitly validates that the router is using the agent, 
-    # which we know enforces guardrails internally.
-    # We can verify if the agent instance in the router is indeed our mock.
-    from enem_project.api import dashboard_router
-    assert dashboard_router.db_agent == mock_db_agent
+    """
+    Testa se a injeção de dependência está ativa e utilizando o mock correto.
+    Isso substitui a verificação antiga que acessava diretamente o atributo removido 'db_agent'.
+    """
+    # Verify if the dependency override is active
+    assert get_db_agent in app.dependency_overrides
+    # Verify if the overridden dependency returns our mock
+    assert app.dependency_overrides[get_db_agent]() == mock_db_agent

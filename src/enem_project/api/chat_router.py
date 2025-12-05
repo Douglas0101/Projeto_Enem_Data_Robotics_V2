@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 
 from ..orchestrator.agents.data_analyst import DataAnalystAgent
 from ..infra.logging import logger

@@ -13,7 +13,6 @@ from ..agents.parquet_quality import (
     SilverParquetQualityAgent,
     save_audit_report,
 )
-from ...config.settings import settings
 from ...data.metadata import load_metadata
 from ...infra.logging import logger
 

@@ -19,6 +19,17 @@ from .chat_router import router as chat_router
 from .schemas import HealthResponse, ErrorResponse
 from .middlewares import RequestIDMiddleware
 
+# --- Rate Limiting Imports ---
+from .limiter import limiter
+try:
+    from slowapi import _rate_limit_exceeded_handler
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.middleware import SlowAPIMiddleware
+    SLOWAPI_AVAILABLE = True
+except ImportError:
+    SLOWAPI_AVAILABLE = False
+    logger.warning("SlowAPI not installed. Rate limiting middleware will NOT be active.")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -49,6 +60,12 @@ app = FastAPI(
     description="API analítica profissional refatorada para estabilidade e performance.",
     lifespan=lifespan,
 )
+
+# --- Rate Limiting Setup ---
+app.state.limiter = limiter
+if SLOWAPI_AVAILABLE:
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
 
 # --- Middlewares ---
 
@@ -85,7 +102,8 @@ def root():
     return RedirectResponse(url="/docs")
 
 @app.get("/health", response_model=HealthResponse, tags=["infra"])
-def health_check() -> HealthResponse:
+@limiter.limit("100/minute")
+def health_check(request: Request) -> HealthResponse:
     return HealthResponse(status="ok", detail="Operational")
 
 app.include_router(dashboard_router)

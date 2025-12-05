@@ -4,7 +4,6 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from enem_project.infra.data_quality import assert_dashboard_data_checks
-from enem_project.infra.db_agent import DuckDBAgent
 
 
 @pytest.fixture

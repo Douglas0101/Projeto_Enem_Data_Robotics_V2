@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Iterable
 
-import numpy as np
 import pandas as pd
 
 from enem_project.data.metadata import filter_metadata_for_year, load_metadata

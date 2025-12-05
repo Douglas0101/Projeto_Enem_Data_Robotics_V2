@@ -1,0 +1,15 @@
+.git
+__pycache__
+.venv
+*.duckdb
+.idea
+.pytest_cache
+tmp_meta_test
+.genkit
+*.pyc
+*.pyo
+env/
+venv/
+dist/
+build/
+.env

@@ -1,15 +1,15 @@
-from functools import lru_cache
-from typing import List, Annotated, Generator, Any
+from typing import List, Annotated, Any
 from datetime import datetime
 import io
 import pandas as pd
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Depends, Request
 from fastapi.responses import StreamingResponse
 from fastapi.concurrency import run_in_threadpool
 
 from ..infra.db_agent import DuckDBAgent
 from ..infra.logging import logger
+from ..infra.security import SecurityEngine
 from ..services.report_service import ReportService
 from .schemas import (
     TbNotasGeoRow,
@@ -21,6 +21,7 @@ from .schemas import (
     TbRadarRow
 )
 from .dependencies import get_db_agent
+from .limiter import limiter
 
 
 router = APIRouter(prefix="/v1/dashboard", tags=["dashboard"])
@@ -48,7 +49,9 @@ def _normalize_text(value: str | None) -> str:
     response_model=List[TbSocioRaceRow],
     summary="Médias de notas por Cor/Raça (Real Data).",
 )
+@limiter.limit("60/minute")
 async def get_socioeconomic_race(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[int | None, Query(description="Ano de referência.")] = None,
     uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None,
@@ -149,7 +152,9 @@ async def get_socioeconomic_race(
     response_model=List[TbSocioIncomeRow],
     summary="Distribuição de Notas por Renda.",
 )
+@limiter.limit("60/minute")
 async def get_socioeconomic_income(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[int, Query(description="Ano de referência.")],
 ) -> List[TbSocioIncomeRow]:
@@ -177,7 +182,9 @@ async def get_socioeconomic_income(
     response_model=List[str],
     summary="Lista de municípios disponíveis.",
 )
+@limiter.limit("100/minute")
 async def get_municipios(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None
 ) -> List[str]:
@@ -215,7 +222,9 @@ async def get_municipios(
     response_model=List[int],
     summary="Lista de anos disponíveis.",
 )
+@limiter.limit("100/minute")
 async def get_anos_disponiveis(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)]
 ) -> List[int]:
     sql = """
@@ -247,7 +256,9 @@ async def get_anos_disponiveis(
     response_model=List[TbNotasStatsRow],
     summary="Estatísticas anuais de notas.",
 )
+@limiter.limit("100/minute")
 async def get_notas_stats(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano_inicio: Annotated[int | None, Query()] = None,
     ano_fim: Annotated[int | None, Query()] = None,
@@ -373,7 +384,9 @@ def _build_geo_query(
     response_model=List[TbNotasGeoRow],
     summary="Notas agregadas por múltiplos anos/UFs/Municípios.",
 )
+@limiter.limit("60/minute")
 async def get_notas_geo(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[List[int] | None, Query()] = None,
     uf: Annotated[List[str] | None, Query()] = None,
@@ -415,13 +428,15 @@ async def get_notas_geo(
     summary="Exportação profissional de dados (Excel, PDF, CSV) com Streaming.",
     response_class=StreamingResponse,
 )
+@limiter.limit("5/hour")
 async def download_notas_geo(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[List[int] | None, Query()] = None,
     uf: Annotated[List[str] | None, Query()] = None,
     municipio: Annotated[List[str] | None, Query()] = None,
     min_count: Annotated[int, Query()] = 30,
-    format: Annotated[str, Query(regex="^(csv|json|excel|pdf)$")] = "excel"
+    format: Annotated[str, Query(pattern="^(csv|json|excel|pdf)$")] = "excel"
 ):
     """
     Endpoint de exportação refatorado para Memory Safety e Non-blocking I/O.
@@ -535,6 +550,12 @@ async def download_notas_geo(
                 if 'NO_MUNICIPIO_PROVA' in df.columns:
                     df['NO_MUNICIPIO_PROVA'] = df['NO_MUNICIPIO_PROVA'].astype(str).str.title()
                 
+                # --- SECURITY: DYNAMIC MASKING ---
+                # Apply LGPD protection for non-admin users.
+                # Since we don't have AUTH yet, we default to 'user' (safe by default).
+                # In future, extract role from request.user.role
+                df = SecurityEngine.apply_dynamic_masking(df, role="user")
+                
                 # Rename cols
                 df.rename(columns={
                     'ANO': 'Ano', 'SG_UF_PROVA': 'Estado', 'NO_MUNICIPIO_PROVA': 'Município',
@@ -567,7 +588,9 @@ async def download_notas_geo(
     response_model=List[TbNotasGeoUfRow],
     summary="Notas agregadas por ano/UF.",
 )
+@limiter.limit("60/minute")
 async def get_notas_geo_uf(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[int | None, Query()] = None,
     min_inscritos: Annotated[int, Query()] = 100,
@@ -622,7 +645,9 @@ async def get_notas_geo_uf(
     response_model=List[TbNotasHistogramRow],
     summary="Dados para histograma de notas.",
 )
+@limiter.limit("60/minute")
 async def get_notas_histograma(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[int, Query()],
     disciplina: Annotated[str, Query()],
@@ -646,7 +671,9 @@ async def get_notas_histograma(
     response_model=List[TbRadarRow],
     summary="Dados para radar comparativo.",
 )
+@limiter.limit("60/minute")
 async def get_radar_data(
+    request: Request,
     agent: Annotated[DuckDBAgent, Depends(get_db_agent)],
     ano: Annotated[int, Query()],
     uf: Annotated[str | None, Query(min_length=2, max_length=2)] = None,

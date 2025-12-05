@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 import pandas as pd
 import jinja2
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +44,16 @@ class ReportService:
             for col_num, value in enumerate(df.columns.values):
                 worksheet.write(0, col_num, value, header_format)
                 
+                # Aplica formatação condicional baseada no tipo da coluna
+                cell_format = string_format
+                if pd.api.types.is_numeric_dtype(df[value]):
+                    cell_format = number_format
+                
                 # Ajuste de largura (Auto-fit aproximado)
                 column_len = max(df[value].astype(str).map(len).max(), len(str(value))) + 2
-                worksheet.set_column(col_num, col_num, min(column_len, 50)) # Max 50 chars width
+                worksheet.set_column(col_num, col_num, min(column_len, 50), cell_format) # Max 50 chars width + format
+
+        return output.getvalue()
 
         return output.getvalue()
 

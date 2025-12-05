@@ -67,7 +67,6 @@ def test_silver_parquet_quality_agent_detects_extra_columns(tmp_path: Path, monk
 def test_gold_parquet_audit_agent_reads_all_files(tmp_path: Path, monkeypatch):
     _, gold_root = _setup_tmp_paths(tmp_path, monkeypatch)
 
-    gold_df = pd.DataFrame({"ANO": [2016], "VAL": [10]})
     other_df = pd.DataFrame({"foo": [1, 2, 3]})
 
     metadata_module.save_metadata(

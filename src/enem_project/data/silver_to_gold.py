@@ -431,11 +431,12 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
                 valid = valid_range & is_present
             elif col == "NOTA_REDACAO" and "TP_STATUS_REDACAO" in df.columns:
                 # For Redacao, check Status. 1 = No problems.
-                # Also usually linked to LC presence, but Status is more specific for the grade validity.
-                # Using Presence LC as well is safer if available.
-                is_valid_status = pd.to_numeric(df["TP_STATUS_REDACAO"], errors='coerce').notna() # Any valid status implies presence/grading attempt? 
-                # Actually, INEP Dict: 1=Presente(Regular), 2=Branco, 3=Nulo, 4=Anulada, 6=Presente(Oral), 8=Presente(Libras).
-                # Absentees usually have Status=NaN or empty in processed data if not present.
+                    # Also usually linked to LC presence, but Status is more specific for the grade validity.
+                    # Using Presence LC as well is safer if available.
+                    # is_valid_status check removed as it was unused logic.
+                    
+                    # Actually, INEP Dict: 1=Presente(Regular), 2=Branco, 3=Nulo, 4=Anulada, 6=Presente(Oral), 8=Presente(Libras).
+                    # Absentees usually have Status=NaN or empty in processed data if not present.
                 # Let's stick to the Note being Non-Null and in Range as the primary check, 
                 # but if TP_PRESENCA_LC is 0, Redacao should be NaN.
                 

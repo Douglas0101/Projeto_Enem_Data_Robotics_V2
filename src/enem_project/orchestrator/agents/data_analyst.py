@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import google.generativeai as genai
-from google.generativeai.types import FunctionDeclaration, Tool
 import duckdb
-import pandas as pd
-from typing import Any, Dict, List
 import textwrap
 
 from ...config.settings import settings

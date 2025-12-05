@@ -2,8 +2,6 @@ import pandas as pd
 from pathlib import Path
 
 from enem_project.data.raw_to_silver import clean_and_standardize
-from enem_project.config.settings import Settings, settings as global_settings
-from enem_project.config import paths as paths_module
 
 
 def test_clean_and_standardize_preserves_socioeconomic_columns(tmp_path: Path, monkeypatch):

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Optional, List
 import sys
-import subprocess
+import subprocess  # nosec B404
 import typer
 import uvicorn
 

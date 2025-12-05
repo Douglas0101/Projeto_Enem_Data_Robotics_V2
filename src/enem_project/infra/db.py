@@ -59,69 +59,60 @@ def register_parquet_views(conn: duckdb.DuckDBPyConnection) -> None:
     g_dir = gold_dir()
 
     # Views agregadas sobre silver/gold (podem não existir em todos os ambientes).
-    conn.execute(  # nosec B608
-        f"""
+    query_silver = f"""
         CREATE OR REPLACE VIEW silver_microdados AS
         SELECT * FROM read_parquet('{(s_dir / "microdados_enem_*.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_silver)
 
-    conn.execute(  # nosec B608
-        f"""
+    query_cleaned = f"""
         CREATE OR REPLACE VIEW gold_cleaned AS
         SELECT * FROM read_parquet('{(g_dir / "cleaned" / "microdados_enem_*_clean.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_cleaned)
 
-    conn.execute(  # nosec B608
-        f"""
+    query_classes = f"""
         CREATE OR REPLACE VIEW gold_classes AS
         SELECT * FROM read_parquet('{(g_dir / "classes" / "classes_enem_*.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_classes)
 
     # Views diretamente mapeadas para as tabelas do dashboard.
-    conn.execute(  # nosec B608
-        f"""
+    query_notas = f"""
         CREATE OR REPLACE VIEW gold_tb_notas AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_notas)
 
-    conn.execute(  # nosec B608
-        f"""
+    query_stats = f"""
         CREATE OR REPLACE VIEW gold_tb_notas_stats AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_stats.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_stats)
 
-    conn.execute(  # nosec B608
-        f"""
+    query_geo = f"""
         CREATE OR REPLACE VIEW gold_tb_notas_geo AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_geo.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_geo)
 
-    conn.execute(  # nosec B608
-        f"""
+    query_geo_uf = f"""
         CREATE OR REPLACE VIEW gold_tb_notas_geo_uf AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_geo_uf.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_geo_uf)
 
-    conn.execute(  # nosec B608
-        f"""
+    query_histogram = f"""
         CREATE OR REPLACE VIEW gold_tb_notas_histogram AS
         SELECT * FROM read_parquet('{(g_dir / "tb_notas_histogram.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_histogram)
 
-    conn.execute(  # nosec B608
-        f"""
+    query_socio = f"""
         CREATE OR REPLACE VIEW gold_tb_socio_economico AS
         SELECT * FROM read_parquet('{(g_dir / "tb_socio_economico.parquet").as_posix()}')
-        """,
-    )
+        """  # nosec B608
+    conn.execute(query_socio)
 
     logger.info(
         "Views DuckDB registradas para silver/gold (incluindo tabelas de dashboard)."

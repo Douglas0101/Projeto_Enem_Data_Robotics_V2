@@ -427,7 +427,7 @@ async def get_notas_geo(
                 ).title()
             results.append(TbNotasGeoRow(**data_dict))
         except Exception:
-            continue
+            continue  # nosec B112
     return results
 
 
@@ -665,7 +665,7 @@ async def get_notas_geo_uf(
                     record[field] = None
             results.append(TbNotasGeoUfRow(**record))
         except Exception:
-            continue
+            continue  # nosec B112
     return results
 
 

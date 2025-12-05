@@ -1,0 +1,19 @@
+services:
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    image: enem-data-robotics-test
+    volumes:
+      # Mapeia código e testes para feedback rápido (hot-reload se usar --looponfail)
+      - ./src:/app/src
+      - ./tests:/app/tests
+    environment:
+      # Garante isolamento dos dados de teste
+      - ENEM_DATA_DIR=/tmp/test_data
+      - PYTHONPATH=/app/src
+      # Configuração para evitar pyc/cache no host
+      - PYTHONDONTWRITEBYTECODE=1
+    # Comando padrão (pode ser sobrescrito, ex: pytest tests/test_specific.py)
+    command: pytest -v

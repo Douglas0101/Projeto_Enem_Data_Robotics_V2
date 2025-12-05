@@ -1,0 +1,105 @@
+name: Enterprise CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# Estratégia de Concorrência:
+# Cancela builds anteriores do mesmo PR se um novo commit for enviado.
+# Isso economiza minutos de runner e recursos da organização.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==============================================================================
+  # Job 1: Backend Quality Assurance (Containerized)
+  # Executa a suíte de testes completa usando a infraestrutura Docker idêntica à local.
+  # ==============================================================================
+  backend-quality:
+    name: Backend Quality & Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        # O Buildx permite recursos avançados de build e cache de camadas
+        uses: docker/setup-buildx-action@v3
+
+      - name: Executar Testes de Integração (Docker)
+        # Utiliza o arquivo de composição de testes criado anteriormente.
+        # O flag --exit-code-from garante que o CI falhe se os testes falharem.
+        run: |
+          docker compose -f docker-compose.test.yml up --build --exit-code-from test-runner
+
+      - name: Auditoria de Segurança (Bandit)
+        # Executa o Bandit (SAST) de forma containerizada para não poluir o runner.
+        # Verifica vulnerabilidades comuns em código Python na pasta src/
+        run: |
+          docker run --rm -v $(pwd):/code pyfound/bandit:latest -r /code/src -ll
+
+  # ==============================================================================
+  # Job 2: Frontend Quality Assurance
+  # Valida o projeto React/Vite (Linting e Build).
+  # ==============================================================================
+  frontend-quality:
+    name: Frontend Quality & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./dashboard
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./dashboard/package-lock.json
+
+      - name: Instalar Dependências
+        # npm ci é mais rápido e seguro para CI do que npm install
+        run: npm ci
+
+      - name: Linting (ESLint)
+        # Verifica padrões de código e possíveis erros de sintaxe/estilo
+        run: npm run lint --if-present
+
+      - name: Build de Produção
+        # Verifica se o projeto compila corretamente (TypeScript check + Vite build)
+        run: npm run build
+
+  # ==============================================================================
+  # Job 3: Code Style & Standards (Python)
+  # Verificação rápida de PEP8 e formatação usando Ruff.
+  # ==============================================================================
+  code-style:
+    name: Python Code Style (Ruff)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Ruff
+        run: pip install ruff
+
+      - name: Linting (Ruff)
+        # Verifica violações de estilo e erros lógicos simples
+        run: ruff check .
+
+      - name: Verificar Formatação (Ruff Format)
+        # Garante que o código está formatado conforme as regras (substituto do Black)
+        run: ruff format --check .

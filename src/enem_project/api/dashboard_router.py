@@ -569,17 +569,55 @@ async def download_notas_geo(
                 # In future, extract role from request.user.role
                 df = SecurityEngine.apply_dynamic_masking(df, role="user")
 
+                # Mapa completo de renomeação para evitar colunas "cruas" no relatório
+                rename_map = {
+                    "ANO": "Ano",
+                    "SG_UF_PROVA": "UF",
+                    "NO_MUNICIPIO_PROVA": "Município",
+                    "CO_MUNICIPIO_PROVA": "Cód. IBGE",
+                    "INSCRITOS": "Inscritos",
+                    
+                    # Vamos usar NOTA_REDACAO_count como proxy de "Qtd. Provas" (presentes no dia 1)
+                    # e remover os outros counts duplicados.
+                    "NOTA_REDACAO_count": "Provas Aplicadas",
+                    
+                    # Médias das 5 Disciplinas - Nomes por extenso conforme solicitado
+                    "NOTA_CIENCIAS_NATUREZA_mean": "Ciências da Natureza",
+                    "NOTA_CIENCIAS_HUMANAS_mean": "Ciências Humanas",
+                    "NOTA_LINGUAGENS_CODIGOS_mean": "Linguagens e Códigos",
+                    "NOTA_MATEMATICA_mean": "Matemática",
+                    "NOTA_REDACAO_mean": "Redação",
+                }
+
                 # Rename cols
-                df.rename(
-                    columns={
-                        "ANO": "Ano",
-                        "SG_UF_PROVA": "Estado",
-                        "NO_MUNICIPIO_PROVA": "Município",
-                        "INSCRITOS": "Total Inscritos",
-                        "NOTA_MATEMATICA_count": "Qtd. Provas",
-                    },
-                    inplace=True,
-                )
+                df.rename(columns=rename_map, inplace=True)
+
+                # Filtra colunas para manter apenas o solicitado:
+                # "são cinco disciplinas, quantidade de inscritos e provas, somente isso"
+                # + Identificadores (Ano, UF, Município)
+                cols_to_keep = [
+                    "Ano", "UF", "Município", "Inscritos", "Provas Aplicadas",
+                    "Ciências da Natureza", "Ciências Humanas", 
+                    "Linguagens e Códigos", "Matemática", "Redação"
+                ]
+                
+                # Mantém apenas as colunas desejadas que existem no DF
+                final_cols = [c for c in cols_to_keep if c in df.columns]
+                df = df[final_cols]
+
+                # Construção do texto de filtro dinâmico
+                filter_parts = []
+                if ano:
+                    filter_parts.append(f"Anos: {', '.join(map(str, sorted(ano)))}")
+                if uf:
+                    filter_parts.append(f"UFs: {', '.join(sorted(uf))}")
+                if municipio:
+                    m_str = ', '.join(sorted(municipio))
+                    if len(m_str) > 60:
+                        m_str = m_str[:57] + "..."
+                    filter_parts.append(f"Municípios: {m_str}")
+                
+                filter_text = " | ".join(filter_parts) if filter_parts else "Filtros: Todos os registros"
 
                 if format == "excel":
                     return (
@@ -589,7 +627,7 @@ async def download_notas_geo(
                     )
                 else:
                     return (
-                        ReportService.generate_pdf(df, title="Relatório de Desempenho"),
+                        ReportService.generate_pdf(df, title="Relatório de Desempenho", filter_summary=filter_text),
                         "application/pdf",
                         "pdf",
                     )

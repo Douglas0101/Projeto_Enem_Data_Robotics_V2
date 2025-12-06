@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm:dev:*\"",
-    "dev:frontend": "vite",
+    "dev:frontend": "vite --host",
     "dev:backend": "poetry run uvicorn enem_project.api.main:app --reload --port 8000",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@amcharts/amcharts5": "^5.14.4",
@@ -60,6 +61,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.4.0",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "@playwright/test": "^1.40.0"
   }
 }

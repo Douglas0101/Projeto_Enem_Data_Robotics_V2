@@ -9,13 +9,15 @@ services:
     volumes:
       # Hot Reload: Mapeia o código local para o container
       - ./src:/app/src
-      # Persistência: Volume nomeado para dados do DuckDB
-      - duckdb_data:/app/data
+      # Persistência: Mapeia o diretório de dados local para o container
+      - ./data:/app/data
     environment:
       # Define onde a aplicação deve buscar/salvar o banco de dados
       - ENEM_DATA_DIR=/app/data
       # Força a localização do módulo python
       - PYTHONPATH=/app/src
+      # Força a recriação das tabelas do banco de dados na inicialização
+      - ENEM_FORCE_MATERIALIZE=true
       # Configurações opcionais de tuning (já aplicadas no código, mas configuráveis aqui)
       - DUCKDB_MEMORY_LIMIT=3GB
       - DUCKDB_THREADS=2
@@ -29,7 +31,3 @@ services:
           memory: 4G
     # Reinicia automaticamente apenas se falhar
     restart: on-failure
-
-volumes:
-  duckdb_data:
-    name: enem_duckdb_persistence

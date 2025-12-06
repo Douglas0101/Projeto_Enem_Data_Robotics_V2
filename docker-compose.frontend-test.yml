@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.50.0-jammy
+    working_dir: /app
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules # Prevent host node_modules from interfering
+    environment:
+      - CI=true
+    command: sh -c "npm install && npx playwright install --with-deps && npx playwright test"
+    ipc: host

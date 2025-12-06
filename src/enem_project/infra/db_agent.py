@@ -44,43 +44,28 @@ class DuckDBAgent:
     def _get_conn(self) -> duckdb.DuckDBPyConnection:
         """
         Obtém a conexão DuckDB.
-        ATENÇÃO: Este método NÃO deve ser chamado concorrentemente sem proteção de Lock externo
-        quando em modo read-only (Singleton), para evitar race conditions na inicialização.
-        A verificação 'SELECT 1' foi removida daqui para ser feita de forma segura pelo caller se necessário,
-        ou omitida para performance (arquivos locais raramente caem).
+        ATENÇÃO: Em modo read-only, sempre retorna uma NOVA conexão para garantir isolamento entre threads
+        do Uvicorn/FastAPI e evitar segfaults (shared_ptr is NULL). O custo de conectar em RO é baixo.
         """
         if self.read_only:
-            global _GLOBAL_CONN, _GLOBAL_DB_PATH
-
-            # Check if connection is already established
-            if _GLOBAL_CONN is not None:
-                return _GLOBAL_CONN
-
-            # If not, initialization logic (caller must hold _DB_LOCK if concurrent access is possible)
-            if _GLOBAL_DB_PATH and _GLOBAL_DB_PATH != self.db_path:
-                logger.warning(
-                    f"Reutilizando conexão global existente para {_GLOBAL_DB_PATH}, "
-                    f"pedido veio para {self.db_path}."
-                )
-
+            # Desabilita Singleton Global para evitar race conditions em threads
+            # O DuckDB suporta múltiplas conexões de leitura simultâneas ao mesmo arquivo.
             max_mem = os.getenv("DUCKDB_MAX_MEMORY", "4GB")
-            logger.info(
-                f"Connecting to DuckDB (singleton, read_only=True, max_memory={max_mem}): {self.db_path}"
+            logger.debug(
+                f"Connecting to DuckDB (read_only=True, dedicated thread, max_memory={max_mem}): {self.db_path}"
             )
 
             try:
-                _GLOBAL_CONN = duckdb.connect(
+                return duckdb.connect(
                     self.db_path.as_posix(),
                     read_only=True,
                     config={"access_mode": "READ_ONLY", "max_memory": max_mem},
                 )
-                _GLOBAL_DB_PATH = self.db_path
-                return _GLOBAL_CONN
             except Exception as e:
                 logger.error(f"Failed to connect to DuckDB: {e}")
                 raise
 
-        # Non-read-only logic (dedicated connection)
+        # Non-read-only logic (dedicated connection for writes, usually single process)
         if self._conn is not None:
             return self._conn
 

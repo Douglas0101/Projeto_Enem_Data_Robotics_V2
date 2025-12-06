@@ -15,13 +15,14 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    allowedHosts: true,
     proxy: {
       "/v1": {
-        target: "http://localhost:8000",
+        target: process.env.API_TARGET || "http://localhost:8000",
         changeOrigin: true
       },
       "/health": {
-        target: "http://localhost:8000",
+        target: process.env.API_TARGET || "http://localhost:8000",
         changeOrigin: true
       }
     }

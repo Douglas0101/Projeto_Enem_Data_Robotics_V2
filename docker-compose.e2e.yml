@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+    environment:
+      - ENEM_DATA_DIR=/app/data
+      - PYTHONPATH=/app/src
+      - DUCKDB_MEMORY_LIMIT=3GB
+      - DUCKDB_THREADS=2
+      - DUCKDB_TEMP_DIR=/app/data/tmp
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    image: node:22-slim
+    working_dir: /app
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev:frontend"
+    expose:
+      - "5173"
+    ports:
+      - "5173:5173" # Mapeia a porta 5173 do container para a porta 5173 do host
+    environment:
+      - HOST=0.0.0.0
+      - API_TARGET=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.50.0-jammy
+    working_dir: /app
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+    environment:
+      - BASE_URL=http://frontend:5173
+      - CI=true
+      - CI_DOCKER=true
+    command: sh -c "apt-get update && apt-get install -y curl && npm install && npx playwright install --with-deps && echo 'Waiting for frontend...' && until curl -s http://frontend:5173 > /dev/null; do sleep 2; done && echo 'Frontend is up!' && npx playwright test"
+    depends_on:
+      - frontend
+    ipc: host
+
+volumes:
+  duckdb_data:
+    name: enem_duckdb_persistence

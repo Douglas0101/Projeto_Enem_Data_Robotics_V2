@@ -71,14 +71,18 @@ async def lifespan(app: FastAPI):
                 "SELECT count(*) FROM information_schema.tables WHERE table_name = 'tb_notas_stats'"
             ).fetchone()
             conn.close()
-            
+
             if table_check and table_check[0] == 0:
-                logger.warning("Tabela crítica 'tb_notas_stats' ausente. Materialização necessária.")
+                logger.warning(
+                    "Tabela crítica 'tb_notas_stats' ausente. Materialização necessária."
+                )
                 should_materialize = True
             else:
                 logger.info(f"Backend SQL verificado em {db_path}. Tabelas presentes.")
         except Exception as e:
-            logger.error(f"Erro ao verificar integridade do banco: {e}. Forçando recriação.")
+            logger.error(
+                f"Erro ao verificar integridade do banco: {e}. Forçando recriação."
+            )
             should_materialize = True
 
     if should_materialize:

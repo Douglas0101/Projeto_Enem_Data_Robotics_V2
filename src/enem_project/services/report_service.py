@@ -25,16 +25,18 @@ class ReportService:
 
         for col in df.columns:
             # Tenta converter para string se ainda não for, para aplicar str methods
-            if pd.api.types.is_string_dtype(df[col]) or pd.api.types.is_object_dtype(df[col]):
+            if pd.api.types.is_string_dtype(df[col]) or pd.api.types.is_object_dtype(
+                df[col]
+            ):
                 df[col] = df[col].astype(str).replace(r"[\n\r\t]+", " ", regex=True)
-                df[col] = df[col].str.replace(r"^["']+|"['"]+$", "", regex=True)
+                df[col] = df[col].str.replace(r"^[" ']+|"[' "]+$", "", regex=True)
                 df[col] = df[col].str.strip()
                 # Tenta converter strings numéricas limpas de volta para números
                 df[col] = pd.to_numeric(df[col], errors="ignore")
             # Para colunas já numéricas (após primeira tentativa ou originais), garante formatação padrão
             elif pd.api.types.is_numeric_dtype(df[col]):
-                df[col] = df[col].fillna(0) # Preenche NaN com 0
-                
+                df[col] = df[col].fillna(0)  # Preenche NaN com 0
+
                 # Se for float, tenta converter para int se for "inteiro seguro"
                 if pd.api.types.is_float_dtype(df[col]):
                     # Verifica se todos os valores são inteiros (ex: 3048.0)
@@ -45,7 +47,7 @@ class ReportService:
                         else:
                             df[col] = df[col].round(1)
                     except Exception:
-                        pass # Mantém como float se falhar a verificação
+                        pass  # Mantém como float se falhar a verificação
 
         return df
 
@@ -87,12 +89,22 @@ class ReportService:
 
             # Formato para números (alinhado à direita, 1 casa decimal, borda)
             number_format = workbook.add_format(
-                {"num_format": "#,##0.0", "border": 1, "valign": "vcenter", "align": "right"}
+                {
+                    "num_format": "#,##0.0",
+                    "border": 1,
+                    "valign": "vcenter",
+                    "align": "right",
+                }
             )
-            
+
             # Formato para números inteiros
             int_format = workbook.add_format(
-                {"num_format": "#,##0", "border": 1, "valign": "vcenter", "align": "right"}
+                {
+                    "num_format": "#,##0",
+                    "border": 1,
+                    "valign": "vcenter",
+                    "align": "right",
+                }
             )
 
             # Aplica formatação nas colunas
@@ -105,9 +117,9 @@ class ReportService:
                 if not df.empty:
                     # Amostra das primeiras 100 linhas para performance
                     sample = df[col_name].head(100).astype(str)
-                    if not sample.empty: # Garante que a amostra não esteja vazia
+                    if not sample.empty:  # Garante que a amostra não esteja vazia
                         max_len_data = sample.map(len).max()
-                
+
                 max_len_header = len(str(col_name))
                 # Largura ideal: max(header, data) + padding
                 column_width = min(max(max_len_data, max_len_header) + 3, 50)
@@ -153,23 +165,28 @@ class ReportService:
                 # Lógica específica para colunas de contagem (Inscritos, Provas Aplicadas)
                 # Garante que sejam exibidos como inteiros mesmo se forem floats no DF
                 col_lower = str(col).lower()
-                if "inscritos" in col_lower or "provas" in col_lower or "qtd" in col_lower:
-                     formatters[col] = lambda x: f"{int(x)}" if pd.notna(x) else ""
-                
-                elif pd.api.types.is_float_dtype(df[col]):
-                    # Arredonda floats (médias) para 1 casa decimal
-                    formatters[col] = lambda x: f"{x:.1f}".replace('.', ',') if pd.notna(x) else ""
-                
-                elif pd.api.types.is_integer_dtype(df[col]):
+                if (
+                    "inscritos" in col_lower
+                    or "provas" in col_lower
+                    or "qtd" in col_lower
+                ):
                     formatters[col] = lambda x: f"{int(x)}" if pd.notna(x) else ""
 
+                elif pd.api.types.is_float_dtype(df[col]):
+                    # Arredonda floats (médias) para 1 casa decimal
+                    formatters[col] = lambda x: (
+                        f"{x:.1f}".replace(".", ",") if pd.notna(x) else ""
+                    )
+
+                elif pd.api.types.is_integer_dtype(df[col]):
+                    formatters[col] = lambda x: f"{int(x)}" if pd.notna(x) else ""
 
             html_table = df.to_html(
                 index=False,
                 border=0,
                 classes=[],
                 formatters=formatters,
-                escape=True # Importante para segurança
+                escape=True,  # Importante para segurança
             )
 
             # Template HTML Profissional
@@ -296,7 +313,7 @@ class ReportService:
             """
 
             template = jinja2.Template(html_template)
-            
+
             context = {
                 "title": title,
                 "date": datetime.now().strftime("%d/%m/%Y %H:%M"),

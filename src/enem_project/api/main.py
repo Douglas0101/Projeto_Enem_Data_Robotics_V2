@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import duckdb
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,6 +40,7 @@ except ImportError:
 async def lifespan(app: FastAPI):
     """
     Gerencia o ciclo de vida da aplicação (startup/shutdown).
+    Verifica a integridade do banco de dados e materializa se necessário.
     """
     if os.getenv("ENEM_SKIP_LIFESPAN", "").lower() in ("1", "true", "yes", "on"):
         yield
@@ -52,13 +54,48 @@ async def lifespan(app: FastAPI):
         "on",
     )
 
-    if not db_path.exists() or force_materialize:
-        logger.info("Iniciando materialização do backend SQL...")
-        # Note: run_sql_backend_workflow uses DuckDBAgent internally,
-        # which is synchronous. We run it as is during startup (blocking is okay here).
-        run_sql_backend_workflow(materialize_dashboard_tables=True)
+    should_materialize = False
+
+    if not db_path.exists():
+        logger.info("Banco de dados não encontrado. Materialização necessária.")
+        should_materialize = True
+    elif force_materialize:
+        logger.info("Forçando materialização via variável de ambiente.")
+        should_materialize = True
     else:
-        logger.info(f"Backend SQL encontrado em {db_path}. Pulando materialização.")
+        # Check if critical tables exist
+        try:
+            conn = duckdb.connect(str(db_path), read_only=True)
+            # Check for 'tb_notas_stats' which is critical for the dashboard
+            table_check = conn.execute(
+                "SELECT count(*) FROM information_schema.tables WHERE table_name = 'tb_notas_stats'"
+            ).fetchone()
+            conn.close()
+
+            if table_check and table_check[0] == 0:
+                logger.warning(
+                    "Tabela crítica 'tb_notas_stats' ausente. Materialização necessária."
+                )
+                should_materialize = True
+            else:
+                logger.info(f"Backend SQL verificado em {db_path}. Tabelas presentes.")
+        except Exception as e:
+            logger.error(
+                f"Erro ao verificar integridade do banco: {e}. Forçando recriação."
+            )
+            should_materialize = True
+
+    if should_materialize:
+        logger.info("Iniciando materialização do backend SQL...")
+        try:
+            # Note: run_sql_backend_workflow uses DuckDBAgent internally,
+            # which is synchronous. We run it as is during startup (blocking is okay here).
+            run_sql_backend_workflow(materialize_dashboard_tables=True)
+            logger.info("Materialização concluída com sucesso.")
+        except Exception as e:
+            logger.critical(f"Falha crítica na materialização: {e}")
+            # We don't crash the app, but dashboard will likely fail.
+            # Ideally, we might want to expose a health check failure.
 
     yield
 

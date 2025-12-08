@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Union
 
-from jose import jwt
+import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 

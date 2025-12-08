@@ -1,8 +1,15 @@
 import os
-from typing import Generator
+from typing import Generator, Annotated
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+
 from ..infra.db_agent import DuckDBAgent
 from ..infra.logging import logger
+from ..config.settings import settings
+from ..domain.auth_schemas import TokenData
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def get_db_agent() -> Generator[DuckDBAgent, None, None]:
     """
@@ -43,3 +50,24 @@ def get_db_agent() -> Generator[DuckDBAgent, None, None]:
         # calling close() ensures we release resources if the implementation changes
         # to use dedicated connections per request in the future.
         agent.close()
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
+    """
+    Valida o token JWT e retorna os dados do usuário (sub/email).
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        role: str = payload.get("role")
+        if email is None:
+            raise credentials_exception
+        token_data = TokenData(email=email, role=role)
+    except JWTError:
+        raise credentials_exception
+    return token_data

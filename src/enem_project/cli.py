@@ -511,7 +511,9 @@ def mcp_docs(
 
 @app.command("serve")
 def serve(
-    host: str = typer.Option("0.0.0.0", help="Host para binding do servidor."),  # nosec B104
+    host: str = typer.Option(
+        "0.0.0.0", help="Host para binding do servidor."
+    ),  # nosec B104
     port: int = typer.Option(8000, help="Porta para binding do servidor."),
     reload: bool = typer.Option(True, help="Habilita auto-reload (dev mode)."),
 ) -> None:

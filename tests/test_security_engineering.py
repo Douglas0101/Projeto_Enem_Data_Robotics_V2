@@ -35,15 +35,21 @@ def test_argon2_industrial_configuration():
     with pytest.raises(VerifyMismatchError):
         ph.verify(hash_gerado, "senha_errada")
 
-def test_duckdb_resource_isolation_readonly():
+def test_duckdb_resource_isolation_readonly(tmp_path):
     """
     CONFIRMAÇÃO DE QUALIDADE: Isolamento de Recursos
     Valida se o DuckDBAgent em modo read_only bloqueia escritas.
     
     Requisito 5.1: "A API deve instanciar o agente de banco de dados estritamente como read_only=True"
     """
-    # Instancia explicitamente em modo leitura
-    agent = DuckDBAgent(read_only=True)
+    # Setup: Cria um banco temporário para o teste (DuckDB exige que o arquivo exista para RO)
+    db_file = tmp_path / "test_security.duckdb"
+    conn_setup = duckdb.connect(str(db_file))
+    conn_setup.execute("CREATE TABLE valid_table (id INTEGER)")
+    conn_setup.close()
+
+    # Instancia explicitamente em modo leitura apontando para o banco temporário
+    agent = DuckDBAgent(db_path=db_file, read_only=True)
     
     # 1. Teste via Guardrail de Script (nível Aplicação)
     with pytest.raises(ValueError) as excinfo:

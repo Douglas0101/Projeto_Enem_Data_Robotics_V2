@@ -17,6 +17,7 @@ from ..config.settings import settings
 from ..infra.logging import logger
 from .dashboard_router import router as dashboard_router
 from .chat_router import router as chat_router
+from .auth_router import router as auth_router
 from .schemas import HealthResponse, ErrorResponse
 from .middlewares import RequestIDMiddleware
 
@@ -160,6 +161,7 @@ def health_check(request: Request) -> HealthResponse:
 
 app.include_router(dashboard_router)
 app.include_router(chat_router)
+app.include_router(auth_router)
 
 if Instrumentator:
     Instrumentator().instrument(app).expose(app)

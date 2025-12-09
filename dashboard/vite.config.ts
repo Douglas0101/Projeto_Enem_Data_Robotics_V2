@@ -21,6 +21,10 @@ export default defineConfig({
         target: process.env.API_TARGET || "http://localhost:8000",
         changeOrigin: true
       },
+      "/auth": {
+        target: process.env.API_TARGET || "http://localhost:8000",
+        changeOrigin: true
+      },
       "/health": {
         target: process.env.API_TARGET || "http://localhost:8000",
         changeOrigin: true
@@ -31,4 +35,3 @@ export default defineConfig({
     include: ["highcharts", "highcharts-react-official", "plotly.js", "react-plotly.js", "@chakra-ui/react", "@emotion/react", "@emotion/styled", "framer-motion", "buffer"]
   }
 });
-

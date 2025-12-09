@@ -31,3 +31,19 @@ services:
           memory: 4G
     # Reinicia automaticamente apenas se falhar
     restart: on-failure
+
+  frontend:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: enem_data_robotics_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+    environment:
+      - API_TARGET=http://api:8000
+    depends_on:
+      - api
+    restart: on-failure

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLayout } from "../../context/LayoutContext";
+import { useAuth } from "../../context/AuthContext";
 import { Button } from "../ui/button";
 import {
   Tooltip,
@@ -91,6 +92,7 @@ interface SidebarProps {
 
 export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const { isSidebarCollapsed, toggleSidebar } = useLayout();
+  const { logout } = useAuth();
 
   return (
     <aside
@@ -209,7 +211,10 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
               Configurações
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600 focus:bg-red-50 focus:text-red-600">
+            <DropdownMenuItem 
+              className="text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer"
+              onClick={logout}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Sair
             </DropdownMenuItem>

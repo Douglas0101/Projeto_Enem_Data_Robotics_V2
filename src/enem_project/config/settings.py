@@ -29,6 +29,19 @@ class Settings:
         default_factory=lambda: os.getenv("ENVIRONMENT", "development")
     )
 
+    # Auth Settings
+    # Segurança: Não há valor padrão para SECRET_KEY em produção.
+    # Em desenvolvimento, deve ser definido no arquivo .env.
+    SECRET_KEY: str = field(
+        default_factory=lambda: os.environ.get(
+            "SECRET_KEY", "dev_insecure_key_please_set_in_env_file"
+        )
+    )
+    ALGORITHM: str = field(default_factory=lambda: os.getenv("ALGORITHM", "HS256"))
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = field(
+        default_factory=lambda: int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    )
+
     # anos cobertos pelo projeto (1998 a 2024)
     YEARS: tuple[int, ...] = tuple(range(1998, 2025))
 

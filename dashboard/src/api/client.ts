@@ -22,13 +22,21 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
   
+  // Inject Auth Token
+  const token = localStorage.getItem("access_token");
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(init?.headers ?? {}),
+  };
+
+  if (token) {
+    (headers as any)["Authorization"] = `Bearer ${token}`;
+  }
+
   try {
     const response = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers ?? {})
-      },
-      ...init
+      ...init,
+      headers
     });
 
     // 1. Interceptor de Rate Limit (429) - Proteção contra DDoS
@@ -43,12 +51,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         duration: 5000,
       });
       
-      // Lança erro específico para a UI cancelar loadings
       throw new ApiError(429, "RATE_LIMIT_EXCEEDED");
     }
 
+    // 2. Interceptor de Auth (401) - Token Expirado
+    if (response.status === 401) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      window.dispatchEvent(new Event("auth:logout"));
+      throw new ApiError(401, "Sessão expirada. Faça login novamente.");
+    }
+
     if (!response.ok) {
-      // 2. Interceptor Inteligente de Erros (JSON dentro de Blob)
+      // 3. Interceptor Inteligente de Erros (JSON dentro de Blob)
       const contentType = response.headers.get("content-type");
       let errorMessage = `Erro ${response.status}: ${response.statusText}`;
 
@@ -68,7 +83,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       throw new ApiError(response.status, errorMessage);
     }
 
-    // 3. Detecção Automática de Binários (PDF/Excel/CSV)
+    // 4. Detecção Automática de Binários (PDF/Excel/CSV)
     const contentType = response.headers.get("content-type");
     if (contentType && (
         contentType.includes("application/pdf") ||
@@ -84,7 +99,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return (await response.json()) as T;
 
   } catch (error: any) {
-    // 4. Tratamento de Falha de Rede
+    // 5. Tratamento de Falha de Rede
     if (error instanceof TypeError && error.message === "Failed to fetch") {
         toast.error("Sem Conexão", {
             description: "Não foi possível contatar o servidor. Verifique se o backend está rodando."

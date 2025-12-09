@@ -5,6 +5,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript)
 ![DuckDB](https://img.shields.io/badge/DuckDB-Olap-fff000?style=for-the-badge&logo=duckdb)
 ![FastAPI](https://img.shields.io/badge/FastAPI-High_Performance-009688?style=for-the-badge&logo=fastapi)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 > **Uma plataforma avançada de Engenharia de Dados e Inteligência Artificial para análise profunda do Exame Nacional do Ensino Médio (ENEM).**
@@ -16,7 +17,7 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combin
 ## ✨ Destaques da Versão Atual
 
 ### 🎯 Rigor Estatístico e Qualidade de Dados
-- **Correção de Viés de Presença:** O pipeline ETL distingue estritamente entre **Total de Inscritos** (intenção) e **Total de Provas** (comparecimento efetivo). Notas de alunos ausentes são tratadas adequadamente para garantir indicadores fiéis à realidade.
+- **Correção de Viés de Presença:** O pipeline ETL distingue estritamente entre **Total de Inscritos** (intenção) e **Provas Aplicadas** (comparecimento efetivo). Notas de alunos ausentes são tratadas adequadamente para garantir indicadores fiéis à realidade.
 - **Cálculo Dinâmico de Provas:** Os indicadores de desempenho consideram dinamicamente o número de provas realizadas por cada grupo demográfico, garantindo precisão mesmo em casos de dados parciais.
 - **Materialização Inteligente:** O backend SQL implementa lógica de *start-up* inteligente, evitando reprocessamentos desnecessários e garantindo persistência segura dos dados.
 
@@ -24,6 +25,11 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combin
 - **Rastreabilidade Total:** Implementação de **Request ID Middleware** que adiciona identificadores únicos (`X-Request-ID`) a todas as requisições, permitindo rastreamento preciso de logs e erros.
 - **Tratamento Global de Erros:** Handler de exceções centralizado que garante que todos os erros, mesmo os inesperados (500), retornem respostas JSON estruturadas e seguras, prevenindo vazamento de stack traces.
 - **Observabilidade:** Logs estruturados (JSON em produção) e instrumentação preparada para Prometheus.
+
+### 📑 Relatórios Premium (Enterprise-Grade)
+- **PDFs Vetoriais Profissionais:** Motor de geração de PDF (WeasyPrint) com CSS defensivo, garantindo layout impecável, paginação correta e cabeçalhos repetidos em documentos multipáginas.
+- **Excel Formatado:** Exportação de planilhas com formatação condicional, filtros e tipos de dados corretos (números como números, texto como texto) usando `xlsxwriter`.
+- **Sanitização Defensiva:** Camada de segurança que remove caracteres de controle e formata dados numéricos antes da geração de documentos, evitando corrupção de arquivos.
 
 ### 🗺️ Inteligência Geográfica e Demográfica
 - **Evolução Histórica por Raça/Cor:** Gráficos avançados que permitem a análise temporal do desempenho educacional segmentado por autodeclaração racial em cada município brasileiro.
@@ -78,6 +84,7 @@ graph TD
 *   **Gerenciamento de Dependências:** Poetry
 *   **API:** FastAPI + Pydantic
 *   **Banco de Dados:** DuckDB (Processamento OLAP local)
+*   **Reporting Engine:** WeasyPrint (PDF), XlsxWriter (Excel)
 *   **Orquestração/IA:** Google Genkit
 *   **Qualidade de Dados:** Soda Core (Validadores customizados)
 
@@ -92,49 +99,33 @@ graph TD
 
 ---
 
-## ⚙️ Instalação e Configuração
+## ⚙️ Instalação e Execução (Docker)
 
-Siga os passos abaixo para executar o ambiente de desenvolvimento.
+A maneira recomendada de executar o projeto é via Docker Compose, garantindo que todas as dependências de sistema (incluindo as necessárias para geração de PDF) estejam corretas.
 
 ### Pré-requisitos
-*   Python 3.12 ou superior
-*   Node.js 18 ou superior
-*   Poetry (Gerenciador de pacotes Python)
+*   Docker Engine e Docker Compose instalados.
 
-### 1. Backend (API e Processamento)
+### Passos
 
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/projeto-enem-data-robotics-v2.git
-cd projeto-enem-data-robotics-v2
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/seu-usuario/projeto-enem-data-robotics-v2.git
+    cd projeto-enem-data-robotics-v2
+    ```
 
-# Instale as dependências com Poetry
-poetry install
+2.  **Execute com Docker Compose:**
+    ```bash
+    docker compose up --build
+    ```
+    Isso iniciará a API (Backend) e o Dashboard (Frontend).
 
-# Ative o ambiente virtual
-poetry shell
+3.  **Acesse:**
+    *   **Dashboard:** [http://localhost:5173](http://localhost:5173)
+    *   **Documentação da API:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
-# (Opcional) Execute o pipeline de dados para um ano específico
-python -m enem_project.cli --ano 2023 --dashboard
-
-# Execute a API
-poetry run uvicorn src.enem_project.api.main:app --reload
-```
-*A API estará disponível em: `http://localhost:8000/docs`*
-
-### 2. Frontend (Dashboard)
-
-```bash
-# Navegue até a pasta do dashboard
-cd dashboard
-
-# Instale as dependências
-npm install
-
-# Inicie o servidor de desenvolvimento
-npm run dev
-```
-*O Dashboard estará disponível em: `http://localhost:5173`*
+### Configuração de Dados
+O projeto utiliza um volume local `./data` mapeado para o container. Certifique-se de que seus dados brutos ou processados estejam na pasta `data/` local para persistência.
 
 ---
 
@@ -145,36 +136,45 @@ Projeto_Enem_Data_Robotics_V2/
 ├── config/                 # Configurações de hardware e ambiente
 ├── dashboard/              # Aplicação Frontend (React/Vite)
 │   ├── src/
-│   │   ├── api/            # Clientes HTTP
-│   │   ├── components/     # Componentes UI (Charts, Maps, Cards)
+│   │   ├── api/            # Clientes HTTP (Axios)
+│   │   ├── components/     # Componentes UI (Charts, Maps, PremiumReport)
 │   │   ├── pages/          # Rotas da aplicação
 │   │   └── ...
-├── data/                   # Lakehouse Local (Ignorado no Git)
-│   ├── 00_raw/
-│   ├── 01_silver/
-│   └── 02_gold/
+├── data/                   # Lakehouse Local (Mapeado no Docker)
+│   ├── 00_raw/             # Dados brutos
+│   ├── 01_silver/          # Dados limpos (Parquet)
+│   └── 02_gold/            # Dados agregados (Parquet)
+├── Enem_documentos_e_orquestração/ # Documentação Arquitetural e Agêntica
 ├── src/                    # Código Fonte Backend
 │   └── enem_project/
-│       ├── api/            # Rotas FastAPI
+│       ├── api/            # Rotas FastAPI e Lógica de Endpoints
 │       ├── data/           # Pipelines ETL (Raw->Silver->Gold)
 │       ├── infra/          # Conexão DB, Logging, IO
+│       ├── services/       # Serviços de Domínio (ReportService, etc.)
 │       └── orchestrator/   # Agentes e Workflows
 ├── tests/                  # Testes unitários e de integração
-└── ...
+├── .genkit/                # Configuração do Genkit (IA)
+├── Dockerfile              # Definição da imagem da API
+├── docker-compose.yml      # Orquestração dos serviços
+├── GEMINI.md               # Regras e Contexto do Assistente
+└── README.md               # Documentação do Projeto
 ```
 
 ---
 
 ## 🧪 Testes e Qualidade
 
-Para garantir a integridade dos dados e do código:
+Para garantir a integridade dos dados e do código (executando localmente):
 
 ```bash
+# Instalar dependências de desenvolvimento
+poetry install
+
 # Executar testes unitários (Backend)
-pytest tests/
+poetry run pytest tests/
 
 # Executar linter
-ruff check .
+poetry run ruff check .
 ```
 
 ---

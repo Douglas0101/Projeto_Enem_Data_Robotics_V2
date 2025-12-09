@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm:dev:*\"",
-    "dev:frontend": "vite",
+    "dev:frontend": "vite --host",
     "dev:backend": "poetry run uvicorn enem_project.api.main:app --reload --port 8000",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@amcharts/amcharts5": "^5.14.4",
@@ -41,6 +42,7 @@
     "react-icons": "^5.2.1",
     "react-markdown": "^10.1.0",
     "react-plotly.js": "^2.6.0",
+    "react-router-dom": "^7.10.1",
     "remark-gfm": "^4.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
@@ -48,6 +50,7 @@
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
     "@types/d3": "^7.4.3",
     "@types/node": "^24.10.1",
     "@types/react": "^18.2.0",

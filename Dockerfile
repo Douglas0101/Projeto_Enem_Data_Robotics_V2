@@ -2,7 +2,7 @@
 # Stage 1: Builder
 # Responsável por compilar dependências e preparar o ambiente virtual.
 # ==============================================================================
-FROM python:3.13-slim as builder
+FROM python:3.12-slim as builder
 
 # Variáveis de ambiente para Python e Poetry
 ENV PYTHONUNBUFFERED=1 \
@@ -66,7 +66,7 @@ CMD ["pytest", "-v"]
 # Stage 2: Runtime
 # Imagem final enxuta, segura e otimizada para produção.
 # ==============================================================================
-FROM python:3.13-slim as runtime
+FROM python:3.12-slim as runtime
 
 # Segurança: Criação de usuário não-root (appuser UID 1000)
 # Rodar como root é uma vulnerabilidade crítica em containers.
@@ -128,7 +128,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Entrypoint de Produção:
 # - Uvicorn como servidor ASGI
-# - --workers 4 para concorrência (ajustado para limites típicos de container)
+# - --workers 1 para garantir estabilidade do DuckDB (single-writer/multi-thread architecture)
 # - --proxy-headers para confiar em headers X-Forwarded-* (útil atrás de Nginx/Traefik)
 # - --host 0.0.0.0 para aceitar conexões externas ao container
-CMD ["uvicorn", "enem_project.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--proxy-headers"]
+CMD ["uvicorn", "enem_project.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers"]

@@ -43,7 +43,7 @@ def _detect_ram_gb() -> float:
         try:
             return psutil.virtual_memory().total / (1024**3)
         except Exception:
-            pass
+            pass  # nosec B110
     # fallback se psutil não estiver instalado
     return 20.0
 
@@ -53,7 +53,7 @@ def _detect_available_ram_gb(total: float) -> float:
         try:
             return psutil.virtual_memory().available / (1024**3)
         except Exception:
-            pass
+            pass  # nosec B110
     return total * 0.8
 
 

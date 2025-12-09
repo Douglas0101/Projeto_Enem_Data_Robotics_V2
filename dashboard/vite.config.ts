@@ -15,13 +15,18 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    allowedHosts: true,
     proxy: {
       "/v1": {
-        target: "http://localhost:8000",
+        target: process.env.API_TARGET || "http://localhost:8000",
+        changeOrigin: true
+      },
+      "/auth": {
+        target: process.env.API_TARGET || "http://localhost:8000",
         changeOrigin: true
       },
       "/health": {
-        target: "http://localhost:8000",
+        target: process.env.API_TARGET || "http://localhost:8000",
         changeOrigin: true
       }
     }
@@ -30,4 +35,3 @@ export default defineConfig({
     include: ["highcharts", "highcharts-react-official", "plotly.js", "react-plotly.js", "@chakra-ui/react", "@emotion/react", "@emotion/styled", "framer-motion", "buffer"]
   }
 });
-

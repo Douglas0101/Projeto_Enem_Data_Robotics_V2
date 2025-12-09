@@ -1,5 +1,3 @@
-import sys
-from pathlib import Path
 
 from enem_project.domain.auth_schemas import UserCreate
 from enem_project.services.auth_service import AuthService
@@ -31,7 +29,7 @@ def create_admin():
         )
         logger.info(f"Usuário admin criado com sucesso: {user.email} (ID: {user.id})")
         print("-" * 40)
-        print(f"SUCESSO: Admin criado.")
+        print("SUCESSO: Admin criado.")
         print(f"Email: {email}")
         print(f"Senha: {password}")
         print("-" * 40)

@@ -47,9 +47,11 @@ def build_contract_for_year(
         contrato = ColumnContract(
             nome_padrao=nome,
             tipo_padrao=_normalize_tipo(str(row["tipo_padrao"])),
-            dominio_valores=row["dominio_valores"]
-            if isinstance(row["dominio_valores"], list)
-            else None,
+            dominio_valores=(
+                row["dominio_valores"]
+                if isinstance(row["dominio_valores"], list)
+                else None
+            ),
         )
         contracts[nome] = contrato
     return contracts

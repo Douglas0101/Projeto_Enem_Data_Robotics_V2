@@ -109,8 +109,14 @@ class DataAnalystAgent:
         self.chat = self.model.start_chat(enable_automatic_function_calling=True)
 
     def _get_system_prompt(self) -> str:
-        return textwrap.dedent(
-            f"""
+        # Separate SQL examples to avoid Bandit B608 false positive in the main prompt
+        sql_examples = (
+            '- Média por ano: "SELECT ANO, AVG(NOTA_MATEMATICA_mean) FROM gold_tb_notas_stats GROUP BY ANO ORDER BY ANO"\n'
+            '- Melhor estado em 2023: "SELECT SG_UF_PROVA, NOTA_MATEMATICA_mean FROM gold_tb_notas_geo_uf WHERE ANO=2023 ORDER BY NOTA_MATEMATICA_mean DESC LIMIT 5"'
+        )  # nosec B608
+
+        # This is a prompt template for LLM, not executable SQL
+        prompt = f"""
             Você é o Assistente de Dados 'Data Robotics', um especialista em análise de dados educacionais do ENEM.
             Sua missão é responder perguntas dos usuários consultando o banco de dados SQL real.
 
@@ -126,10 +132,9 @@ class DataAnalystAgent:
             6. Seja conciso e profissional. Use formatação Markdown (negrito, listas) para facilitar a leitura.
             
             EXEMPLOS DE QUERIES:
-            - Média por ano: "SELECT ANO, AVG(NOTA_MATEMATICA_mean) FROM gold_tb_notas_stats GROUP BY ANO ORDER BY ANO"
-            - Melhor estado em 2023: "SELECT SG_UF_PROVA, NOTA_MATEMATICA_mean FROM gold_tb_notas_geo_uf WHERE ANO=2023 ORDER BY NOTA_MATEMATICA_mean DESC LIMIT 5"
+            {sql_examples}
         """
-        )  # nosec B608
+        return textwrap.dedent(prompt)
 
     def send_message(self, user_message: str) -> str:
         """

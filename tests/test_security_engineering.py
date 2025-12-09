@@ -21,15 +21,15 @@ def test_argon2_industrial_configuration():
     expected_memory_cost = 65536
     expected_parallelism = 2
 
-    assert (
-        ph.time_cost == expected_time_cost
-    ), f"Time cost deve ser {expected_time_cost}"
-    assert (
-        ph.memory_cost == expected_memory_cost
-    ), f"Memory cost deve ser {expected_memory_cost} (64MB)"
-    assert (
-        ph.parallelism == expected_parallelism
-    ), f"Parallelism deve ser {expected_parallelism}"
+    assert ph.time_cost == expected_time_cost, (
+        f"Time cost deve ser {expected_time_cost}"
+    )
+    assert ph.memory_cost == expected_memory_cost, (
+        f"Memory cost deve ser {expected_memory_cost} (64MB)"
+    )
+    assert ph.parallelism == expected_parallelism, (
+        f"Parallelism deve ser {expected_parallelism}"
+    )
 
     # Validação Funcional
     senha_teste = "EngenhariaDeDados2025!"
@@ -75,9 +75,9 @@ def test_duckdb_resource_isolation_readonly(tmp_path):
 
     # Mensagem de erro do DuckDB para violação de read-only varia, mas geralmente contém "read access" ou "read-only"
     error_msg = str(excinfo_db.value).lower()
-    assert (
-        "read" in error_msg or "access" in error_msg
-    ), f"Erro inesperado do DB: {error_msg}"
+    assert "read" in error_msg or "access" in error_msg, (
+        f"Erro inesperado do DB: {error_msg}"
+    )
 
     agent.close()
 

@@ -1,6 +1,5 @@
 import pytest
 from fastapi.testclient import TestClient
-from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 import duckdb
 from enem_project.api.main import app

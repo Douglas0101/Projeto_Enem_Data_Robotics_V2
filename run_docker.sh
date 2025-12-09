@@ -37,4 +37,4 @@ export DOCKER_CONFIG=$(pwd)/.docker_isolation
 echo "🐳 Iniciando build e upload dos containers..."
 echo "---------------------------------------------------"
 
-docker compose up --build
+docker compose up --build --force-recreate

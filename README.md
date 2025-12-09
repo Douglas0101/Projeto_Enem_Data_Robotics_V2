@@ -144,6 +144,7 @@ Projeto_Enem_Data_Robotics_V2/
 │   ├── 00_raw/             # Dados brutos
 │   ├── 01_silver/          # Dados limpos (Parquet)
 │   └── 02_gold/            # Dados agregados (Parquet)
+├── Enem_documentos_e_orquestração/ # Documentação Arquitetural e Agêntica
 ├── src/                    # Código Fonte Backend
 │   └── enem_project/
 │       ├── api/            # Rotas FastAPI e Lógica de Endpoints
@@ -152,8 +153,10 @@ Projeto_Enem_Data_Robotics_V2/
 │       ├── services/       # Serviços de Domínio (ReportService, etc.)
 │       └── orchestrator/   # Agentes e Workflows
 ├── tests/                  # Testes unitários e de integração
+├── .genkit/                # Configuração do Genkit (IA)
 ├── Dockerfile              # Definição da imagem da API
 ├── docker-compose.yml      # Orquestração dos serviços
+├── GEMINI.md               # Regras e Contexto do Assistente
 └── README.md               # Documentação do Projeto
 ```
 

@@ -10,6 +10,7 @@ from ..domain.user_model import UserInDB, User
 from ..infra.security_auth import get_password_hash, verify_password
 from ..infra.logging import logger
 
+
 class AuthService:
     def __init__(self):
         # Ensure table exists (lazy check)
@@ -41,7 +42,9 @@ class AuthService:
         agent = DuckDBAgent(read_only=True)
         try:
             # Use parameterized query to prevent SQL Injection
-            rows, _ = agent.run_query("SELECT * FROM users WHERE email = ?", params=[email])
+            rows, _ = agent.run_query(
+                "SELECT * FROM users WHERE email = ?", params=[email]
+            )
             if rows:
                 row = rows[0]
                 # Mapping: id, email, password_hash, role, is_active, created_at
@@ -51,7 +54,7 @@ class AuthService:
                     hashed_password=row[2],
                     role=row[3],
                     is_active=row[4],
-                    created_at=row[5]
+                    created_at=row[5],
                 )
             return None
         finally:
@@ -62,35 +65,35 @@ class AuthService:
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Email already registered",
             )
 
         hashed_pw = get_password_hash(user.password)
         user_id = str(uuid.uuid4())
         now = datetime.now()
-        
+
         agent = DuckDBAgent(read_only=False)
         try:
             sql = """
             INSERT INTO users (id, email, password_hash, role, is_active, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
             """
-            agent.run_query(sql, params=[
-                user_id, user.email, hashed_pw, user.role, True, now
-            ])
-            
+            agent.run_query(
+                sql, params=[user_id, user.email, hashed_pw, user.role, True, now]
+            )
+
             return User(
                 id=user_id,
                 email=user.email,
                 role=user.role,
                 is_active=True,
-                created_at=now
+                created_at=now,
             )
         except Exception as e:
             logger.error(f"Erro ao criar usuário: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Could not create user"
+                detail="Could not create user",
             )
         finally:
             agent.close()

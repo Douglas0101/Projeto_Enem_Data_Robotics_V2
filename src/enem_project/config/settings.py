@@ -30,10 +30,11 @@ class Settings:
     )
 
     # Auth Settings
+    # Segurança: Não há valor padrão para SECRET_KEY em produção.
+    # Em desenvolvimento, deve ser definido no arquivo .env.
     SECRET_KEY: str = field(
-        default_factory=lambda: os.getenv(
-            "SECRET_KEY",
-            "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7",
+        default_factory=lambda: os.environ.get(
+            "SECRET_KEY", "dev_insecure_key_please_set_in_env_file"
         )
     )
     ALGORITHM: str = field(default_factory=lambda: os.getenv("ALGORITHM", "HS256"))

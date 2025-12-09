@@ -2,7 +2,8 @@ import os
 from typing import Generator, Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
+import jwt
+from jwt import PyJWTError
 
 from ..infra.db_agent import DuckDBAgent
 from ..infra.logging import logger
@@ -68,6 +69,6 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Tok
         if email is None:
             raise credentials_exception
         token_data = TokenData(email=email, role=role)
-    except JWTError:
+    except PyJWTError:
         raise credentials_exception
     return token_data

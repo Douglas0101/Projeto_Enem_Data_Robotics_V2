@@ -47,7 +47,9 @@ class ReportService:
                         else:
                             df[col] = df[col].round(1)
                     except Exception:
-                        pass  # Mantém como float se falhar a verificação
+                        # Mantém como float se falhar a verificação
+                        # logger.debug("Falha ao converter coluna %s para int", col)
+                        pass  # nosec B110
 
         return df
 

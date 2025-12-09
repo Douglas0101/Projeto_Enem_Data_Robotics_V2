@@ -7,8 +7,25 @@ def create_admin():
     logger.info("Iniciando criação de usuário admin...")
     service = AuthService()
 
+    import os
+    import getpass
+
     email = "admin@enem.data"
-    password = "AdminStrongPassword123!"
+    password = os.getenv("ADMIN_PASSWORD")
+
+    if not password:
+        logger.info("ADMIN_PASSWORD não definida. Solicitando entrada manual...")
+        try:
+            password = getpass.getpass(
+                "Digite a senha para o admin (admin@enem.data): "
+            )
+        except (EOFError, KeyboardInterrupt):
+            logger.error("Entrada cancelada.")
+            return
+
+    if not password:
+        logger.error("Senha não fornecida. Abortando.")
+        return
 
     logger.info(f"Tentando criar usuário: {email}")
 

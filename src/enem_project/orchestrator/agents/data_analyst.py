@@ -109,7 +109,8 @@ class DataAnalystAgent:
         self.chat = self.model.start_chat(enable_automatic_function_calling=True)
 
     def _get_system_prompt(self) -> str:
-        return textwrap.dedent(f"""
+        return textwrap.dedent(
+            f"""
             Você é o Assistente de Dados 'Data Robotics', um especialista em análise de dados educacionais do ENEM.
             Sua missão é responder perguntas dos usuários consultando o banco de dados SQL real.
 
@@ -127,7 +128,8 @@ class DataAnalystAgent:
             EXEMPLOS DE QUERIES:
             - Média por ano: "SELECT ANO, AVG(NOTA_MATEMATICA_mean) FROM gold_tb_notas_stats GROUP BY ANO ORDER BY ANO"
             - Melhor estado em 2023: "SELECT SG_UF_PROVA, NOTA_MATEMATICA_mean FROM gold_tb_notas_geo_uf WHERE ANO=2023 ORDER BY NOTA_MATEMATICA_mean DESC LIMIT 5"
-        """)  # nosec B608
+        """
+        )  # nosec B608
 
     def send_message(self, user_message: str) -> str:
         """

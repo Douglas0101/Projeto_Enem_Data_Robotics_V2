@@ -12,6 +12,7 @@ from ..domain.auth_schemas import TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+
 def get_db_agent() -> Generator[DuckDBAgent, None, None]:
     """
     Dependency provider for DuckDBAgent.
@@ -63,7 +64,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Tok
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         email: str = payload.get("sub")
         role: str = payload.get("role")
         if email is None:

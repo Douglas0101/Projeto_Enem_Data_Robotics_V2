@@ -1,16 +1,28 @@
-import pandas as pd
+"""
+Testes para os pipelines de limpeza e engenharia de classes.
+
+Este módulo contém testes unitários e de integração para:
+- Pipeline de limpeza de dados (cleaning)
+- Pipeline de engenharia de classes (class engineering)
+- Processamento em streaming
+"""
 from pathlib import Path
+
+import pandas as pd
 
 from enem_project.data.cleaning.pipeline import run_cleaning_pipeline
 from enem_project.data.cleaning.streaming import stream_clean_to_parquet
 from enem_project.data.class_engineering.streaming import stream_class_pipeline
 from enem_project.data.class_engineering.transformers import run_class_pipeline
-from enem_project.data.class_engineering import transformers as class_transformers
+from enem_project.data.class_engineering import (
+    transformers as class_transformers,
+)
 from enem_project.data.metadata import save_metadata
 from enem_project.data import metadata as metadata_module
 
 
 def _sample_metadata(year: int) -> pd.DataFrame:
+    """Gera metadata de exemplo para testes."""
     return pd.DataFrame(
         [
             {
@@ -57,7 +69,11 @@ def _sample_metadata(year: int) -> pd.DataFrame:
     )
 
 
-def test_cleaning_pipeline_filters_invalid_and_duplicates(tmp_path: Path, monkeypatch):
+def test_cleaning_pipeline_filters_invalid_and_duplicates(
+    tmp_path: Path, monkeypatch
+):
+    """Testa se pipeline de limpeza filtra inválidos e duplicados."""
+    # pylint: disable=import-outside-toplevel
     from enem_project.config import paths as paths_module
 
     data_dir = tmp_path / "data"
@@ -87,7 +103,11 @@ def test_cleaning_pipeline_filters_invalid_and_duplicates(tmp_path: Path, monkey
     assert not artifacts.cleaning_report.empty
 
 
-def test_class_pipeline_generates_expected_columns(tmp_path: Path, monkeypatch):
+def test_class_pipeline_generates_expected_columns(
+    tmp_path: Path, monkeypatch
+):
+    """Testa se pipeline de classes gera colunas esperadas."""
+    # pylint: disable=import-outside-toplevel
     from enem_project.config import paths as paths_module
 
     data_dir = tmp_path / "data"
@@ -112,15 +132,14 @@ def test_class_pipeline_generates_expected_columns(tmp_path: Path, monkeypatch):
     assert "CLASS_FAIXA_ETARIA" in result.classes_df.columns
     assert "CLASS_NOTA_GLOBAL" in result.classes_df.columns
     assert "CLASS_RENDA_FAMILIAR" in result.classes_df.columns
-    assert (
-        result.summary_df[result.summary_df["class_name"] == "CLASS_FAIXA_ETARIA"][
-            "total"
-        ].sum()
-        == 1
-    )
+    faixa_sum = result.summary_df[
+        result.summary_df["class_name"] == "CLASS_FAIXA_ETARIA"
+    ]["total"].sum()
+    assert faixa_sum == 1
 
 
 def test_class_pipeline_respects_chunk_size(monkeypatch):
+    """Testa se pipeline de classes respeita chunk_size."""
     df = pd.DataFrame(
         {
             "ID_INSCRICAO": [str(i) for i in range(10)],
@@ -142,12 +161,12 @@ def test_class_pipeline_respects_chunk_size(monkeypatch):
 
     result = run_class_pipeline(df, chunk_size=3)
     assert len(result.classes_df) == len(df)
-    assert (
-        call_counter["count"] >= 4
-    )  # 10 linhas em chunks de 3 → pelo menos 4 chamadas
+    # 10 linhas em chunks de 3 → pelo menos 4 chamadas
+    assert call_counter["count"] >= 4
 
 
 def test_stream_cleaning_matches_batch(tmp_path: Path):
+    """Testa se streaming de limpeza produz mesmo resultado que batch."""
     metadata = _sample_metadata(2016)
     df = pd.DataFrame(
         {
@@ -187,6 +206,7 @@ def test_stream_cleaning_matches_batch(tmp_path: Path):
 
 
 def test_stream_class_pipeline_matches_batch(tmp_path: Path):
+    """Testa se streaming de classes produz mesmo resultado que batch."""
     df_clean = pd.DataFrame(
         {
             "ID_INSCRICAO": ["1", "2", "3"],
@@ -200,7 +220,9 @@ def test_stream_class_pipeline_matches_batch(tmp_path: Path):
     classes_path = tmp_path / "classes.parquet"
     df_clean.to_parquet(clean_path, index=False)
 
-    stream_result = stream_class_pipeline(clean_path, classes_path, chunk_rows=2)
+    stream_result = stream_class_pipeline(
+        clean_path, classes_path, chunk_rows=2
+    )
     df_stream = pd.read_parquet(classes_path)
 
     batch_result = run_class_pipeline(df_clean)
@@ -215,7 +237,9 @@ def test_stream_class_pipeline_matches_batch(tmp_path: Path):
     summary_batch = batch_result.summary_df.sort_values(
         ["class_name", "class_value"]
     ).reset_index(drop=True)
-    pd.testing.assert_frame_equal(summary_stream, summary_batch, check_like=True)
+    pd.testing.assert_frame_equal(
+        summary_stream, summary_batch, check_like=True
+    )
 
 
 def test_class_pipeline_handles_pd_na_scores():

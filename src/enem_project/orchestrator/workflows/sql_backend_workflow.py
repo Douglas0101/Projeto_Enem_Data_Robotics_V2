@@ -10,7 +10,9 @@ from ...data.silver_to_gold import (
     build_tb_notas_geo_uf_from_cleaned,
     build_tb_notas_histogram_from_cleaned,
     build_tb_socio_economico_from_cleaned,
+    build_tb_media_uf_from_cleaned,
 )
+from ...data.dimensions import build_dim_municipio
 from ...infra.db_agent import DuckDBAgent
 from ...infra.data_quality import assert_dashboard_data_checks
 from ...infra.logging import logger
@@ -34,7 +36,8 @@ def run_sql_backend_workflow(
 
     Retorna o caminho do arquivo DuckDB criado/atualizado.
     """
-    target_years = tuple(sorted(set(years))) if years is not None else settings.YEARS
+    target_years = tuple(
+        sorted(set(years))) if years is not None else settings.YEARS
     agent = DuckDBAgent(read_only=False)
     db_path = agent.db_path
 
@@ -52,7 +55,13 @@ def run_sql_backend_workflow(
     build_tb_notas_geo_uf_from_cleaned(target_years)
     build_tb_notas_histogram_from_cleaned(target_years)
     build_tb_socio_economico_from_cleaned(target_years)
-    logger.success("[workflow-sql] Tabelas Gold (Parquet) geradas com sucesso.")
+    build_tb_media_uf_from_cleaned(target_years)
+
+    # Gerar tabela dimensional de municípios (evita duplicações cross-UF)
+    build_dim_municipio(list(target_years))
+
+    logger.success(
+        "[workflow-sql] Tabelas Gold (Parquet) geradas com sucesso.")
 
     # Passos 2-5: Carregar e materializar no DuckDB usando Agente
     try:
@@ -71,7 +80,8 @@ def run_sql_backend_workflow(
                 / "materialize_dashboard_tables.sql"
             )
             if not sql_path.exists():
-                raise FileNotFoundError(f"Script SQL não encontrado em: {sql_path}")
+                raise FileNotFoundError(
+                    f"Script SQL não encontrado em: {sql_path}")
 
             sql_script = sql_path.read_text(encoding="utf-8")
             agent.execute_script(sql_script)

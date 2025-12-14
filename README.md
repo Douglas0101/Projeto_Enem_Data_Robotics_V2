@@ -6,6 +6,7 @@
 ![DuckDB](https://img.shields.io/badge/DuckDB-Olap-fff000?style=for-the-badge&logo=duckdb)
 ![FastAPI](https://img.shields.io/badge/FastAPI-High_Performance-009688?style=for-the-badge&logo=fastapi)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)
+![Security](https://img.shields.io/badge/Security-Zero_Trust-critical?style=for-the-badge&logo=shield)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 > **Uma plataforma avançada de Engenharia de Dados e Inteligência Artificial para análise profunda do Exame Nacional do Ensino Médio (ENEM).**
@@ -35,6 +36,14 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combin
 - **Evolução Histórica por Raça/Cor:** Gráficos avançados que permitem a análise temporal do desempenho educacional segmentado por autodeclaração racial em cada município brasileiro.
 - **Tooltips Contextuais Inteligentes:** Visualizações de dados aprimoradas que exibem médias, contagens de participantes e número de provas contabilizadas ao interagir com os gráficos.
 - **Mapa de Calor Unificado:** Visualização matricial dinâmica que se ajusta automaticamente aos filtros, permitindo visões macro e micro.
+
+### 🔐 Segurança e Conformidade
+- **Zero Trust Architecture:** Autenticação JWT com Argon2id industrial e autorização RBAC granular.
+- **Criptografia Forte:** TLS 1.3 para trânsito, chaves gerenciadas via variáveis de ambiente.
+- **Rate Limiting:** Proteção contra DDoS e brute force com SlowAPI.
+- **Data Masking (LGPD):** Dynamic Data Masking para colunas PII (CPF, inscrição) com `SecurityEngine`.
+- **Auditoria Estruturada:** Logs JSON estruturados para integração com sistemas SIEM.
+- **Checklist de Produção:** Documento técnico com 94 itens de segurança e escalabilidade.
 
 ---
 
@@ -144,15 +153,19 @@ Projeto_Enem_Data_Robotics_V2/
 │   ├── 00_raw/             # Dados brutos
 │   ├── 01_silver/          # Dados limpos (Parquet)
 │   └── 02_gold/            # Dados agregados (Parquet)
-├── Enem_documentos_e_orquestração/ # Documentação Arquitetural e Agêntica
+├── Enem_documentos_e_orquestração/ # Documentação Arquitetural e Segurança
+│   ├── checklist_producao_segura_escalavel.md  # ⭐ Checklist de Staff Engineer
+│   ├── Ciberseguranca-e-Escalabilidade.md      # Plano Diretor de Segurança
+│   ├── arquitetura_projeto_enem_data_robotics.md
+│   └── ...                 # Guias de engenharia e orquestração
 ├── src/                    # Código Fonte Backend
 │   └── enem_project/
 │       ├── api/            # Rotas FastAPI e Lógica de Endpoints
 │       ├── data/           # Pipelines ETL (Raw->Silver->Gold)
-│       ├── infra/          # Conexão DB, Logging, IO
+│       ├── infra/          # Conexão DB, Logging, IO, Security
 │       ├── services/       # Serviços de Domínio (ReportService, etc.)
 │       └── orchestrator/   # Agentes e Workflows
-├── tests/                  # Testes unitários e de integração
+├── tests/                  # Testes unitários, integração e segurança
 ├── .genkit/                # Configuração do Genkit (IA)
 ├── Dockerfile              # Definição da imagem da API
 ├── docker-compose.yml      # Orquestração dos serviços
@@ -175,7 +188,23 @@ poetry run pytest tests/
 
 # Executar linter
 poetry run ruff check .
+
+# Executar testes de segurança
+poetry run pytest tests/test_security_engineering.py -v
 ```
+
+---
+
+## 📚 Documentação Técnica
+
+O projeto inclui documentação profissional de engenharia:
+
+| Documento | Descrição |
+|-----------|-----------|
+| [Checklist de Produção](Enem_documentos_e_orquestração/checklist_producao_segura_escalavel.md) | 94 itens de segurança, escalabilidade e estabilidade |
+| [Plano de Cibersegurança](Enem_documentos_e_orquestração/Ciberseguranca-e-Escalabilidade.md) | Zero Trust, IAM, proteção de dados |
+| [Arquitetura do Projeto](Enem_documentos_e_orquestração/arquitetura_projeto_enem_data_robotics.md) | Estrutura completa e orquestração agêntica |
+| [GEMINI.md](GEMINI.md) | Regras e contexto do assistente de IA |
 
 ---
 

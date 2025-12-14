@@ -136,3 +136,26 @@ class ErrorResponse(BaseModel):
     error: str
     message: str
     request_id: Optional[str] = None
+
+
+class MediaMunicipalRow(BaseModel):
+    NO_MUNICIPIO_PROVA: str
+    ANO: int
+    MEDIA_CN: Optional[float]
+    MEDIA_CH: Optional[float]
+    MEDIA_LC: Optional[float]
+    MEDIA_MT: Optional[float]
+    MEDIA_RED: Optional[float]
+    MEDIA_FINAL: Optional[float]
+    QTD_ALUNOS: int
+
+
+class DistribuicaoNotasRow(BaseModel):
+    """
+    Schema para distribuição de alunos por faixa de notas.
+    Usado pelo endpoint /distribuicao-notas.
+    """
+
+    FAIXA: str
+    QTD_ALUNOS: int
+    PERCENTUAL: float

@@ -6,6 +6,9 @@ import type {
   TbNotasHistogramRow,
 } from "../types/dashboard";
 
+// Re-export types for use in components
+export type { TbNotasGeoUfRow } from "../types/dashboard";
+
 // --- Endpoints de Referência ---
 
 export async function getAvailableYears(): Promise<number[]> {
@@ -250,4 +253,80 @@ export async function getSocioRace(
 
 export async function getSocioIncome(year: number): Promise<TbSocioIncomeRow[]> {
   return apiClient.get<TbSocioIncomeRow[]>(`/v1/dashboard/advanced/socioeconomic/income?ano=${year}`);
+}
+
+// --- Media Municipal ---
+
+export interface MediaMunicipalParams {
+  uf: string;
+  municipio?: string;
+  anoInicio?: number;
+  anoFim?: number;
+  minAlunos?: number;
+}
+
+export interface MediaMunicipalRow {
+  NO_MUNICIPIO_PROVA: string;
+  ANO: number;
+  MEDIA_CN: number | null;
+  MEDIA_CH: number | null;
+  MEDIA_LC: number | null;
+  MEDIA_MT: number | null;
+  MEDIA_RED: number | null;
+  MEDIA_FINAL: number | null;
+  QTD_ALUNOS: number;
+}
+
+export async function getMediaMunicipal(
+  params: MediaMunicipalParams
+): Promise<MediaMunicipalRow[]> {
+  const search = new URLSearchParams();
+  search.set("uf", params.uf);
+  
+  if (params.municipio) {
+    search.set("municipio", params.municipio);
+  }
+  if (params.anoInicio != null) {
+    search.set("ano_inicio", String(params.anoInicio));
+  }
+  if (params.anoFim != null) {
+    search.set("ano_fim", String(params.anoFim));
+  }
+  if (params.minAlunos != null) {
+    search.set("min_alunos", String(params.minAlunos));
+  }
+  
+  const query = search.toString();
+  return apiClient.get<MediaMunicipalRow[]>(`/v1/dashboard/media-municipal?${query}`);
+}
+
+// --- Distribuição de Notas por Faixas ---
+
+export interface DistribuicaoNotasRow {
+  FAIXA: string;
+  QTD_ALUNOS: number;
+  PERCENTUAL: number;
+}
+
+export interface DistribuicaoNotasParams {
+  uf: string;
+  municipio?: string;
+  ano?: number;
+}
+
+export async function getDistribuicaoNotas(
+  params: DistribuicaoNotasParams
+): Promise<DistribuicaoNotasRow[]> {
+  const search = new URLSearchParams();
+  search.set("uf", params.uf);
+  
+  if (params.municipio) {
+    search.set("municipio", params.municipio);
+  }
+  if (params.ano != null) {
+    search.set("ano", String(params.ano));
+  }
+  
+  const query = search.toString();
+  return apiClient.get<DistribuicaoNotasRow[]>(`/v1/dashboard/distribuicao-notas?${query}`);
 }

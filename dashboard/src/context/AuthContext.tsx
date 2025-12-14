@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { apiClient } from "../api/client";
 import { toast } from "sonner";
+import { setTokens, clearTokens, getAccessToken } from "@/lib/secureStorage";
 
 interface User {
   email: string;
@@ -23,16 +24,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const logout = useCallback(() => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    clearTokens(); // Usa secureStorage centralizado (sessionStorage)
     setUser(null);
     setIsAuthenticated(false);
     toast.info("Você foi desconectado.");
   }, []);
 
   const login = useCallback((token: string, refreshToken: string) => {
-    localStorage.setItem("access_token", token);
-    localStorage.setItem("refresh_token", refreshToken);
+    setTokens(token, refreshToken); // Usa secureStorage centralizado
     setIsAuthenticated(true);
     
     // Fetch user details immediately after login
@@ -48,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const handleAuthLogout = () => logout();
     window.addEventListener("auth:logout", handleAuthLogout);
 
-    const token = localStorage.getItem("access_token");
+    const token = getAccessToken(); // Usa secureStorage centralizado
     if (token) {
       // Optional: Validate token with /me endpoint
       apiClient.get<User>("/auth/me")

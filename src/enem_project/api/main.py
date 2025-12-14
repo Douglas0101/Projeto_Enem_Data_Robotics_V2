@@ -79,7 +79,8 @@ async def lifespan(app: FastAPI):
                 )
                 should_materialize = True
             else:
-                logger.info(f"Backend SQL verificado em {db_path}. Tabelas presentes.")
+                logger.info(
+                    f"Backend SQL verificado em {db_path}. Tabelas presentes.")
         except Exception as e:
             logger.error(
                 f"Erro ao verificar integridade do banco: {e}. Forçando recriação."
@@ -97,6 +98,17 @@ async def lifespan(app: FastAPI):
             logger.critical(f"Falha crítica na materialização: {e}")
             # We don't crash the app, but dashboard will likely fail.
             # Ideally, we might want to expose a health check failure.
+    else:
+        # Ensure views are registered even if not materializing
+        # This is important for new tables added after initial setup
+        from ..infra.db import register_parquet_views, get_duckdb_conn
+        try:
+            conn = get_duckdb_conn(db_path, read_only=False)
+            register_parquet_views(conn)
+            conn.close()
+            logger.info("Views DuckDB registradas (skip materialization).")
+        except Exception as e:
+            logger.warning(f"Falha ao registrar views: {e}")
 
     yield
 

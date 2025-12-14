@@ -1,3 +1,11 @@
+"""
+Módulo responsável pela transformação de dados da camada Silver para Gold.
+
+Contém funções para:
+- Limpeza e normalização de colunas.
+- Agregação de estatísticas (notas, distribuição geográfica, socioeconômica).
+- Geração de tabelas finais em formato Parquet para consumo pelo Dashboard.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -9,6 +17,8 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+
+import yaml
 
 from enem_project.config import paths
 from enem_project.infra.io import read_parquet, write_parquet
@@ -24,6 +34,8 @@ gold_dir = paths.gold_dir
 
 @dataclass
 class ParquetStreamingConfig:
+    """Configuração para processamento em stream de arquivos Parquet."""
+
     rows_per_batch: int
 
 
@@ -59,7 +71,8 @@ def _clean_columns(
     if "ANO" not in df.columns:
         df["ANO"] = year
     else:
-        df["ANO"] = pd.to_numeric(df["ANO"], errors="coerce").fillna(year).astype(int)
+        df["ANO"] = pd.to_numeric(
+            df["ANO"], errors="coerce").fillna(year).astype(int)
 
     for col in DEFAULT_NOTA_COLUMNS:
         if col not in df.columns:
@@ -86,7 +99,8 @@ def _clean_columns(
         df["TP_SEXO"] = df["TP_SEXO"].astype("category")
     for cat_col in ("TP_COR_RACA", "TP_FAIXA_ETARIA"):
         if cat_col in df.columns:
-            df[cat_col] = pd.to_numeric(df[cat_col], errors="coerce").astype("Int16")
+            df[cat_col] = pd.to_numeric(
+                df[cat_col], errors="coerce").astype("Int16")
         if "NU_IDADE" in df.columns:
             age_series = pd.to_numeric(df["NU_IDADE"], errors="coerce")
             valid_age = age_series.between(8, 120)
@@ -129,6 +143,7 @@ def _stream_config() -> ParquetStreamingConfig:
 
 
 def build_tb_notas_parquet_streaming(years: Iterable[int]) -> int:
+    """Gera tabela de notas unificada usando processamento em stream."""
     config = _stream_config()
     total_rows = 0
     tb_notas_path = gold_dir() / "tb_notas.parquet"
@@ -160,14 +175,17 @@ def build_tb_notas_parquet_streaming(years: Iterable[int]) -> int:
     if writer is None:
         # Nenhum dado processado: cria arquivo vazio com schema esperado
         empty = pd.DataFrame(
-            columns=["ANO", "ID_INSCRICAO", *DEMOGRAPHIC_COLUMNS, *DEFAULT_NOTA_COLUMNS]
+            columns=["ANO", "ID_INSCRICAO", *
+                     DEMOGRAPHIC_COLUMNS, *DEFAULT_NOTA_COLUMNS]
         )
         write_parquet(empty, tb_notas_path)
     else:
         writer.close()
 
     logger.info(
-        "tb_notas gerado em {} com {} linhas (streaming).", tb_notas_path, total_rows
+        "tb_notas gerado em {} com {} linhas (streaming).",
+        tb_notas_path,
+        total_rows,
     )
     return total_rows
 
@@ -189,7 +207,8 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
             out_age = int((~valid_age).sum())
             if out_age > 0:
                 logger.warning(
-                    "Ano {}: descartando {} idades fora do intervalo [8,120] para estatísticas anuais.",
+                    "Ano {}: descartando {} idades fora do intervalo [8,120] "
+                    "para estatísticas anuais.",
                     year,
                     out_age,
                 )
@@ -198,7 +217,8 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
             if age_valid.empty:
                 record.update(
                     {
-                        # Mantém como NaN para não sinalizar falsos positivos nos data checks.
+                        # Mantém como NaN para não sinalizar falsos positivos
+                        # nos data checks.
                         "IDADE_mean": np.nan,
                         "IDADE_std": np.nan,
                         "IDADE_min": np.nan,
@@ -224,7 +244,8 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
             out_of_range = (~valid).sum()
             if out_of_range > 0:
                 logger.warning(
-                    "Ano {}, coluna {}: descartando {} valores fora do intervalo [0,1000].",
+                    "Ano {}, coluna {}: descartando {} valores fora do "
+                    "intervalo [0,1000].",
                     year,
                     col,
                     out_of_range,
@@ -250,11 +271,13 @@ def _aggregate_stats(df: pd.DataFrame) -> pd.DataFrame:
 
     df_stats = pd.DataFrame(stats_frames)
 
-    # Preenche apenas colunas de nota com 0 (idade permanece NaN para não gerar falsos avisos).
+    # Preenche apenas colunas de nota com 0
+    # (idade permanece NaN para não gerar falsos avisos).
     nota_cols = [c for c in df_stats.columns if c.startswith("NOTA_")]
     age_cols = [c for c in df_stats.columns if c.startswith("IDADE_")]
     if nota_cols:
-        df_stats[nota_cols] = df_stats[nota_cols].fillna(0).infer_objects(copy=False)
+        df_stats[nota_cols] = df_stats[nota_cols].fillna(
+            0).infer_objects(copy=False)
     if age_cols:
         df_stats[age_cols] = df_stats[age_cols].infer_objects(copy=False)
 
@@ -277,7 +300,8 @@ def _build_geo_duckdb(path: Path, year: int) -> pd.DataFrame:
     required = [*GEO_COLUMNS, *DEFAULT_NOTA_COLUMNS]
     if not _geo_requires_columns(path, required):
         logger.warning(
-            "Colunas geográficas ou de notas ausentes para o ano {}; geo ficará vazio (schema preservado).",
+            "Colunas geográficas ou de notas ausentes para o ano {}; "
+            "geo ficará vazio (schema preservado).",
             year,
         )
         return pd.DataFrame(columns=_geo_empty_schema())
@@ -289,7 +313,8 @@ def _build_geo_duckdb(path: Path, year: int) -> pd.DataFrame:
     inscritos_expr = "COUNT(DISTINCT ID_INSCRICAO)" if has_id else "COUNT(*)"
 
     # Presence Column Mapping for DuckDB
-    # We check if columns exist to avoid SQL errors, defaulting to just range check if missing
+    # We check if columns exist to avoid SQL errors, defaulting to just
+    # range check if missing
     presence_map = {
         "NOTA_CIENCIAS_NATUREZA": "TP_PRESENCA_CN",
         "NOTA_CIENCIAS_HUMANAS": "TP_PRESENCA_CH",
@@ -302,8 +327,10 @@ def _build_geo_duckdb(path: Path, year: int) -> pd.DataFrame:
     for col in DEFAULT_NOTA_COLUMNS:
         pres_col = presence_map.get(col)
 
-        # Check condition: Value in range AND (Presence column doesn't exist OR Presence=1)
-        # Note: In DuckDB, if column doesn't exist in file, we can't reference it easily without dynamic check.
+        # Check condition: Value in range AND
+        # (Presence column doesn't exist OR Presence=1)
+        # Note: In DuckDB, if column doesn't exist in file, we can't reference
+        # it easily without dynamic check.
         # But we checked cols above.
 
         conditions = [f"{col} BETWEEN 0 AND 1000"]
@@ -341,18 +368,23 @@ def _build_geo_uf_duckdb(path: Path, year: int) -> pd.DataFrame:
     required = {"SG_UF_PROVA", *DEFAULT_NOTA_COLUMNS}
     if not required.issubset(cols):
         logger.warning(
-            "Colunas necessárias para geo_uf ausentes no ano {}; retorno vazio.", year
+            "Colunas necessárias para geo_uf ausentes no ano {}; "
+            "retorno vazio.",
+            year,
         )
         return pd.DataFrame()
 
     has_id = "ID_INSCRICAO" in cols
-    inscritos_expr = "COUNT(DISTINCT ID_INSCRICAO)" if has_id else "COUNT(*)"
+    inscritos_expr = (
+        "COUNT(DISTINCT ID_INSCRICAO)" if has_id else "COUNT(*)"
+    )
 
     col_selects = [f"{inscritos_expr} AS INSCRITOS"]
     for col in DEFAULT_NOTA_COLUMNS:
         valid_case = f"CASE WHEN {col} BETWEEN 0 AND 1000 THEN {col} END"
         col_selects.append(
-            f"SUM(CASE WHEN {col} BETWEEN 0 AND 1000 THEN 1 ELSE 0 END) AS {col}_count"
+            f"SUM(CASE WHEN {col} BETWEEN 0 AND 1000 THEN 1 ELSE 0 END) "
+            f"AS {col}_count"
         )
         col_selects.append(f"AVG({valid_case}) AS {col}_mean")
 
@@ -368,7 +400,12 @@ def _build_geo_uf_duckdb(path: Path, year: int) -> pd.DataFrame:
     return duckdb.sql(query).df()  # type: ignore[union-attr]
 
 
-def build_tb_notas_stats_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
+def build_tb_notas_stats_from_cleaned(
+    years: Iterable[int],
+) -> pd.DataFrame:
+    """
+    Gera tabela de estatísticas anuais de notas (média, desvio, min, max).
+    """
     # Calcula stats por ano lendo os Parquets limpos ano a ano
     records: list[dict[str, object]] = []
     columns_to_read = ["ID_INSCRICAO", "NU_IDADE", *DEFAULT_NOTA_COLUMNS]
@@ -393,8 +430,10 @@ def build_tb_notas_stats_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
 
 
 def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
+    """Gera tabela de notas agregada por município."""
     frames: list[pd.DataFrame] = []
-    # Include presence columns to correctly filter absentees from grade averages
+    # Include presence columns to correctly filter absentees
+    # from grade averages
     columns_to_read = [
         "ID_INSCRICAO",
         *GEO_COLUMNS,
@@ -420,28 +459,34 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             try:
                 frames.append(_build_geo_duckdb(path, year))
                 continue
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:  # pylint: disable=broad-exception-caught
                 logger.warning(
-                    "DuckDB falhou em geo {} ({}); caindo para pandas.", year, exc
+                    "DuckDB falhou em geo {} ({}); caindo para pandas.",
+                    year,
+                    exc,
                 )
 
         # Load data with presence columns
         try:
             df = read_parquet(path, columns=columns_to_read)
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             # Fallback if presence columns are missing in older schemas
             logger.warning(
-                "Colunas de presença ausentes em {}. Carregando apenas notas/geo.", path
+                "Colunas de presença ausentes em {}. "
+                "Carregando apenas notas/geo.",
+                path,
             )
             df = read_parquet(
-                path, columns=[c for c in columns_to_read if not c.startswith("TP_")]
+                path, columns=[
+                    c for c in columns_to_read if not c.startswith("TP_")]
             )
 
         df = _clean_columns(df, year, extra_columns=GEO_COLUMNS)
 
         if not all(col in df.columns for col in GEO_COLUMNS):
             logger.warning(
-                "Colunas geográficas ausentes para o ano {}; geo ficará vazio (schema preservado).",
+                "Colunas geográficas ausentes para o ano {}; "
+                "geo ficará vazio (schema preservado).",
                 year,
             )
             empty = pd.DataFrame(columns=_geo_empty_schema())
@@ -449,7 +494,8 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             continue
 
         # Apply Logic: Force NaN for Absentees based on Presence Columns
-        # This ensures count() only counts those present, while size() counts everyone (Enrolled)
+        # This ensures count() only counts those present, while size() counts
+        # everyone (Enrolled)
 
         # Map Subject -> Presence Column
         presence_map = {
@@ -469,23 +515,29 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
                 presence_col = presence_map[col]
                 # Keep value only if range is valid AND Presence == 1 (Present)
                 # Note: TP_PRESENCA might be string or int, allow for both
-                is_present = pd.to_numeric(df[presence_col], errors="coerce") == 1
+                is_present = pd.to_numeric(
+                    df[presence_col], errors="coerce") == 1
                 valid = valid_range & is_present
             elif col == "NOTA_REDACAO" and "TP_STATUS_REDACAO" in df.columns:
                 # For Redacao, check Status. 1 = No problems.
-                # Also usually linked to LC presence, but Status is more specific for the grade validity.
+                # Also usually linked to LC presence, but Status is more
+                # specific for the grade validity.
                 # Using Presence LC as well is safer if available.
                 # is_valid_status check removed as it was unused logic.
 
-                # Actually, INEP Dict: 1=Presente(Regular), 2=Branco, 3=Nulo, 4=Anulada, 6=Presente(Oral), 8=Presente(Libras).
-                # Absentees usually have Status=NaN or empty in processed data if not present.
-                # Let's stick to the Note being Non-Null and in Range as the primary check,
-                # but if TP_PRESENCA_LC is 0, Redacao should be NaN.
+                # Actually, INEP Dict: 1=Presente(Regular), 2=Branco, 3=Nulo,
+                # 4=Anulada, 6=Presente(Oral), 8=Presente(Libras).
+                # Absentees usually have Status=NaN or empty in processed data
+                # if not present.
+                # Let's stick to the Note being Non-Null and in Range as the
+                # primary check, but if TP_PRESENCA_LC is 0, Redacao should
+                # be NaN.
 
                 valid = valid_range
                 if "TP_PRESENCA_LC" in df.columns:
                     is_present_lc = (
-                        pd.to_numeric(df["TP_PRESENCA_LC"], errors="coerce") == 1
+                        pd.to_numeric(df["TP_PRESENCA_LC"],
+                                      errors="coerce") == 1
                     )
                     valid = valid & is_present_lc
             else:
@@ -500,7 +552,8 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
         )
 
         if "ID_INSCRICAO" in df.columns:
-            inscritos_agg = grouped["ID_INSCRICAO"].nunique().rename("INSCRITOS")
+            inscritos_agg = grouped["ID_INSCRICAO"].nunique().rename(
+                "INSCRITOS")
         else:
             inscritos_agg = grouped.size().rename("INSCRITOS")
 
@@ -525,7 +578,10 @@ def build_tb_notas_geo_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     return geo_df
 
 
-def build_tb_notas_geo_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
+def build_tb_notas_geo_uf_from_cleaned(
+    years: Iterable[int],
+) -> pd.DataFrame:
+    """Gera tabela de notas agregada por UF."""
     frames: list[pd.DataFrame] = []
     columns_to_read = ["SG_UF_PROVA", "ID_INSCRICAO", *DEFAULT_NOTA_COLUMNS]
     for year in years:
@@ -542,9 +598,11 @@ def build_tb_notas_geo_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             try:
                 frames.append(_build_geo_uf_duckdb(path, year))
                 continue
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:  # pylint: disable=broad-exception-caught
                 logger.warning(
-                    "DuckDB falhou em geo_uf {} ({}); caindo para pandas.", year, exc
+                    "DuckDB falhou em geo_uf {} ({}); caindo para pandas.",
+                    year,
+                    exc,
                 )
 
         df = read_parquet(path, columns=columns_to_read)
@@ -552,7 +610,9 @@ def build_tb_notas_geo_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
 
         if "SG_UF_PROVA" not in df.columns:
             logger.warning(
-                "Coluna SG_UF_PROVA ausente para o ano {}; geo (UF) ficará vazio.", year
+                "Coluna SG_UF_PROVA ausente para o ano {}; "
+                "geo (UF) ficará vazio.",
+                year,
             )
             continue
 
@@ -561,13 +621,16 @@ def build_tb_notas_geo_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
             valid = series.between(0, 1000)
             df[col] = series.where(valid)
 
-        grouped = df.groupby(["ANO", "SG_UF_PROVA"], dropna=True, observed=False)
+        grouped = df.groupby(["ANO", "SG_UF_PROVA"],
+                             dropna=True, observed=False)
 
         if "ID_INSCRICAO" in df.columns:
-            inscritos_agg = grouped["ID_INSCRICAO"].nunique().rename("INSCRITOS")
+            inscritos_agg = grouped["ID_INSCRICAO"].nunique().rename(
+                "INSCRITOS")
         else:
             logger.warning(
-                "ID_INSCRICAO não encontrado para o ano {}. Usando o tamanho do grupo como contagem de inscritos.",
+                "ID_INSCRICAO não encontrado para o ano {}. Usando o tamanho "
+                "do grupo como contagem de inscritos.",
                 year,
             )
             inscritos_agg = grouped.size().rename("INSCRITOS")
@@ -599,6 +662,7 @@ def build_tb_notas_histogram_from_cleaned(
     range_min: int = 0,
     range_max: int = 1000,
 ) -> pd.DataFrame:
+    """Gera tabela de histogramas de notas."""
     all_hist_frames = []
     bin_edges = np.linspace(range_min, range_max, bins + 1)
 
@@ -606,7 +670,9 @@ def build_tb_notas_histogram_from_cleaned(
         path = _cleaned_path(year)
         if not path.exists():
             logger.warning(
-                "Arquivo limpo não encontrado para o ano {}; ignorando.", year, path
+                "Arquivo limpo não encontrado para o ano {}; ignorando.",
+                year,
+                path,
             )
             continue
 
@@ -668,7 +734,9 @@ Q006_MAP = {
 }
 
 
-def build_tb_socio_economico_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
+def build_tb_socio_economico_from_cleaned(
+    years: Iterable[int],
+) -> pd.DataFrame:
     """
     Gera a tabela Gold de indicadores socioeconômicos (Renda x Nota),
     aplicando filtros de qualidade (presença) e mapa de classes.
@@ -693,11 +761,16 @@ def build_tb_socio_economico_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
         # Leitura otimizada
         try:
             df = read_parquet(path, columns=cols)
-        except Exception:
-            logger.warning(f"Colunas socioeconômicas ausentes em {path}. Pulando.")
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.warning(
+                "Colunas socioeconômicas ausentes em {} ({}). Pulando.",
+                path,
+                exc,
+            )
             continue
 
-        # 1. Filtro de Qualidade (Apenas quem foi em tudo e não zerou redação por falta)
+        # 1. Filtro de Qualidade
+        # (Apenas quem foi em tudo e não zerou redação por falta)
         # PRESENCA = 1 (Presente), STATUS_REDACAO = 1 (Sem problemas)
         mask = (
             (df["TP_PRESENCA_CN"] == 1)
@@ -761,6 +834,259 @@ def build_tb_socio_economico_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
     return final_df
 
 
+# ---------------------------------------------------------------------------
+# MÉDIA POR UF (5 DISCIPLINAS)
+# ---------------------------------------------------------------------------
+
+def _load_faixas_config() -> list[dict]:
+    """
+    Carrega a configuração de faixas de média do arquivo YAML.
+    Retorna lista de dicionários com id, min, max, descricao.
+    """
+    config_path = paths.settings.PROJECT_ROOT / "config" / "faixas_media.yaml"
+    if not config_path.exists():
+        logger.warning(
+            "Arquivo de configuração de faixas não encontrado em {}. "
+            "Usando faixas padrão.",
+            config_path,
+        )
+        return [
+            {"id": 1, "min": 0, "max": 400, "descricao": "Abaixo de 400"},
+            {
+                "id": 2,
+                "min": 400,
+                "max": 600,
+                "descricao": "Intermediário baixo",
+            },
+            {
+                "id": 3,
+                "min": 600,
+                "max": 800,
+                "descricao": "Intermediário alto",
+            },
+            {"id": 4, "min": 800, "max": 1000, "descricao": "Alto desempenho"},
+        ]
+
+    with open(config_path, encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+
+    return config.get("faixas", [])
+
+
+def calcular_media_5_disc(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calcula a média das 5 disciplinas do ENEM para cada aluno.
+
+    Exclui alunos que não possuem todas as 5 notas válidas (non-null).
+    Retorna DataFrame filtrado com coluna MEDIA_5_DISC adicionada.
+
+    Args:
+        df: DataFrame com colunas de notas (DEFAULT_NOTA_COLUMNS)
+
+    Returns:
+        DataFrame com alunos válidos e coluna MEDIA_5_DISC
+    """
+    # Verifica quais colunas de notas estão disponíveis
+    nota_cols = [c for c in DEFAULT_NOTA_COLUMNS if c in df.columns]
+
+    if len(nota_cols) < 5:
+        logger.warning(
+            "Menos de 5 colunas de notas disponíveis ({}). "
+            "Média será calculada com {} disciplinas.",
+            nota_cols,
+            len(nota_cols),
+        )
+
+    if not nota_cols:
+        logger.error(
+            "Nenhuma coluna de notas encontrada para cálculo da média.")
+        return df
+
+    # Converte para numérico e valida range [0, 1000]
+    for col in nota_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+        # Valores fora do range viram NaN
+        df.loc[~df[col].between(0, 1000), col] = np.nan
+
+    # Filtra apenas alunos com todas as notas válidas
+    mask_completo = df[nota_cols].notna().all(axis=1)
+    df_validos = df[mask_completo].copy()
+
+    descartados = len(df) - len(df_validos)
+    if descartados > 0:
+        logger.info(
+            "Media 5 disc: {} alunos descartados por notas incompletas.",
+            descartados,
+        )
+
+    # Calcula a média arredondada para 2 casas decimais
+    df_validos["MEDIA_5_DISC"] = (
+        df_validos[nota_cols].mean(axis=1).round(2)
+    )
+
+    return df_validos
+
+
+def classificar_faixa(media: float, faixas: list[dict]) -> tuple[int, str]:
+    """
+    Classifica uma média em uma das faixas configuradas.
+
+    Args:
+        media: Valor da média (0-1000)
+        faixas: Lista de faixas carregadas do config
+
+    Returns:
+        Tupla (id_faixa, descricao_faixa)
+    """
+    for faixa in faixas:
+        faixa_min = faixa["min"]
+        faixa_max = faixa["max"]
+        # Último intervalo é fechado [min, max]
+        if faixa_max == 1000:
+            if faixa_min <= media <= faixa_max:
+                return faixa["id"], faixa["descricao"]
+        else:
+            # Intervalos são [min, max)
+            if faixa_min <= media < faixa_max:
+                return faixa["id"], faixa["descricao"]
+
+    # Fallback para faixa 1 se não encontrar
+    return 1, "Abaixo de 400"
+
+
+def build_tb_media_uf_from_cleaned(years: Iterable[int]) -> pd.DataFrame:
+    """
+    Gera a tabela Gold de distribuição de alunos por faixa de média,
+    agrupada por ano e UF.
+
+    Pipeline:
+    1. Lê arquivos cleaned do gold/cleaned/
+    2. Calcula média das 5 disciplinas (MEDIA_5_DISC)
+    3. Classifica em faixas configuradas
+    4. Agrega por ANO, UF, FAIXA
+    5. Salva em gold/tb_media_uf.parquet
+
+    Args:
+        years: Iterable de anos a processar
+
+    Returns:
+        DataFrame agregado com colunas:
+        - ANO, SG_UF_PROVA, ID_FAIXA, DESCRICAO_FAIXA, QTD_ALUNOS
+    """
+    frames: list[pd.DataFrame] = []
+    faixas = _load_faixas_config()
+
+    columns_to_read = ["SG_UF_PROVA", *DEFAULT_NOTA_COLUMNS]
+
+    for year in years:
+        path = _cleaned_path(year)
+        if not path.exists():
+            logger.warning(
+                "Arquivo limpo não encontrado para o ano {} em {}; ignorando.",
+                year,
+                path,
+            )
+            continue
+
+        logger.info("Processando média por UF para o ano {}...", year)
+
+        # Lê dados limpos
+        df = read_parquet(path, columns=columns_to_read)
+        df = _clean_columns(df, year, extra_columns=["SG_UF_PROVA"])
+
+        if "SG_UF_PROVA" not in df.columns:
+            logger.warning(
+                "Coluna SG_UF_PROVA ausente para o ano {}; ignorando.", year
+            )
+            continue
+
+        # Trata UF nula como "UF_DESCONHECIDA"
+        uf_nulas = df["SG_UF_PROVA"].isna().sum()
+        if uf_nulas > 0:
+            logger.info(
+                "Ano {}: {} registros com UF nula alocados em "
+                "UF_DESCONHECIDA.",
+                year,
+                uf_nulas,
+            )
+            if isinstance(df["SG_UF_PROVA"].dtype, pd.CategoricalDtype):
+                if "XX" not in df["SG_UF_PROVA"].cat.categories:
+                    df["SG_UF_PROVA"] = df["SG_UF_PROVA"].cat.add_categories(
+                        "XX")
+
+            df["SG_UF_PROVA"] = df["SG_UF_PROVA"].fillna("XX")
+
+        # Calcula média das 5 disciplinas
+        df_com_media = calcular_media_5_disc(df)
+
+        if df_com_media.empty:
+            logger.warning(
+                "Nenhum aluno válido para cálculo de média no ano {}.", year
+            )
+            continue
+
+        # Classifica em faixas
+        classificacoes = df_com_media["MEDIA_5_DISC"].apply(
+            lambda m: classificar_faixa(m, faixas)
+        )
+        df_com_media["ID_FAIXA"] = classificacoes.apply(lambda x: x[0])
+        df_com_media["DESCRICAO_FAIXA"] = classificacoes.apply(lambda x: x[1])
+
+        # Agrega por ano, uf, faixa
+        agg = (
+            df_com_media.groupby(
+                [
+                    "ANO",
+                    "SG_UF_PROVA",
+                    "ID_FAIXA",
+                    "DESCRICAO_FAIXA",
+                ],
+                dropna=False,
+                observed=False,
+            )
+            .size()
+            .reset_index(name="QTD_ALUNOS")
+        )
+
+        frames.append(agg)
+
+        logger.info(
+            "Ano {}: {} alunos classificados em {} grupos UF/faixa.",
+            year,
+            len(df_com_media),
+            len(agg),
+        )
+
+    if not frames:
+        logger.warning("Nenhum dado processado para tb_media_uf.")
+        return pd.DataFrame(
+            columns=[
+                "ANO",
+                "SG_UF_PROVA",
+                "ID_FAIXA",
+                "DESCRICAO_FAIXA",
+                "QTD_ALUNOS",
+            ]
+        )
+
+    final_df = pd.concat(frames, ignore_index=True)
+
+    # Ordena por ano, UF, faixa
+    final_df = final_df.sort_values(
+        ["ANO", "SG_UF_PROVA", "ID_FAIXA"]
+    ).reset_index(drop=True)
+
+    out_path = gold_dir() / "tb_media_uf.parquet"
+    write_parquet(final_df, out_path)
+    logger.info(
+        "Tabela tb_media_uf gerada em {} com {} registros.",
+        out_path,
+        len(final_df),
+    )
+
+    return final_df
+
+
 __all__ = [
     "build_tb_notas_parquet_streaming",
     "build_tb_notas_stats_from_cleaned",
@@ -768,4 +1094,7 @@ __all__ = [
     "build_tb_notas_geo_uf_from_cleaned",
     "build_tb_notas_histogram_from_cleaned",
     "build_tb_socio_economico_from_cleaned",
+    "build_tb_media_uf_from_cleaned",
+    "calcular_media_5_disc",
+    "classificar_faixa",
 ]

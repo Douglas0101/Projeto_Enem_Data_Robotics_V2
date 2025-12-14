@@ -2,9 +2,9 @@ name: Enterprise CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 # Estratégia de Concorrência:
 # Cancela builds anteriores do mesmo PR se um novo commit for enviado.
@@ -21,7 +21,7 @@ jobs:
   backend-quality:
     name: Backend Quality & Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout do Código
         uses: actions/checkout@v4
@@ -39,9 +39,11 @@ jobs:
       - name: Auditoria de Segurança (Bandit)
         # Executa o Bandit (SAST) via pip para garantir estabilidade.
         # Verifica vulnerabilidades comuns em código Python na pasta src/
+        # --severity-level medium: ignora issues de baixa severidade
+        # -ll: nível de confiança baixo (mostra mais resultados)
         run: |
           pip install bandit
-          bandit -r src/ -ll
+          bandit -r src/ --severity-level medium -ll
 
   # ==============================================================================
   # Job 2: Frontend Quality Assurance
@@ -61,8 +63,8 @@ jobs:
       - name: Setup Node.js LTS
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: ./dashboard/package-lock.json
 
       - name: Instalar Dependências
@@ -84,7 +86,7 @@ jobs:
   code-style:
     name: Python Code Style (Ruff)
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout do Código
         uses: actions/checkout@v4
@@ -92,7 +94,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Instalar Ruff
         run: pip install ruff

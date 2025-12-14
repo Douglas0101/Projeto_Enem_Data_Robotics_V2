@@ -3,6 +3,7 @@ Módulo responsável pelo gerenciamento de conexões e execução de queries
 no DuckDB, fornecendo uma camada de abstração com guardrails de segurança e
 suporte a concorrência segura em ambientes multi-thread.
 """
+
 from __future__ import annotations
 
 import os
@@ -42,9 +43,7 @@ class DuckDBAgent:
     de queries no DuckDB com guardrails de segurança e auditoria básica.
     """
 
-    def __init__(
-        self, db_path: Optional[Path | str] = None, read_only: bool = True
-    ):
+    def __init__(self, db_path: Optional[Path | str] = None, read_only: bool = True):
         self.db_path = Path(db_path) if db_path else default_db_path()
         self.read_only = read_only
         if not self.read_only:
@@ -85,13 +84,11 @@ class DuckDBAgent:
             return self._conn
 
         logger.info(
-            f"Connecting to DuckDB: {self.db_path} "
-            f"(read_only={self.read_only})"
+            f"Connecting to DuckDB: {self.db_path} (read_only={self.read_only})"
         )
         try:
             self._conn = duckdb.connect(
-                self.db_path.as_posix(),
-                read_only=self.read_only
+                self.db_path.as_posix(), read_only=self.read_only
             )
         except duckdb.IOException as e:
             if "lock" in str(e).lower():
@@ -151,10 +148,7 @@ class DuckDBAgent:
         return sql
 
     def run_query(
-        self,
-        sql: str,
-        params: Optional[list[Any]] = None,
-        row_limit: int = 50000
+        self, sql: str, params: Optional[list[Any]] = None, row_limit: int = 50000
     ) -> tuple[list[Any], list[str]]:
         """
         Executa uma query SQL de forma thread-safe e retorna resultados
@@ -178,8 +172,7 @@ class DuckDBAgent:
                     rows = cursor.fetchall()
                     description = cursor.description
 
-                    columns = [d[0]
-                               for d in description] if description else []
+                    columns = [d[0] for d in description] if description else []
                     return rows, columns
                 except Exception as e:
                     logger.error(f"Erro na execução da query: {e}")
@@ -207,8 +200,7 @@ class DuckDBAgent:
     def execute_script(self, sql_script: str):
         """Executa um script SQL completo (vários comandos)."""
         if self.read_only:
-            raise ValueError(
-                "Não é possível executar scripts DDL em modo read-only.")
+            raise ValueError("Não é possível executar scripts DDL em modo read-only.")
 
         conn = self._get_conn()
         try:
@@ -221,8 +213,7 @@ class DuckDBAgent:
     def register_parquet_views(self):
         """Registra as views do Lakehouse no DuckDB."""
         if self.read_only:
-            logger.warning(
-                "Tentativa de registrar views em modo read-only ignorada.")
+            logger.warning("Tentativa de registrar views em modo read-only ignorada.")
             return
 
         s_dir = silver_dir()
@@ -231,8 +222,7 @@ class DuckDBAgent:
 
         views = {
             "silver_microdados": s_dir / "microdados_enem_*.parquet",
-            "gold_cleaned":
-                g_dir / "cleaned" / "microdados_enem_*_clean.parquet",
+            "gold_cleaned": g_dir / "cleaned" / "microdados_enem_*_clean.parquet",
             "gold_classes": g_dir / "classes" / "classes_enem_*.parquet",
             "gold_tb_notas": g_dir / "tb_notas.parquet",
             "gold_tb_notas_stats": g_dir / "tb_notas_stats.parquet",

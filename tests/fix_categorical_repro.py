@@ -1,4 +1,3 @@
-
 import pandas as pd
 import pytest
 
@@ -8,12 +7,14 @@ def test_categorical_fillna_fix():
 
     # 1. Simular DataFrame como ele chega no pipeline
     # (SG_UF_PROVA como category)
-    df = pd.DataFrame({
-        "ANO": [2009, 2009, 2009],
-        # Um valor nulo para provocar o erro
-        "SG_UF_PROVA": ["SP", "MG", None],
-        "NOTA_MEDIA": [500, 600, 700]
-    })
+    df = pd.DataFrame(
+        {
+            "ANO": [2009, 2009, 2009],
+            # Um valor nulo para provocar o erro
+            "SG_UF_PROVA": ["SP", "MG", None],
+            "NOTA_MEDIA": [500, 600, 700],
+        }
+    )
 
     # Conversão rigorosa que ocorre em _clean_columns
     df["SG_UF_PROVA"] = df["SG_UF_PROVA"].astype("category")
@@ -51,9 +52,7 @@ def test_reproduce_crash_without_fix():
     Serve apenas para documentar o comportamento original.
     """
     print("\n--- Teste de Comportamento Original (Crash Esperado) ---")
-    df = pd.DataFrame({
-        "SG_UF_PROVA": ["SP", None]
-    })
+    df = pd.DataFrame({"SG_UF_PROVA": ["SP", None]})
     df["SG_UF_PROVA"] = df["SG_UF_PROVA"].astype("category")
 
     try:

@@ -230,9 +230,7 @@ async def get_municipios(
     except Exception as exc:
         # Fallback para tb_notas_geo se dim_municipio não existir
         if "dim_municipio" in str(exc):
-            logger.warning(
-                "dim_municipio não disponível, usando fallback tb_notas_geo"
-            )
+            logger.warning("dim_municipio não disponível, usando fallback tb_notas_geo")
             sql = "SELECT DISTINCT NO_MUNICIPIO_PROVA FROM tb_notas_geo"
             params = []
             if uf:
@@ -240,12 +238,9 @@ async def get_municipios(
                 params.append(uf.upper())
             sql += " ORDER BY NO_MUNICIPIO_PROVA"
             try:
-                rows, _ = await run_in_threadpool(
-                    agent.run_query, sql, params
-                )
+                rows, _ = await run_in_threadpool(agent.run_query, sql, params)
             except Exception as inner_exc:
-                logger.error(
-                    f"Erro ao listar municípios (fallback): {inner_exc}")
+                logger.error(f"Erro ao listar municípios (fallback): {inner_exc}")
                 raise HTTPException(
                     status_code=500, detail="Failed to fetch municipalities"
                 ) from inner_exc
@@ -344,9 +339,7 @@ async def get_notas_stats(
         logger.error(f"Query error in get_notas_stats: {exc}")
         if "does not exist" in str(exc):
             return []
-        raise HTTPException(
-            status_code=500, detail="Database error."
-        ) from exc
+        raise HTTPException(status_code=500, detail="Database error.") from exc
 
     results = []
     for row in rows:
@@ -466,9 +459,7 @@ async def get_notas_geo(
         rows, columns = await run_in_threadpool(agent.run_query, sql, params)
     except Exception as exc:
         logger.warning(f"Consulta a tb_notas_geo falhou: {exc}")
-        raise HTTPException(
-            status_code=500, detail="Database Query Failed"
-        ) from exc
+        raise HTTPException(status_code=500, detail="Database Query Failed") from exc
 
     results = []
     for row in rows:
@@ -486,9 +477,7 @@ async def get_notas_geo(
 
 @router.get(
     "/notas/geo/export",
-    summary=(
-        "Exportação profissional de dados (Excel, PDF, CSV) com Streaming."
-    ),
+    summary=("Exportação profissional de dados (Excel, PDF, CSV) com Streaming."),
     response_class=StreamingResponse,
 )
 @limiter.limit("5/hour")
@@ -523,9 +512,7 @@ async def download_notas_geo(
 
     try:
         # Using run_in_threadpool for the count query to keep event loop free
-        count_res, _ = await run_in_threadpool(
-            agent.run_query, count_sql, params
-        )
+        count_res, _ = await run_in_threadpool(agent.run_query, count_sql, params)
         total_rows = count_res[0][0]
 
         # Limit for in-memory generation formats (Excel/PDF)
@@ -617,9 +604,7 @@ async def download_notas_geo(
                 iter_json(),
                 media_type="application/json",
                 headers={
-                    "Content-Disposition": (
-                        "attachment; filename=dados_enem.json"
-                    )
+                    "Content-Disposition": ("attachment; filename=dados_enem.json")
                 },
             )
 
@@ -642,9 +627,7 @@ async def download_notas_geo(
                 # Since we don't have AUTH yet, we default to 'user'
                 # (safe by default).
                 # In future, extract role from request.user.role
-                df = SecurityEngine.apply_dynamic_masking(
-                    df, role="user"
-                )
+                df = SecurityEngine.apply_dynamic_masking(df, role="user")
 
                 # Mapa completo de renomeação para evitar colunas "cruas"
                 rename_map = {
@@ -656,7 +639,6 @@ async def download_notas_geo(
                     # Vamos usar NOTA_REDACAO_count como proxy de
                     # "Qtd. Provas" (presentes no dia 1)
                     # e remover os outros counts duplicados.
-
                     "NOTA_REDACAO_count": "Provas Aplicadas",
                     # Médias das 5 Disciplinas
                     # Nomes por extenso conforme solicitado
@@ -695,8 +677,7 @@ async def download_notas_geo(
                 # Construção do texto de filtro dinâmico
                 filter_parts = []
                 if ano:
-                    filter_parts.append(
-                        f"Anos: {', '.join(map(str, sorted(ano)))}")
+                    filter_parts.append(f"Anos: {', '.join(map(str, sorted(ano)))}")
                 if uf:
                     filter_parts.append(f"UFs: {', '.join(sorted(uf))}")
                 if municipio:
@@ -732,9 +713,7 @@ async def download_notas_geo(
                     )
 
             # Execute heavy generation in threadpool
-            file_content, media_type, ext = await run_in_threadpool(
-                generate_binary
-            )
+            file_content, media_type, ext = await run_in_threadpool(generate_binary)
 
             return StreamingResponse(
                 io.BytesIO(file_content),
@@ -751,9 +730,7 @@ async def download_notas_geo(
         raise he
     except Exception as exc:
         logger.error(f"Export error: {exc}")
-        raise HTTPException(
-            status_code=500, detail="Failed to export data."
-        ) from exc
+        raise HTTPException(status_code=500, detail="Failed to export data.") from exc
 
 
 @router.get(
@@ -796,9 +773,7 @@ async def get_notas_geo_uf(
         if "does not exist" in str(exc):
             return []
         logger.warning(f"Query fail: {exc}")
-        raise HTTPException(
-            status_code=500, detail="Database query error."
-        ) from exc
+        raise HTTPException(status_code=500, detail="Database query error.") from exc
 
     required_fields = list(TbNotasGeoUfRow.model_fields.keys())
     results = []
@@ -836,13 +811,9 @@ async def get_notas_histograma(
         ORDER BY BIN_START
     """
     try:
-        rows, columns = await run_in_threadpool(
-            agent.run_query, sql, [ano, disciplina]
-        )
+        rows, columns = await run_in_threadpool(agent.run_query, sql, [ano, disciplina])
     except Exception as exc:
-        raise HTTPException(
-            status_code=500, detail=f"DB Error: {exc}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"DB Error: {exc}") from exc
 
     return [TbNotasHistogramRow(**dict(zip(columns, row))) for row in rows]
 
@@ -882,8 +853,7 @@ async def get_radar_data(
             dict_uf = {}
             if uf:
                 row_uf, cols_uf = agent.run_query(
-                    "SELECT * FROM tb_notas_geo_uf "
-                    "WHERE ANO = ? AND SG_UF_PROVA = ?",
+                    "SELECT * FROM tb_notas_geo_uf WHERE ANO = ? AND SG_UF_PROVA = ?",
                     [ano, uf.upper()],
                 )
                 row_uf = row_uf[0] if row_uf else None
@@ -893,15 +863,10 @@ async def get_radar_data(
             # 3. Best UF
             selects = [f"MAX({k}) as {k}" for k in disciplinas]
             # nosec B608
-            sql_best = (
-                f"SELECT {', '.join(selects)} "
-                "FROM tb_notas_geo_uf WHERE ANO = ?"
-            )
+            sql_best = f"SELECT {', '.join(selects)} FROM tb_notas_geo_uf WHERE ANO = ?"
             row_best, cols_best = agent.run_query(sql_best, [ano])
             row_best = row_best[0] if row_best else None
-            dict_best = (
-                dict(zip(cols_best, row_best)) if row_best else {}
-            )
+            dict_best = dict(zip(cols_best, row_best)) if row_best else {}
 
             return dict_br, dict_uf, dict_best
 
@@ -909,9 +874,7 @@ async def get_radar_data(
         d_br, d_uf, d_best = await run_in_threadpool(fetch_radar)
 
     except Exception as exc:
-        raise HTTPException(
-            status_code=500, detail=f"DB Error: {exc}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"DB Error: {exc}") from exc
 
     results = []
     for col_key, label in disciplinas.items():
@@ -1008,12 +971,9 @@ async def get_media_municipal(
             # If the view is missing, we might want to return empty or 500.
             logger.error(f"Table gold_tb_notas_geo not found or error: {exc}")
             raise HTTPException(
-                status_code=500,
-                detail="Dados municipais não disponíveis no momento."
+                status_code=500, detail="Dados municipais não disponíveis no momento."
             ) from exc
-        raise HTTPException(
-            status_code=500, detail=f"Database error: {exc}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Database error: {exc}") from exc
 
     # === TWO-PHASE DEDUPLICATION ===
     # Phase 1: Build global mapping of normalized_name -> best_display_name
@@ -1170,12 +1130,9 @@ async def get_distribuicao_notas(
         if "does not exist" in str(exc) or table_source in str(exc):
             logger.error(f"Table {table_source} not found: {exc}")
             raise HTTPException(
-                status_code=500,
-                detail="Dados de distribuição não disponíveis."
+                status_code=500, detail="Dados de distribuição não disponíveis."
             ) from exc
-        raise HTTPException(
-            status_code=500, detail=f"Database error: {exc}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Database error: {exc}") from exc
 
     # Processamento final para garantir todas as faixas e percentuais
     total_alunos = sum(row[1] for row in rows) if rows else 0
@@ -1186,10 +1143,12 @@ async def get_distribuicao_notas(
         qtd = faixas_encontradas.get(faixa_label, 0)
         percentual = (qtd / total_alunos * 100) if total_alunos > 0 else 0.0
 
-        results.append(DistribuicaoNotasRow(
-            FAIXA=faixa_label,
-            QTD_ALUNOS=qtd,
-            PERCENTUAL=round(percentual, 2),
-        ))
+        results.append(
+            DistribuicaoNotasRow(
+                FAIXA=faixa_label,
+                QTD_ALUNOS=qtd,
+                PERCENTUAL=round(percentual, 2),
+            )
+        )
 
     return results

@@ -259,9 +259,10 @@ class DuckDBAgent:
                     f"Parquet não encontrado para view {view_name}: {path}"
                 )
 
-            # nosec B608
+            # SECURITY: view_name e path são controlados internamente,
+            # não vêm de input do usuário - SQL injection não é possível aqui.
             sql = (
-                f"CREATE OR REPLACE VIEW {view_name} AS "
+                f"CREATE OR REPLACE VIEW {view_name} AS "  # nosec B608
                 f"SELECT * FROM read_parquet('{path.as_posix()}')"
             )
             conn.execute(sql)

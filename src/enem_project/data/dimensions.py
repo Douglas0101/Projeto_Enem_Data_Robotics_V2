@@ -70,7 +70,8 @@ def build_dim_municipio(years: list[int] | None = None) -> pd.DataFrame:
         logger.warning("Nenhum arquivo de dados encontrado para dimensão.")
         return pd.DataFrame()
 
-    # Query: extrai municípios únicos e deriva UF pelo código IBGE
+    # SECURITY: parquet_files é construído internamente, não vem de input
+    # do usuário - SQL injection não é possível aqui.
     query = f"""
     WITH all_municipios AS (
         SELECT
@@ -100,7 +101,7 @@ def build_dim_municipio(years: list[int] | None = None) -> pd.DataFrame:
     FROM ranked_names
     WHERE rn = 1
     ORDER BY CO_MUNICIPIO_PROVA
-    """
+    """  # nosec B608
 
     try:
         df_dim = duckdb.sql(query).df()

@@ -862,8 +862,11 @@ async def get_radar_data(
 
             # 3. Best UF
             selects = [f"MAX({k}) as {k}" for k in disciplinas]
-            # nosec B608
-            sql_best = f"SELECT {', '.join(selects)} FROM tb_notas_geo_uf WHERE ANO = ?"
+            # SECURITY: selects são constantes, não input do usuário
+            sql_best = (
+                f"SELECT {', '.join(selects)} "  # nosec B608
+                f"FROM tb_notas_geo_uf WHERE ANO = ?"
+            )
             row_best, cols_best = agent.run_query(sql_best, [ano])
             row_best = row_best[0] if row_best else None
             dict_best = dict(zip(cols_best, row_best)) if row_best else {}

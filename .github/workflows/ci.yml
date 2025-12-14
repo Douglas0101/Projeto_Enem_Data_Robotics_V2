@@ -40,10 +40,9 @@ jobs:
         # Executa o Bandit (SAST) via pip para garantir estabilidade.
         # Verifica vulnerabilidades comuns em código Python na pasta src/
         # --severity-level medium: ignora issues de baixa severidade
-        # -ll: nível de confiança baixo (mostra mais resultados)
         run: |
           pip install bandit
-          bandit -r src/ --severity-level medium -ll
+          bandit -r src/ --severity-level medium
 
   # ==============================================================================
   # Job 2: Frontend Quality Assurance

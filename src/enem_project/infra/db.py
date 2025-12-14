@@ -114,6 +114,16 @@ def register_parquet_views(conn: duckdb.DuckDBPyConnection) -> None:
         """  # nosec B608
     conn.execute(query_socio)
 
+    # Tabela dimensional de municípios (único por código IBGE)
+    dim_municipio_path = g_dir / "dim_municipio.parquet"
+    if dim_municipio_path.exists():
+        query_dim_mun = f"""
+            CREATE OR REPLACE VIEW dim_municipio AS
+            SELECT * FROM read_parquet('{dim_municipio_path.as_posix()}')
+            """  # nosec B608
+        conn.execute(query_dim_mun)
+        logger.info("View dim_municipio registrada.")
+
     logger.info(
         "Views DuckDB registradas para silver/gold (incluindo tabelas de dashboard)."
     )

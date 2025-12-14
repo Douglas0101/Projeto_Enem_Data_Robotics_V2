@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { getAccessToken, clearTokens } from "@/lib/secureStorage";
 
 const DEFAULT_API_BASE_URL = "";
 
@@ -22,8 +23,8 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
   
-  // Inject Auth Token
-  const token = localStorage.getItem("access_token");
+  // Inject Auth Token (via secureStorage - sessionStorage)
+  const token = getAccessToken();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(init?.headers ?? {}),
@@ -56,8 +57,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
     // 2. Interceptor de Auth (401) - Token Expirado
     if (response.status === 401) {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+      clearTokens(); // Usa secureStorage centralizado
       window.dispatchEvent(new Event("auth:logout"));
       throw new ApiError(401, "Sessão expirada. Faça login novamente.");
     }

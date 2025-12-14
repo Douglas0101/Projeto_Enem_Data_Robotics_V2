@@ -9,6 +9,8 @@ import { StateHistoryChart } from "../components/StateHistoryChart";
 import { VerticallyStackedAxesChart } from "../components/VerticallyStackedAxesChart";
 import { PremiumReport } from "../components/PremiumReport"; 
 import { MunicipalityChartSection } from "../components/MunicipalityChartSection";
+import { MediaMunicipalChart } from "../components/MediaMunicipalChart";
+import { ScoreDistributionChart } from "../components/ScoreDistributionChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"; 
 import {
   getRadarData,
@@ -132,12 +134,14 @@ export function AdvancedPage() {
       )}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full md:w-[900px] grid-cols-5">
+        <TabsList className="grid w-full md:w-[1200px] grid-cols-7">
           <TabsTrigger value="overview">Visão Geral ({year})</TabsTrigger>
           <TabsTrigger value="history">Evolução Histórica</TabsTrigger>
           <TabsTrigger value="race">Desempenho por Raça 🧬</TabsTrigger>
+          <TabsTrigger value="distribuicao" className="font-semibold text-primary">Distribuição 📊</TabsTrigger>
           <TabsTrigger value="municipal" className="font-semibold text-primary">Evolução Municipal 💎</TabsTrigger>
-          <TabsTrigger value="reports" className="font-semibold text-primary">Relatórios Premium 💎</TabsTrigger>
+          <TabsTrigger value="media-municipal" className="font-semibold text-primary">Média Municipal 📊</TabsTrigger>
+          <TabsTrigger value="reports" className="font-semibold text-primary">Relatórios 💎</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -176,8 +180,16 @@ export function AdvancedPage() {
              <RaceHistoryChart />
         </TabsContent>
 
+        <TabsContent value="distribuicao" className="mt-6">
+            <ScoreDistributionChart />
+        </TabsContent>
+
         <TabsContent value="municipal" className="mt-6">
             <MunicipalityChartSection />
+        </TabsContent>
+
+        <TabsContent value="media-municipal" className="mt-6">
+            <MediaMunicipalChart />
         </TabsContent>
 
         <TabsContent value="reports" className="mt-6">

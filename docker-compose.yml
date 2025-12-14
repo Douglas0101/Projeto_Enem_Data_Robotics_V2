@@ -26,11 +26,13 @@ services:
       resources:
         limits:
           # Cota Rígida de CPU (2 cores)
-          cpus: '2.0'
+          cpus: "2.0"
           # Cota Rígida de Memória (4GB) para evitar OOM no host
           memory: 4G
     # Reinicia automaticamente apenas se falhar
     restart: on-failure
+    networks:
+      - enem_network
 
   frontend:
     build:
@@ -47,3 +49,10 @@ services:
     depends_on:
       - api
     restart: on-failure
+    networks:
+      - enem_network
+
+networks:
+  enem_network:
+    name: enem_data_robotics_network
+    driver: bridge

@@ -36,8 +36,7 @@ def run_sql_backend_workflow(
 
     Retorna o caminho do arquivo DuckDB criado/atualizado.
     """
-    target_years = tuple(
-        sorted(set(years))) if years is not None else settings.YEARS
+    target_years = tuple(sorted(set(years))) if years is not None else settings.YEARS
     agent = DuckDBAgent(read_only=False)
     db_path = agent.db_path
 
@@ -60,8 +59,7 @@ def run_sql_backend_workflow(
     # Gerar tabela dimensional de municípios (evita duplicações cross-UF)
     build_dim_municipio(list(target_years))
 
-    logger.success(
-        "[workflow-sql] Tabelas Gold (Parquet) geradas com sucesso.")
+    logger.success("[workflow-sql] Tabelas Gold (Parquet) geradas com sucesso.")
 
     # Passos 2-5: Carregar e materializar no DuckDB usando Agente
     try:
@@ -80,8 +78,7 @@ def run_sql_backend_workflow(
                 / "materialize_dashboard_tables.sql"
             )
             if not sql_path.exists():
-                raise FileNotFoundError(
-                    f"Script SQL não encontrado em: {sql_path}")
+                raise FileNotFoundError(f"Script SQL não encontrado em: {sql_path}")
 
             sql_script = sql_path.read_text(encoding="utf-8")
             agent.execute_script(sql_script)

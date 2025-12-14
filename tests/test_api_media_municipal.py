@@ -1,6 +1,7 @@
 """
 Testes específicos para o endpoint /media-municipal.
 """
+
 from typing import Any
 from unittest.mock import Mock
 import pytest
@@ -29,20 +30,20 @@ class FakeAgentMedia:
             "MEDIA_MT",
             "MEDIA_RED",
             "MEDIA_FINAL",
-            "QTD_ALUNOS"
+            "QTD_ALUNOS",
         ]
 
         # Mock data row
         row = (
             "São Paulo",  # NO_MUNICIPIO_PROVA
-            2023,        # ANO
-            600.0,       # CN
-            610.0,       # CH
-            620.0,       # LC
-            630.0,       # MT
-            640.0,       # RED
-            620.0,       # FINAL (Average)
-            1000         # QTD_ALUNOS
+            2023,  # ANO
+            600.0,  # CN
+            610.0,  # CH
+            620.0,  # LC
+            630.0,  # MT
+            640.0,  # RED
+            620.0,  # FINAL (Average)
+            1000,  # QTD_ALUNOS
         )
         return [row], columns
 
@@ -62,7 +63,7 @@ async def test_get_media_municipal_success():
         municipio="Sao Paulo",
         ano_inicio=2020,
         ano_fim=2023,
-        min_alunos=50
+        min_alunos=50,
     )
 
     # Check results

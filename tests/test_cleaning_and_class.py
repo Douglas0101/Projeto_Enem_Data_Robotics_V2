@@ -6,6 +6,7 @@ Este módulo contém testes unitários e de integração para:
 - Pipeline de engenharia de classes (class engineering)
 - Processamento em streaming
 """
+
 from pathlib import Path
 
 import pandas as pd
@@ -69,9 +70,7 @@ def _sample_metadata(year: int) -> pd.DataFrame:
     )
 
 
-def test_cleaning_pipeline_filters_invalid_and_duplicates(
-    tmp_path: Path, monkeypatch
-):
+def test_cleaning_pipeline_filters_invalid_and_duplicates(tmp_path: Path, monkeypatch):
     """Testa se pipeline de limpeza filtra inválidos e duplicados."""
     # pylint: disable=import-outside-toplevel
     from enem_project.config import paths as paths_module
@@ -103,9 +102,7 @@ def test_cleaning_pipeline_filters_invalid_and_duplicates(
     assert not artifacts.cleaning_report.empty
 
 
-def test_class_pipeline_generates_expected_columns(
-    tmp_path: Path, monkeypatch
-):
+def test_class_pipeline_generates_expected_columns(tmp_path: Path, monkeypatch):
     """Testa se pipeline de classes gera colunas esperadas."""
     # pylint: disable=import-outside-toplevel
     from enem_project.config import paths as paths_module
@@ -220,9 +217,7 @@ def test_stream_class_pipeline_matches_batch(tmp_path: Path):
     classes_path = tmp_path / "classes.parquet"
     df_clean.to_parquet(clean_path, index=False)
 
-    stream_result = stream_class_pipeline(
-        clean_path, classes_path, chunk_rows=2
-    )
+    stream_result = stream_class_pipeline(clean_path, classes_path, chunk_rows=2)
     df_stream = pd.read_parquet(classes_path)
 
     batch_result = run_class_pipeline(df_clean)
@@ -237,9 +232,7 @@ def test_stream_class_pipeline_matches_batch(tmp_path: Path):
     summary_batch = batch_result.summary_df.sort_values(
         ["class_name", "class_value"]
     ).reset_index(drop=True)
-    pd.testing.assert_frame_equal(
-        summary_stream, summary_batch, check_like=True
-    )
+    pd.testing.assert_frame_equal(summary_stream, summary_batch, check_like=True)
 
 
 def test_class_pipeline_handles_pd_na_scores():

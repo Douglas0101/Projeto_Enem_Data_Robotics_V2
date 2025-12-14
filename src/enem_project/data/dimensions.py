@@ -1,6 +1,7 @@
 """
 Módulo para geração de tabelas dimensionais.
 """
+
 import duckdb
 import pandas as pd
 from loguru import logger
@@ -13,12 +14,33 @@ DIM_MUNICIPIO_PATH = DATA_DIR / "02_gold" / "dim_municipio.parquet"
 # Mapeamento oficial IBGE: Código UF → Sigla UF
 # Os primeiros 2 dígitos do CO_MUNICIPIO correspondem ao código da UF
 IBGE_UF_MAP = {
-    11: "RO", 12: "AC", 13: "AM", 14: "RR", 15: "PA", 16: "AP", 17: "TO",
-    21: "MA", 22: "PI", 23: "CE", 24: "RN", 25: "PB", 26: "PE", 27: "AL",
-    28: "SE", 29: "BA",
-    31: "MG", 32: "ES", 33: "RJ", 35: "SP",
-    41: "PR", 42: "SC", 43: "RS",
-    50: "MS", 51: "MT", 52: "GO", 53: "DF",
+    11: "RO",
+    12: "AC",
+    13: "AM",
+    14: "RR",
+    15: "PA",
+    16: "AP",
+    17: "TO",
+    21: "MA",
+    22: "PI",
+    23: "CE",
+    24: "RN",
+    25: "PB",
+    26: "PE",
+    27: "AL",
+    28: "SE",
+    29: "BA",
+    31: "MG",
+    32: "ES",
+    33: "RJ",
+    35: "SP",
+    41: "PR",
+    42: "SC",
+    43: "RS",
+    50: "MS",
+    51: "MT",
+    52: "GO",
+    53: "DF",
 }
 
 
@@ -37,8 +59,7 @@ def build_dim_municipio(years: list[int] | None = None) -> pd.DataFrame:
     parquet_files = []
     for year in years:
         path = (
-            DATA_DIR / "02_gold" / "cleaned" /
-            f"microdados_enem_{year}_clean.parquet"
+            DATA_DIR / "02_gold" / "cleaned" / f"microdados_enem_{year}_clean.parquet"
         )
         if path.exists():
             parquet_files.append(str(path))
@@ -49,7 +70,8 @@ def build_dim_municipio(years: list[int] | None = None) -> pd.DataFrame:
         logger.warning("Nenhum arquivo de dados encontrado para dimensão.")
         return pd.DataFrame()
 
-    # Query: extrai municípios únicos e deriva UF pelo código IBGE
+    # SECURITY: parquet_files é construído internamente, não vem de input
+    # do usuário - SQL injection não é possível aqui.
     query = f"""
     WITH all_municipios AS (
         SELECT
@@ -79,7 +101,7 @@ def build_dim_municipio(years: list[int] | None = None) -> pd.DataFrame:
     FROM ranked_names
     WHERE rn = 1
     ORDER BY CO_MUNICIPIO_PROVA
-    """
+    """  # nosec B608
 
     try:
         df_dim = duckdb.sql(query).df()

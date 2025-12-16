@@ -33,5 +33,10 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["highcharts", "highcharts-react-official", "plotly.js", "react-plotly.js", "@chakra-ui/react", "@emotion/react", "@emotion/styled", "framer-motion", "buffer"]
+  },
+  build: {
+    // Desabilita source maps em produção para segurança
+    // Atacantes não verão nomes de arquivo originais como "client.ts:38"
+    sourcemap: false,
   }
 });

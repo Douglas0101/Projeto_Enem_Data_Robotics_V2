@@ -1,4 +1,5 @@
 """Módulo de interface com DuckDB para conexão e execução de queries."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -147,6 +148,5 @@ def register_parquet_views(conn: duckdb.DuckDBPyConnection) -> None:
         logger.info("View gold_tb_media_uf registrada.")
 
     logger.info(
-        "Views DuckDB registradas para silver/gold "
-        "(incluindo tabelas de dashboard)."
+        "Views DuckDB registradas para silver/gold " "(incluindo tabelas de dashboard)."
     )

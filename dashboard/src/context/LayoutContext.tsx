@@ -1,37 +1,60 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface LayoutContextType {
+  // Sidebar (vertical)
   isSidebarCollapsed: boolean;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  // FilterBar (horizontal)
+  isFilterBarCollapsed: boolean;
+  toggleFilterBar: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
-  const [isSidebarCollapsed, setCollapsed] = useState(false);
+  const [isSidebarCollapsed, setSidebarState] = useState(false);
+  const [isFilterBarCollapsed, setFilterBarState] = useState(false);
 
-  // Persistir preferência do usuário
+  // Persistir preferências do usuário
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-collapsed");
-    if (saved) {
-      setCollapsed(saved === "true");
+    const savedSidebar = localStorage.getItem("sidebar-collapsed");
+    if (savedSidebar) {
+      setSidebarState(savedSidebar === "true");
+    }
+    const savedFilterBar = localStorage.getItem("filterbar-collapsed");
+    if (savedFilterBar) {
+      setFilterBarState(savedFilterBar === "true");
     }
   }, []);
 
   const toggleSidebar = () => {
     const newState = !isSidebarCollapsed;
-    setCollapsed(newState);
+    setSidebarState(newState);
     localStorage.setItem("sidebar-collapsed", String(newState));
   };
 
   const setSidebarCollapsed = (value: boolean) => {
-    setCollapsed(value);
+    setSidebarState(value);
     localStorage.setItem("sidebar-collapsed", String(value));
   };
 
+  const toggleFilterBar = () => {
+    const newState = !isFilterBarCollapsed;
+    setFilterBarState(newState);
+    localStorage.setItem("filterbar-collapsed", String(newState));
+  };
+
   return (
-    <LayoutContext.Provider value={{ isSidebarCollapsed, toggleSidebar, setSidebarCollapsed }}>
+    <LayoutContext.Provider
+      value={{
+        isSidebarCollapsed,
+        toggleSidebar,
+        setSidebarCollapsed,
+        isFilterBarCollapsed,
+        toggleFilterBar,
+      }}
+    >
       {children}
     </LayoutContext.Provider>
   );

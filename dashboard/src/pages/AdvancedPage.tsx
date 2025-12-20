@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useFilters } from "../context/FilterContext";
-import { FilterBar } from "../components/FilterBar";
+import { CollapsibleFilterBar } from "../components/layout/CollapsibleFilterBar";
 import { ComparativoRadar } from "../components/ComparativoRadar";
 import { SocioRaceChart } from "../components/SocioRaceChart";
 import { RaceHistoryChart } from "../components/RaceHistoryChart";
@@ -125,7 +125,7 @@ export function AdvancedPage() {
           </p>
       </div>
 
-      <FilterBar />
+      <CollapsibleFilterBar />
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">

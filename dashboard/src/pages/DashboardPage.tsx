@@ -9,11 +9,13 @@ import {
 import { useFilters } from "../context/FilterContext";
 import { NotasStatsCards } from "../components/NotasStatsCards";
 import { NotasGeoTable } from "../components/NotasGeoTable";
+import { NotasGeoUfTable } from "../components/NotasGeoUfTable";
 import NotasAmMap from "../components/NotasAmMap";
 import NotasHistogram from "../components/NotasHistogram";
 import NotasHeatmap from "../components/NotasHeatmap";
-import { FilterBar } from "../components/FilterBar";
-import { TbNotasGeoUfRow, TbSocioRaceRow } from "../types/dashboard"; // Import TbSocioRaceRow
+import { CollapsibleFilterBar } from "../components/layout/CollapsibleFilterBar";
+import { TbNotasGeoUfRow } from "../types/dashboard";
+import { TbSocioRaceRow } from "../api/dashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { RacePerformanceChart } from "../components/RacePerformanceChart"; // Import RacePerformanceChart
 
@@ -123,7 +125,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       
-      <FilterBar />
+      <CollapsibleFilterBar />
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -153,8 +155,9 @@ export function DashboardPage() {
           <TabsTrigger value="mapa">Mapa Geográfico</TabsTrigger>
           <TabsTrigger value="histograma">Médias Nacionais</TabsTrigger>
           <TabsTrigger value="heatmap">Desempenho Unificado</TabsTrigger>
-          <TabsTrigger value="tabela">Tabela Detalhada</TabsTrigger>
-          <TabsTrigger value="raca">Desempenho por Raça</TabsTrigger> {/* New Tab Trigger */}
+          <TabsTrigger value="tabela-uf">📊 Por Estado</TabsTrigger>
+          <TabsTrigger value="tabela-mun">📍 Por Município</TabsTrigger>
+          <TabsTrigger value="raca">Desempenho por Raça</TabsTrigger>
         </TabsList>
         
         <TabsContent value="mapa" className="space-y-4">
@@ -181,8 +184,12 @@ export function DashboardPage() {
           />
         </TabsContent>
         
-        <TabsContent value="tabela">
-           <NotasGeoTable rows={geoRows} />
+        <TabsContent value="tabela-uf">
+          <NotasGeoUfTable rows={geoUfRows} isLoading={geoLoading} />
+        </TabsContent>
+        
+        <TabsContent value="tabela-mun">
+           <NotasGeoTable rows={geoRows} isLoading={geoLoading} />
         </TabsContent>
 
         {/* New Tab Content for Race Performance */}

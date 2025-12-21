@@ -15,73 +15,174 @@ O **ENEM Data Robotics V2** é uma solução "End-to-End" corporativa que combin
 
 ---
 
-## ✨ Destaques da Versão Atual
+## 📋 Pré-requisitos
 
-### 🎯 Rigor Estatístico e Qualidade de Dados
-- **Correção de Viés de Presença:** O pipeline ETL distingue estritamente entre **Total de Inscritos** (intenção) e **Provas Aplicadas** (comparecimento efetivo). Notas de alunos ausentes são tratadas adequadamente para garantir indicadores fiéis à realidade.
-- **Cálculo Dinâmico de Provas:** Os indicadores de desempenho consideram dinamicamente o número de provas realizadas por cada grupo demográfico, garantindo precisão mesmo em casos de dados parciais.
-- **Materialização Inteligente:** O backend SQL implementa lógica de *start-up* inteligente, evitando reprocessamentos desnecessários e garantindo persistência segura dos dados.
+### Requisitos de Sistema
 
-### 🛡️ API e Estabilidade Profissional
-- **Rastreabilidade Total:** Implementação de **Request ID Middleware** que adiciona identificadores únicos (`X-Request-ID`) a todas as requisições, permitindo rastreamento preciso de logs e erros.
-- **Tratamento Global de Erros:** Handler de exceções centralizado que garante que todos os erros, mesmo os inesperados (500), retornem respostas JSON estruturadas e seguras, prevenindo vazamento de stack traces.
-- **Observabilidade:** Logs estruturados (JSON em produção) e instrumentação preparada para Prometheus.
+| Recurso | Mínimo | Recomendado |
+|---------|--------|-------------|
+| **RAM** | 8 GB | 16 GB |
+| **Disco** | 100 GB livres | 150 GB livres |
+| **CPU** | 4 cores | 8+ cores |
 
-### 📑 Relatórios Premium (Enterprise-Grade)
-- **PDFs Vetoriais Profissionais:** Motor de geração de PDF (WeasyPrint) com CSS defensivo, garantindo layout impecável, paginação correta e cabeçalhos repetidos em documentos multipáginas.
-- **Excel Formatado:** Exportação de planilhas com formatação condicional, filtros e tipos de dados corretos (números como números, texto como texto) usando `xlsxwriter`.
-- **Sanitização Defensiva:** Camada de segurança que remove caracteres de controle e formata dados numéricos antes da geração de documentos, evitando corrupção de arquivos.
+> ⚠️ **Nota:** Os microdados do ENEM ocupam aproximadamente **70 GB** para a série histórica completa (1998-2024).
 
-### 🗺️ Inteligência Geográfica e Demográfica
-- **Evolução Histórica por Raça/Cor:** Gráficos avançados que permitem a análise temporal do desempenho educacional segmentado por autodeclaração racial em cada município brasileiro.
-- **Tooltips Contextuais Inteligentes:** Visualizações de dados aprimoradas que exibem médias, contagens de participantes e número de provas contabilizadas ao interagir com os gráficos.
-- **Mapa de Calor Unificado:** Visualização matricial dinâmica que se ajusta automaticamente aos filtros, permitindo visões macro e micro.
+### Software
 
-### 🔐 Segurança e Conformidade
-- **Zero Trust Architecture:** Autenticação JWT com Argon2id industrial e autorização RBAC granular.
-- **Criptografia Forte:** TLS 1.3 para trânsito, chaves gerenciadas via variáveis de ambiente.
-- **Rate Limiting:** Proteção contra DDoS e brute force com SlowAPI.
-- **Data Masking (LGPD):** Dynamic Data Masking para colunas PII (CPF, inscrição) com `SecurityEngine`.
-- **Auditoria Estruturada:** Logs JSON estruturados para integração com sistemas SIEM.
-- **Checklist de Produção:** Documento técnico com 94 itens de segurança e escalabilidade.
+- **Python 3.12+** com [Poetry](https://python-poetry.org/docs/#installation)
+- **Node.js 20+** com npm (para o Dashboard)
+- **Docker** e **Docker Compose** (opcional, mas recomendado)
 
 ---
 
-## 🚀 Funcionalidades Principais
+## 📥 Obtenção dos Dados do INEP
 
-### 📊 Dashboard Interativo (Frontend)
-- **Visualizações Avançadas:** Gráficos interativos com **amCharts 5** e **Recharts**.
-- **Análise Comparativa:** Radar charts para comparar desempenho de estados vs. média nacional e melhores benchmarks.
-- **Evolução Histórica:** Acompanhamento temporal de notas (2009-2024) com detalhamento por disciplinas.
-- **Recortes Socioeconômicos:** Análise detalhada de desempenho por raça, renda e localização geográfica.
-- **Relatórios Profissionais:** Exportação de dados filtrados em Excel, PDF e CSV.
-- **Assistente IA:** Chat integrado para perguntas sobre os dados (Powered by Genkit).
+Os microdados do ENEM são públicos e disponibilizados pelo INEP. **Este repositório NÃO inclui os dados** devido ao tamanho.
 
-### 🛠️ Engenharia de Dados (Backend)
-- **Arquitetura Medalhão:**
-  - 🟤 **Raw:** Dados brutos do INEP.
-  - ⚪ **Silver:** Dados limpos, tipados e padronizados (Parquet).
-  - 🟡 **Gold:** Agregações analíticas prontas para consumo (DuckDB + Parquet).
-- **DuckDB:** Banco de dados analítico embarcado para processamento massivo local.
-- **FastAPI:** API RESTful de alta performance e documentação automática (Swagger UI).
-- **Agentes de IA:** Orquestração inteligente de pipelines e análise de dados.
+### 1. Download dos Microdados
+
+Acesse o portal oficial do INEP:
+- **🔗 [Microdados ENEM - INEP](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/enem)**
+
+Faça download dos arquivos `.zip` dos anos desejados.
+
+### 2. Estrutura de Diretórios Esperada
+
+Após extrair os arquivos, organize-os na pasta `data/00_raw/`:
+
+```plaintext
+data/
+└── 00_raw/
+    ├── microdados_enem_2020/
+    │   └── DADOS/
+    │       └── MICRODADOS_ENEM_2020.csv
+    ├── microdados_enem_2021/
+    │   └── DADOS/
+    │       └── MICRODADOS_ENEM_2021.csv
+    ├── microdados_enem_2022/
+    │   └── DADOS/
+    │       └── MICRODADOS_ENEM_2022.csv
+    ├── microdados_enem_2023/
+    │   └── DADOS/
+    │       └── MICRODADOS_ENEM_2023.csv
+    └── microdados_enem_2024/
+        └── DADOS/
+            └── MICRODADOS_ENEM_2024.csv
+```
+
+> **Dica:** Comece com 1-2 anos recentes (2023-2024) para testes. Cada ano ocupa ~3-5 GB.
 
 ---
 
-## 🏗️ Arquitetura do Projeto
+## 🚀 Instalação e Execução
 
-O projeto segue uma estrutura modular e escalável:
+### Opção A: Docker (Recomendado)
+
+A maneira mais simples de executar o projeto, garantindo todas as dependências corretas.
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/Douglas0101/Projeto_Enem_Data_Robotics_V2.git
+cd Projeto_Enem_Data_Robotics_V2
+
+# 2. Crie a estrutura de dados e adicione os microdados do INEP
+mkdir -p data/00_raw
+
+# 3. Execute com Docker Compose
+docker compose up --build
+```
+
+**Acesse:**
+- 📊 **Dashboard:** http://localhost:5173
+- 📖 **API Docs:** http://localhost:8000/docs
+
+### Opção B: Execução Local (Desenvolvimento)
+
+#### Backend (Python)
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/Douglas0101/Projeto_Enem_Data_Robotics_V2.git
+cd Projeto_Enem_Data_Robotics_V2
+
+# 2. Instale as dependências Python
+poetry install
+
+# 3. Execute o pipeline ETL (Raw → Silver → Gold)
+poetry run enem --dashboard --anos 2023-2024
+
+# 4. Inicie o servidor da API
+poetry run enem serve
+# Ou diretamente:
+poetry run uvicorn enem_project.api.main:app --reload --port 8000
+```
+
+#### Frontend (React)
+
+```bash
+# Em outro terminal:
+cd dashboard
+npm install
+npm run dev
+```
+
+**Acesse:**
+- 📊 **Dashboard:** http://localhost:5173
+- 📖 **API Docs:** http://localhost:8000/docs
+
+---
+
+## ⚙️ Pipeline de Dados (ETL)
+
+O projeto utiliza a **Arquitetura Medallion** (Lakehouse):
 
 ```mermaid
-graph TD
-    A[Dados Públicos INEP] -->|Ingestão| B(Camada Raw)
-    B -->|Limpeza & Validação| C(Camada Silver)
-    C -->|Regras de Negócio & Presença| D(Camada Gold - DuckDB)
-    D -->|FastAPI| E[Backend Server]
-    E -->|JSON/Stream| F[Dashboard React/Vite]
-    G[Usuário] -->|Interage| F
-    G -->|Query NL| H[Agente IA Genkit]
-    H -->|SQL Generation| D
+graph LR
+    A[00_raw - CSVs INEP] -->|Raw → Silver| B[01_silver - Parquet Limpo]
+    B -->|Silver → Gold| C[02_gold - Tabelas Analíticas]
+    C -->|DuckDB| D[API FastAPI]
+    D --> E[Dashboard React]
+```
+
+### Comandos CLI
+
+| Comando | Descrição |
+|---------|-----------|
+| `poetry run enem --ano 2023` | Processa Raw → Silver para um ano específico |
+| `poetry run enem --anos 2020-2024` | Processa múltiplos anos |
+| `poetry run enem --dashboard` | Gera tabelas Gold (analíticas) para o Dashboard |
+| `poetry run enem --dashboard --skip-existing` | Pula anos já processados |
+| `poetry run enem serve` | Inicia o servidor FastAPI |
+
+### Exemplo: Pipeline Completo
+
+```bash
+# Processa anos 2020-2024 e gera tabelas do dashboard
+poetry run enem --dashboard --anos 2020-2024
+
+# Se adicionar novos anos posteriormente:
+poetry run enem --dashboard --anos 2025 --skip-existing
+```
+
+---
+
+## 🔧 Variáveis de Ambiente
+
+| Variável | Descrição | Padrão |
+|----------|-----------|--------|
+| `ENEM_DATA_DIR` | Diretório raiz dos dados | `./data` |
+| `ENEM_FORCE_MATERIALIZE` | Força recriação das tabelas DuckDB | `false` |
+| `DUCKDB_MEMORY_LIMIT` | Limite de memória do DuckDB | `4GB` |
+| `DUCKDB_THREADS` | Threads para processamento paralelo | `2` |
+| `GEMINI_API_KEY` | Chave da API Google Gemini (IA) | - |
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```bash
+ENEM_DATA_DIR=/app/data
+DUCKDB_MEMORY_LIMIT=8GB
+DUCKDB_THREADS=4
+GEMINI_API_KEY=sua_chave_aqui
 ```
 
 ---
@@ -89,52 +190,17 @@ graph TD
 ## 📦 Stack Tecnológica
 
 ### Backend & Data
-*   **Linguagem:** Python 3.12+
-*   **Gerenciamento de Dependências:** Poetry
-*   **API:** FastAPI + Pydantic
-*   **Banco de Dados:** DuckDB (Processamento OLAP local)
-*   **Reporting Engine:** WeasyPrint (PDF), XlsxWriter (Excel)
-*   **Orquestração/IA:** Google Genkit
-*   **Qualidade de Dados:** Soda Core (Validadores customizados)
+- **Python 3.12+** / Poetry
+- **FastAPI** + Pydantic v2
+- **DuckDB** (OLAP embarcado)
+- **Pandas** / PyArrow
+- **WeasyPrint** (PDFs) / XlsxWriter (Excel)
 
 ### Frontend (Dashboard)
-*   **Framework:** React 18 + Vite
-*   **Linguagem:** TypeScript
-*   **Estilização:** Tailwind CSS + Shadcn/UI
-*   **Visualização de Dados:**
-    *   `amcharts5`: Gráficos complexos e mapas.
-    *   `recharts`: Gráficos estatísticos padrão.
-    *   `lucide-react`: Ícones.
-
----
-
-## ⚙️ Instalação e Execução (Docker)
-
-A maneira recomendada de executar o projeto é via Docker Compose, garantindo que todas as dependências de sistema (incluindo as necessárias para geração de PDF) estejam corretas.
-
-### Pré-requisitos
-*   Docker Engine e Docker Compose instalados.
-
-### Passos
-
-1.  **Clone o repositório:**
-    ```bash
-    git clone https://github.com/seu-usuario/projeto-enem-data-robotics-v2.git
-    cd projeto-enem-data-robotics-v2
-    ```
-
-2.  **Execute com Docker Compose:**
-    ```bash
-    docker compose up --build
-    ```
-    Isso iniciará a API (Backend) e o Dashboard (Frontend).
-
-3.  **Acesse:**
-    *   **Dashboard:** [http://localhost:5173](http://localhost:5173)
-    *   **Documentação da API:** [http://localhost:8000/docs](http://localhost:8000/docs)
-
-### Configuração de Dados
-O projeto utiliza um volume local `./data` mapeado para o container. Certifique-se de que seus dados brutos ou processados estejam na pasta `data/` local para persistência.
+- **React 18** + Vite
+- **TypeScript**
+- **Tailwind CSS** + Radix UI
+- **amCharts 5** / Recharts / D3.js
 
 ---
 
@@ -142,81 +208,123 @@ O projeto utiliza um volume local `./data` mapeado para o container. Certifique-
 
 ```plaintext
 Projeto_Enem_Data_Robotics_V2/
-├── config/                 # Configurações de hardware e ambiente
-├── dashboard/              # Aplicação Frontend (React/Vite)
+├── dashboard/              # Frontend React/Vite
 │   ├── src/
-│   │   ├── api/            # Clientes HTTP (Axios)
-│   │   ├── components/     # Componentes UI (Charts, Maps, PremiumReport)
-│   │   ├── pages/          # Rotas da aplicação
-│   │   └── ...
-├── data/                   # Lakehouse Local (Mapeado no Docker)
-│   ├── 00_raw/             # Dados brutos
+│   │   ├── api/            # Clientes HTTP
+│   │   ├── components/     # UI Components + Charts
+│   │   └── pages/          # Rotas da aplicação
+├── data/                   # Lakehouse Local (NÃO COMMITADO)
+│   ├── 00_raw/             # Microdados originais INEP
 │   ├── 01_silver/          # Dados limpos (Parquet)
-│   └── 02_gold/            # Dados agregados (Parquet)
-├── Enem_documentos_e_orquestração/ # Documentação Arquitetural e Segurança
-│   ├── checklist_producao_segura_escalavel.md  # ⭐ Checklist de Staff Engineer
-│   ├── Ciberseguranca-e-Escalabilidade.md      # Plano Diretor de Segurança
-│   ├── arquitetura_projeto_enem_data_robotics.md
-│   └── ...                 # Guias de engenharia e orquestração
-├── src/                    # Código Fonte Backend
-│   └── enem_project/
-│       ├── api/            # Rotas FastAPI e Lógica de Endpoints
-│       ├── data/           # Pipelines ETL (Raw->Silver->Gold)
-│       ├── infra/          # Conexão DB, Logging, IO, Security
-│       ├── services/       # Serviços de Domínio (ReportService, etc.)
-│       └── orchestrator/   # Agentes e Workflows
-├── tests/                  # Testes unitários, integração e segurança
-├── .genkit/                # Configuração do Genkit (IA)
-├── Dockerfile              # Definição da imagem da API
-├── docker-compose.yml      # Orquestração dos serviços
-├── GEMINI.md               # Regras e Contexto do Assistente
-└── README.md               # Documentação do Projeto
+│   └── 02_gold/            # Tabelas analíticas (Parquet/DuckDB)
+├── src/enem_project/       # Backend Python
+│   ├── api/                # Rotas FastAPI
+│   ├── config/             # Settings, Paths
+│   ├── data/               # Pipelines ETL
+│   ├── infra/              # DB, IO, Logging, Security
+│   └── services/           # Lógica de Negócio
+├── tests/                  # Testes unitários e integração
+├── Dockerfile              # Build da API
+├── docker-compose.yml      # Orquestração
+└── pyproject.toml          # Dependências Python
 ```
 
 ---
 
-## 🧪 Testes e Qualidade
+## ❗ Troubleshooting
 
-Para garantir a integridade dos dados e do código (executando localmente):
+### Erro de Memória ao Processar Anos Grandes
 
 ```bash
-# Instalar dependências de desenvolvimento
-poetry install
+# Ajuste o limite de memória do DuckDB
+export DUCKDB_MEMORY_LIMIT=2GB
 
-# Executar testes unitários (Backend)
-poetry run pytest tests/
+# Ou processe anos individualmente
+poetry run enem --ano 2023
+poetry run enem --ano 2024
+poetry run enem --dashboard
+```
 
-# Executar linter
+### Erro: DuckDB Database Locked
+
+O DuckDB permite apenas **uma conexão de escrita** por vez.
+
+```bash
+# Certifique-se de que o servidor da API não está rodando
+# ao executar pipelines ETL
+pkill -f uvicorn
+poetry run enem --dashboard
+```
+
+### Erro: WeasyPrint / Geração de PDF
+
+Instale as dependências de sistema:
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install libpango-1.0-0 libpangoft2-1.0-0 libcairo2 libpangocairo-1.0-0
+
+# macOS
+brew install pango cairo
+```
+
+### Docker: Network Not Found ao Reiniciar
+
+```bash
+docker compose down --remove-orphans
+docker compose up --build
+```
+
+---
+
+## 🧪 Testes
+
+```bash
+# Testes unitários (Backend)
+poetry run pytest tests/ -v
+
+# Linting
 poetry run ruff check .
 
-# Executar testes de segurança
+# Testes de segurança
 poetry run pytest tests/test_security_engineering.py -v
+
+# Testes E2E (Frontend)
+cd dashboard
+npx playwright test
 ```
 
 ---
 
 ## 📚 Documentação Técnica
 
-O projeto inclui documentação profissional de engenharia:
-
 | Documento | Descrição |
 |-----------|-----------|
-| [Checklist de Produção](Enem_documentos_e_orquestração/checklist_producao_segura_escalavel.md) | 94 itens de segurança, escalabilidade e estabilidade |
+| [Checklist de Produção](Enem_documentos_e_orquestração/checklist_producao_segura_escalavel.md) | 94 itens de segurança e escalabilidade |
 | [Plano de Cibersegurança](Enem_documentos_e_orquestração/Ciberseguranca-e-Escalabilidade.md) | Zero Trust, IAM, proteção de dados |
-| [Arquitetura do Projeto](Enem_documentos_e_orquestração/arquitetura_projeto_enem_data_robotics.md) | Estrutura completa e orquestração agêntica |
+| [Arquitetura do Projeto](Enem_documentos_e_orquestração/arquitetura_projeto_enem_data_robotics.md) | Estrutura completa e orquestração |
 | [GEMINI.md](GEMINI.md) | Regras e contexto do assistente de IA |
+
+---
+
+## ✨ Destaques da Versão Atual
+
+- **Correção de Viés de Presença:** Distingue inscritos vs. participantes efetivos
+- **Rastreabilidade Total:** Request ID em todas as requisições
+- **PDFs Profissionais:** WeasyPrint com layout paginado
+- **Zero Trust:** Autenticação JWT + Argon2id + RBAC
+- **Rate Limiting:** Proteção contra DDoS
+- **Data Masking (LGPD):** Proteção de dados PII
 
 ---
 
 ## 🤝 Contribuição
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir **Issues** para reportar bugs ou **Pull Requests** para melhorias.
-
-1.  Faça um Fork do projeto
-2.  Crie sua Feature Branch (`git checkout -b feature/MinhaFeature`)
-3.  Commit suas mudanças (`git commit -m 'Add: Minha nova feature'`)
-4.  Push para a Branch (`git push origin feature/MinhaFeature`)
-5.  Abra um Pull Request
+1. Faça um Fork do projeto
+2. Crie sua Feature Branch (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Add: Minha nova feature'`)
+4. Push para a Branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
 
 ---
 

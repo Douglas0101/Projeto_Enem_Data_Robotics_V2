@@ -287,7 +287,7 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer"
-              onClick={logout}
+              onClick={() => logout()}
             >
               <LogOut className="mr-2 h-4 w-4" />
               Sair
